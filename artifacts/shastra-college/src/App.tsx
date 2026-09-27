@@ -1,9 +1,12 @@
-import { type ReactNode } from 'react';
+import { useEffect, useRef } from 'react';
+import { ClerkProvider, SignIn, SignUp, useClerk } from '@clerk/react';
+import { publishableKeyFromHost } from '@clerk/react/internal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
+import AdminPage from '@/pages/admin';
+import HomePage from '@/pages/public-home';
 import {
   Route,
   Switch,
@@ -13,49 +16,75 @@ import {
 
 const queryClient = new QueryClient();
 
-function Home() {
-  return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Replit Agent is building...
-        </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Your app will appear here once it's ready.
-        </p>
-      </div>
-    </div>
-  );
+const clerkPubKey = publishableKeyFromHost(
+  window.location.hostname,
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+);
+const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+function stripBase(path: string) {
+  return basePath && path.startsWith(basePath)
+    ? path.slice(basePath.length) || '/'
+    : path;
 }
 
-function Router() {
-  return (
-    // Keep a shared shell (sidebar, navbar) outside the boundary so it
-    // survives a page crash.
-    <RoutedErrorBoundary>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route component={NotFound} />
-      </Switch>
-    </RoutedErrorBoundary>
-  );
+const clerkAppearance = {
+  options: {
+    logoPlacement: 'inside' as const,
+    logoLinkUrl: basePath || '/',
+    logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
+  },
+  variables: {
+    colorPrimary: '#0B3472',
+    colorForeground: '#15243d',
+    colorMutedForeground: '#61718a',
+    colorDanger: '#E3212B',
+    colorBackground: '#ffffff',
+    colorInput: '#f7f9fc',
+    colorInputForeground: '#15243d',
+    colorNeutral: '#d9e0ea',
+    fontFamily: 'DM Sans, sans-serif',
+    borderRadius: '0.75rem',
+  },
+};
+
+function SignInPage() {
+  return <div className="flex min-h-[100dvh] items-center justify-center bg-[#f5f7fb] px-4"><SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} /></div>;
 }
 
-function RoutedErrorBoundary({ children }: { children: ReactNode }) {
-  const [location] = useLocation();
-  return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
+function SignUpPage() {
+  return <div className="flex min-h-[100dvh] items-center justify-center bg-[#f5f7fb] px-4"><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} /></div>;
+}
+
+function ClerkQueryClientCacheInvalidator() {
+  const { addListener } = useClerk();
+  const client = queryClient;
+  const previousUser = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    const unsubscribe = addListener(({ user }) => {
+      const nextUser = user?.id ?? null;
+      if (previousUser.current !== undefined && previousUser.current !== nextUser) client.clear();
+      previousUser.current = nextUser;
+    });
+    return unsubscribe;
+  }, [addListener, client]);
+  return null;
+}
+
+function RoutedApp() {
+  const [, setLocation] = useLocation();
+  return <ClerkProvider publishableKey={clerkPubKey} proxyUrl={clerkProxyUrl} appearance={clerkAppearance} signInUrl={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} localization={{ signIn: { start: { title: 'Welcome back', subtitle: 'Sign in to access the staff workspace' } }, signUp: { start: { title: 'Create your account', subtitle: 'Your college content workspace awaits' } } }} routerPush={(to) => setLocation(stripBase(to))} routerReplace={(to) => setLocation(stripBase(to), { replace: true })}><ClerkQueryClientCacheInvalidator /><QueryClientProvider client={queryClient}><Switch><Route path="/" component={HomePage} /><Route path="/admin" component={AdminPage} /><Route path="/sign-in/*?" component={SignInPage} /><Route path="/sign-up/*?" component={SignUpPage} /><Route component={NotFound} /></Switch></QueryClientProvider></ClerkProvider>;
 }
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <TooltipProvider>
+      <WouterRouter base={basePath}>
+        <RoutedApp />
+      </WouterRouter>
+      <Toaster />
+    </TooltipProvider>
   );
 }
 
