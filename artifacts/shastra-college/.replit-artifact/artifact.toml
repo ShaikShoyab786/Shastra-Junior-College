@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Shastra Junior College"
+description = "A public homepage and protected content dashboard for Shastra Junior College. The homepage presents confirmed college identity and editable demo content; administrators manage page content from a shared persistent CMS."
+version = "1.0.0"
+id = "artifacts/shastra-college"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19885
+
+[services.development]
+run = "pnpm --filter @workspace/shastra-college run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/shastra-college", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/shastra-college/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19885"
+BASE_PATH = "/"

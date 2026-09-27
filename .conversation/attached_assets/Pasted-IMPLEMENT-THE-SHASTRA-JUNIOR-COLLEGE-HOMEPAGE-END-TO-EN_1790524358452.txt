@@ -1,0 +1,58 @@
+IMPLEMENT THE SHASTRA JUNIOR COLLEGE HOMEPAGE — END-TO-END
+
+Build the first implementation milestone for the college website: the public Home page and the minimum backend/admin functionality required to manage Home-page content.
+
+Before changing anything, inspect the existing project: its framework, routing, database, authentication, admin dashboard, and available assets. Preserve the current stack and existing work; extend what is there rather than rebuilding it unnecessarily. After the inspection, proceed with implementation in this task. Do not stop at a plan.
+
+PROJECT DETAILS
+- Confirmed college name: Shastra Junior College
+- Use the supplied logo asset if it is available in the project:
+  attached_assets/ChatGPT_Image_Sep_27,_2026,_09_01_32_PM_1790523141243.png
+- The logo mentions Intermediate, IIT-JEE Main, and NEET. These may appear as editable program/preparation cards, but do not invent specific streams, fees, eligibility, faculty, results, or other details.
+- The college name and logo are the only confirmed client information. All other copy and records must be clearly treated as demo content and easy to replace. Do not invent rankings, accreditations, placement percentages, staff names, testimonials, contact details, or achievements.
+- Use a navy-first theme inspired by the logo: navy approximately #0B3472, red approximately #E3212B, white, and restrained light-blue/grey surfaces. Use navy for major surfaces and red as an accent—not as the dominant page background. Give the admin dashboard a light workspace, navy navigation, and restrained red accents.
+
+SCOPE
+Implement Home only. Do not build the About, Academics, Admissions, Campus Life, Knowledge Hub, or Contact page content yet. A shared header may show those planned navigation labels, but do not create fake placeholder page bodies. Keep future links consistent with the routing already in the project.
+
+HOME PAGE SECTIONS
+Build the page as a polished, responsive college homepage. Include:
+
+1. Optional announcement bar, with editable text and visibility.
+2. Shared header with the supplied logo, college name, planned navigation, and an Enquire/Explore Programs action.
+3. Hero section with an editable headline, short demo introduction, editable image/background, and clear calls to action. Do not imply that applications are open unless confirmed.
+4. Short college introduction linking to the future About page.
+5. Program/preparation cards for Intermediate, IIT-JEE Main, and NEET. Titles and descriptions must be editable. Use neutral demo descriptions; invent no course specifics.
+6. “Why choose us” feature cards with replaceable demo copy and no unsupported factual claims.
+7. Campus Life preview with editable image/cards that can later link to the Campus Life page. Use existing project media if available; otherwise use tasteful placeholders and an editable image field. Do not scrape or copy images from the reference site.
+8. Notices/events preview with editable repeatable items. Use clearly marked demo records or leave the section hidden until content is entered.
+9. Optional testimonials/results section, hidden by default until the client provides verified content. Never seed fabricated people, quotations, rankings, or numbers.
+10. Final Enquire/Explore Programs call to action.
+11. Shared footer using only supplied or clearly editable demo details. Do not invent an address, phone number, email, or social account.
+
+CONTENT AND ADMIN REQUIREMENTS
+- Every displayed Home-page section must read from persisted backend/database content—not hardcoded frontend copy or browser localStorage.
+- Reuse the existing database, API, authentication, and admin infrastructure where available. If no CMS structure exists, create the smallest reusable content model that can later support the other planned pages.
+- Keep content in one source of truth. Do not create duplicate data structures for each card or repeat global settings in multiple places. Store reusable program/event/gallery records once if they may later appear on other pages.
+- Add a Home editor in the existing admin dashboard, grouped by the same sections shown above.
+- Admins must be able to create, edit, update, and delete repeatable items such as program cards, feature cards, notices, and gallery items. Allow sections to be shown/hidden; support reordering if it fits the existing dashboard structure.
+- Use the existing media library/upload feature if present. Otherwise provide a simple validated image URL or existing-asset selection field; do not build an unrelated, oversized media-management system.
+- Keep the college name and logo in shared site settings so they can be reused on future pages rather than duplicated in the Home editor.
+- Respect existing authentication and protect admin write operations. Do not hardcode credentials or expose secrets in client code.
+
+DESIGN AND QUALITY
+- Match the visual hierarchy and palette to the supplied logo, but do not copy the reference website’s branding or content.
+- Make the page responsive for mobile, tablet, and desktop; use semantic HTML, accessible labels, keyboard-friendly controls, and visible focus states.
+- Include sensible loading, empty, validation, and error states in the admin editor.
+- If a required database or credential setup is genuinely unavailable, implement the parts that can be completed safely and report the exact blocker. Never ask me to paste secrets into chat.
+
+ACCEPTANCE CHECKS
+1. The Home page renders the college name and supplied logo correctly on desktop and mobile.
+2. All Home-page content comes from persisted backend data.
+3. In the admin dashboard, changing a headline or card, saving, and reloading updates the public Home page.
+4. Admins can add, edit, and delete repeatable content; deleted items no longer appear publicly.
+5. Hidden sections do not appear on the public page.
+6. No unsupported factual claims or fabricated testimonials/results are shown.
+7. Existing project features and the current stack remain intact.
+
+When finished, report what you implemented, where the Home editor is located, what database/API path stores the content, and which checks you ran. Do not claim any check passed unless you actually verified it.
