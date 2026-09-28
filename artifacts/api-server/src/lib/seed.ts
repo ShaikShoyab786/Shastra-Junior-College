@@ -1,4 +1,5 @@
 import { db } from "@workspace/db";
+import { and, eq } from "drizzle-orm";
 import {
   contentItemsTable,
   contentSectionsTable,
@@ -6,6 +7,46 @@ import {
   type CmsJson,
 } from "@workspace/db";
 import { logger } from "./logger";
+
+const demoEnquiryForm = {
+  title: "Ask us a question",
+  description:
+    "Share a few details to preview the enquiry form. This demo will not send your information.",
+  submitLabel: "Send an enquiry",
+  successMessage:
+    "Thanks. Your demo enquiry is complete; nothing was sent or stored.",
+  fields: [
+    {
+      name: "fullName",
+      type: "text",
+      label: "Your name",
+      placeholder: "Enter your name",
+      required: true,
+    },
+    {
+      name: "email",
+      type: "email",
+      label: "Email address",
+      placeholder: "you@example.com",
+      required: true,
+    },
+    {
+      name: "phone",
+      type: "tel",
+      label: "Phone number",
+      placeholder: "Optional",
+      required: false,
+    },
+    {
+      name: "pathway",
+      type: "select",
+      label: "Area of interest",
+      placeholder: "Choose an option",
+      options: ["Intermediate", "IIT-JEE Main", "NEET"],
+      required: true,
+    },
+  ],
+};
 
 type SeedSection = {
   sectionKey: string;
@@ -38,10 +79,11 @@ const initialSections: SeedSection[] = [
       introduction:
         "The words on this homepage are sample copy created for the first build. Replace them with details approved by Shastra Junior College.",
       imageUrl: null,
-      primaryLabel: "Explore programs",
+      primaryLabel: "Explore pathways",
       primaryPath: "#programs",
       secondaryLabel: "Enquire",
       secondaryPath: "#enquire",
+      enquiryForm: demoEnquiryForm,
       isDemo: true,
     },
     isVisible: true,
@@ -63,12 +105,20 @@ const initialSections: SeedSection[] = [
   },
   {
     sectionKey: "programs",
-    title: "Programs & preparation",
+    title: "Explore Pathways",
     subtitle:
-      "The supplied logo identifies these areas. Descriptions are demo copy.",
+      "Explore the areas named in the Shastra logo. Descriptions are demo copy.",
     content: { isDemo: true },
     isVisible: true,
     position: 3,
+  },
+  {
+    sectionKey: "statistics",
+    title: "At a glance",
+    subtitle: null,
+    content: { isDemo: true, countUp: true },
+    isVisible: true,
+    position: 9,
   },
   {
     sectionKey: "features",
@@ -130,12 +180,7 @@ export async function seedInitialHomeContent(): Promise<void> {
         logoUrl: "/shastra-college-logo.png",
         navigation: [
           { label: "Home", path: "/" },
-          { label: "About", path: "/about" },
-          { label: "Academics", path: "/academics" },
-          { label: "Admissions", path: "/admissions" },
-          { label: "Campus Life", path: "/campus-life" },
-          { label: "Knowledge Hub", path: "/knowledge-hub" },
-          { label: "Contact", path: "/contact" },
+          { label: "Staff Login", path: "/sign-in" },
         ],
         footerNote:
           "Homepage demo content — replace with college-approved copy before publishing.",
@@ -167,8 +212,14 @@ export async function seedInitialHomeContent(): Promise<void> {
     const programSectionId = sectionIds.get("programs");
     const featureSectionId = sectionIds.get("features");
     const campusSectionId = sectionIds.get("campus-life");
+    const statisticsSectionId = sectionIds.get("statistics");
 
-    if (!programSectionId || !featureSectionId || !campusSectionId) {
+    if (
+      !programSectionId ||
+      !featureSectionId ||
+      !campusSectionId ||
+      !statisticsSectionId
+    ) {
       throw new Error("Default homepage sections could not be initialized.");
     }
 
@@ -203,6 +254,33 @@ export async function seedInitialHomeContent(): Promise<void> {
           "Demo copy: replace with approved information for this option.",
         linkPath: "#enquire",
         content: { isDemo: true },
+        isVisible: true,
+        position: 2,
+      },
+      {
+        sectionId: statisticsSectionId,
+        itemType: "statistic",
+        title: "Sample metric 1",
+        description: null,
+        content: { value: 0, prefix: "", suffix: "", isDemo: true },
+        isVisible: true,
+        position: 0,
+      },
+      {
+        sectionId: statisticsSectionId,
+        itemType: "statistic",
+        title: "Sample metric 2",
+        description: null,
+        content: { value: 0, prefix: "", suffix: "", isDemo: true },
+        isVisible: true,
+        position: 1,
+      },
+      {
+        sectionId: statisticsSectionId,
+        itemType: "statistic",
+        title: "Sample metric 3",
+        description: null,
+        content: { value: 0, prefix: "", suffix: "", isDemo: true },
         isVisible: true,
         position: 2,
       },
@@ -272,5 +350,112 @@ export async function seedInitialHomeContent(): Promise<void> {
     ]);
 
     logger.info("Seeded homepage demo content");
+  });
+
+  // Existing projects may already have legacy content and a site-settings row.
+  // Add only missing Home content; never remove or replace the older records.
+  await db.transaction(async (tx) => {
+    const [statistics] = await tx
+      .select({ id: contentSectionsTable.id })
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "home"),
+          eq(contentSectionsTable.sectionKey, "statistics"),
+        ),
+      )
+      .limit(1);
+
+    if (!statistics) {
+      const [created] = await tx
+        .insert(contentSectionsTable)
+        .values({
+          pageSlug: "home",
+          sectionKey: "statistics",
+          title: "At a glance",
+          subtitle: null,
+          content: { isDemo: true, countUp: true },
+          isVisible: true,
+          position: 9,
+        })
+        .onConflictDoNothing()
+        .returning({ id: contentSectionsTable.id });
+
+      if (created) {
+        await tx.insert(contentItemsTable).values([
+          {
+            sectionId: created.id,
+            itemType: "statistic",
+            title: "Sample metric 1",
+            description: null,
+            content: { value: 0, prefix: "", suffix: "", isDemo: true },
+            isVisible: true,
+            position: 0,
+          },
+          {
+            sectionId: created.id,
+            itemType: "statistic",
+            title: "Sample metric 2",
+            description: null,
+            content: { value: 0, prefix: "", suffix: "", isDemo: true },
+            isVisible: true,
+            position: 1,
+          },
+          {
+            sectionId: created.id,
+            itemType: "statistic",
+            title: "Sample metric 3",
+            description: null,
+            content: { value: 0, prefix: "", suffix: "", isDemo: true },
+            isVisible: true,
+            position: 2,
+          },
+        ]);
+      }
+    }
+
+    const [hero] = await tx
+      .select()
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "home"),
+          eq(contentSectionsTable.sectionKey, "hero"),
+        ),
+      )
+      .limit(1);
+
+    if (hero && !("enquiryForm" in hero.content)) {
+      await tx
+        .update(contentSectionsTable)
+        .set({
+          content: { ...hero.content, enquiryForm: demoEnquiryForm },
+          updatedAt: new Date(),
+        })
+        .where(eq(contentSectionsTable.id, hero.id));
+    }
+
+    const [programs] = await tx
+      .select()
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "home"),
+          eq(contentSectionsTable.sectionKey, "programs"),
+        ),
+      )
+      .limit(1);
+
+    if (programs?.title === "Programs & preparation") {
+      await tx
+        .update(contentSectionsTable)
+        .set({
+          title: "Explore Pathways",
+          subtitle:
+            "Explore the areas named in the Shastra logo. Descriptions are demo copy.",
+          updatedAt: new Date(),
+        })
+        .where(eq(contentSectionsTable.id, programs.id));
+    }
   });
 }
