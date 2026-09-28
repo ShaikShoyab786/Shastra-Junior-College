@@ -198,25 +198,35 @@ function getHeroFormContent(content: UnknownRecord) {
     : [];
 
   return {
+    eyebrow: stringValue(
+      merged,
+      ["eyebrow", "formEyebrow"],
+      "ADMISSIONS ENQUIRY",
+    ),
     title: stringValue(
       merged,
       ["formTitle", "enquiryTitle", "title"],
-      "Make an enquiry",
+      "Talk with our team",
     ),
     description: stringValue(
       merged,
       ["formDescription", "enquiryDescription", "description"],
-      "Tell us a little about what you are looking for.",
+      "Share a few details about your interests so we can guide your next step.",
     ),
     button: stringValue(
       merged,
       ["formButton", "buttonLabel", "submitLabel"],
-      "Send enquiry",
+      "Preview enquiry",
+    ),
+    note: stringValue(
+      merged,
+      ["note", "privacyNote"],
+      "Preview only — your details are not sent or stored.",
     ),
     successMessage: stringValue(
       merged,
       ["successMessage"],
-      "This client-only demo confirmation stays on this page. Nothing was sent externally.",
+      "This preview is complete. Your details were not sent or stored.",
     ),
     fields:
       fields.length > 0
@@ -280,7 +290,7 @@ function EnquiryForm({ section }: { section: ContentSection }) {
   if (submitted) {
     return (
       <div
-        className="flex min-h-[390px] flex-col justify-between rounded-[2rem] bg-[#0b3472] p-7 text-white shadow-[0_22px_60px_rgba(11,52,114,.18)] sm:p-9"
+        className="flex h-full flex-col justify-between rounded-[1.75rem] bg-[#0b3472] p-6 text-white shadow-[0_22px_60px_rgba(11,52,114,.16)] sm:p-7"
         data-testid="status-enquiry-confirmation"
         role="status"
         aria-live="polite"
@@ -289,11 +299,11 @@ function EnquiryForm({ section }: { section: ContentSection }) {
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#e3212b]">
             <Check className="h-6 w-6" aria-hidden="true" />
           </div>
-          <p className="mt-7 text-xs font-bold uppercase tracking-[0.18em] text-[#f3b9a7]">
-            Enquiry preview complete
+          <p className="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-[#f3b9a7]">
+            Preview complete
           </p>
           <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight">
-            Thank you.
+            Your enquiry preview
           </h2>
           <p className="mt-4 max-w-sm text-sm leading-6 text-blue-100/75">
             {config.successMessage}
@@ -305,7 +315,7 @@ function EnquiryForm({ section }: { section: ContentSection }) {
           className="focus-ring mt-8 inline-flex w-fit items-center gap-2 rounded-full border border-white/25 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10"
           data-testid="button-submit-another-enquiry"
         >
-          Submit another enquiry <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          Edit details <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
     );
@@ -315,12 +325,15 @@ function EnquiryForm({ section }: { section: ContentSection }) {
     <form
       id="enquire"
       onSubmit={handleSubmit}
-      className="rounded-[2rem] bg-[#0b3472] p-6 text-white shadow-[0_22px_60px_rgba(11,52,114,.18)] sm:p-9"
+      className="flex h-full flex-col rounded-[1.75rem] bg-[#0b3472] p-6 text-white shadow-[0_22px_60px_rgba(11,52,114,.16)] sm:p-7"
       data-testid="form-enquiry"
     >
-      <div className="mb-7 border-b border-white/15 pb-6">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#f3b9a7]">
-          Enquiry desk
+      <div className="mb-5 border-b border-white/15 pb-5">
+        <p
+          className="text-xs font-bold uppercase tracking-[0.18em] text-[#f3b9a7]"
+          data-testid={`text-enquiry-eyebrow-${section.id}`}
+        >
+          {config.eyebrow}
         </p>
         <h2
           className="mt-3 font-display text-3xl font-extrabold tracking-tight"
@@ -336,7 +349,7 @@ function EnquiryForm({ section }: { section: ContentSection }) {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid flex-1 content-start gap-3 sm:grid-cols-2">
         {config.fields.map((field) => (
           <label
             key={field.key}
@@ -401,14 +414,14 @@ function EnquiryForm({ section }: { section: ContentSection }) {
 
       <button
         type="submit"
-        className="focus-ring mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#e3212b] px-5 py-3.5 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
+        className="focus-ring mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#e3212b] px-5 py-3.5 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
         data-testid="button-submit-enquiry"
       >
         {config.button}
         <Send className="h-4 w-4" aria-hidden="true" />
       </button>
       <p className="mt-3 text-center text-[11px] leading-5 text-blue-100/55">
-        Demo form only. No information leaves this page.
+        {config.note}
       </p>
     </form>
   );
@@ -431,35 +444,30 @@ function HeroSection({ section }: { section: ContentSection }) {
     ["introduction", "description", "body"],
     section.subtitle || "Find a pathway that fits the next step in your education.",
   );
-  const imageUrl = stringValue(content, ["imageUrl", "image"]);
-
   return (
     <section
       id="hero"
-      className="relative overflow-hidden border-b border-[#0b3472]/10 bg-[#f7f5ef] px-5 pb-16 pt-16 sm:px-8 sm:pb-24 sm:pt-24"
+      className="relative overflow-hidden border-b border-[#0b3472]/10 bg-[#f7f5ef] px-5 pt-5 pb-7 sm:px-8 sm:pt-6 sm:pb-8 lg:pt-7 lg:pb-9"
       data-testid={`section-hero-${section.id}`}
     >
-      <div className="pointer-events-none absolute -right-24 top-16 h-80 w-80 rounded-full border-[32px] border-[#e3212b]/10" />
-      <div className="pointer-events-none absolute -left-20 bottom-0 h-56 w-56 rounded-full bg-[#e7edf6]" />
-      <div className="relative mx-auto grid max-w-7xl items-end gap-12 lg:grid-cols-[1fr_0.82fr] lg:gap-20">
+      <div className="relative mx-auto grid max-w-7xl items-stretch gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14">
         <div className="reveal max-w-3xl">
-          <div className="mb-7 flex flex-wrap items-center gap-3">
+          <div className="mb-4 flex flex-wrap items-center gap-3">
             <SectionKicker>{eyebrow}</SectionKicker>
-            <DemoMarker show={isDemo(content)} />
           </div>
           <h1
-            className="max-w-4xl font-display text-[clamp(3.25rem,8vw,7.5rem)] font-extrabold leading-[0.91] tracking-[-0.065em] text-[#0b3472]"
+            className="max-w-[13ch] font-display text-[clamp(3rem,6.1vw,6.5rem)] font-extrabold leading-[0.96] tracking-[-0.06em] text-[#0b3472]"
             data-testid={`text-hero-title-${section.id}`}
           >
             {title}
           </h1>
           <p
-            className="mt-7 max-w-xl text-lg leading-8 text-slate-600 sm:text-xl"
+            className="mt-5 max-w-xl text-lg leading-7 text-slate-600 sm:text-xl sm:leading-8"
             data-testid={`text-hero-description-${section.id}`}
           >
             {description}
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
             <a
               href="#programs"
               className="focus-ring group inline-flex items-center gap-3 rounded-full bg-[#0b3472] px-5 py-3.5 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
@@ -481,28 +489,8 @@ function HeroSection({ section }: { section: ContentSection }) {
               </a>
             ) : null}
           </div>
-          {imageUrl ? (
-            <div className="mt-12 max-w-xl overflow-hidden rounded-[1.5rem] border border-[#0b3472]/10 bg-[#e7edf6]">
-              <img
-                src={imageUrl}
-                alt=""
-                className="h-36 w-full object-cover sm:h-44"
-                data-testid={`img-hero-${section.id}`}
-              />
-            </div>
-          ) : (
-            <div
-              className="mt-12 flex max-w-xl items-center gap-4 border-t border-[#0b3472]/15 pt-5"
-              data-testid="hero-identity-note"
-            >
-              <span className="h-2.5 w-2.5 rounded-full bg-[#e3212b]" aria-hidden="true" />
-              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b3472]/65">
-                A clear start to what comes next
-              </span>
-            </div>
-          )}
         </div>
-        <div className="reveal reveal-delay-2">
+        <div className="reveal reveal-delay-2 h-full">
           <EnquiryForm section={section} />
         </div>
       </div>

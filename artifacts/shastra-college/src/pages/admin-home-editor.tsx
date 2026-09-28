@@ -36,9 +36,11 @@ type EnquiryField = {
   options: string[];
 };
 type EnquiryForm = {
+  eyebrow: string;
   title: string;
   description: string;
   submitLabel: string;
+  note: string;
   successMessage: string;
   fields: EnquiryField[];
 };
@@ -79,10 +81,18 @@ function getEnquiryForm(content: CmsRecord): EnquiryForm {
     : [];
 
   return {
-    title: text(raw.title),
-    description: text(raw.description),
-    submitLabel: text(raw.submitLabel),
-    successMessage: text(raw.successMessage),
+    eyebrow: text(raw.eyebrow, "ADMISSIONS ENQUIRY"),
+    title: text(raw.title, "Talk with our team"),
+    description: text(
+      raw.description,
+      "Share a few details about your interests so we can guide your next step.",
+    ),
+    submitLabel: text(raw.submitLabel, "Preview enquiry"),
+    note: text(raw.note, "Preview only — your details are not sent or stored."),
+    successMessage: text(
+      raw.successMessage,
+      "This preview is complete. Your details were not sent or stored.",
+    ),
     fields,
   };
 }
@@ -320,13 +330,15 @@ function HeroEditor({
     event.preventDefault();
     if (
       !headline.trim() ||
+      !form.eyebrow.trim() ||
       !form.title.trim() ||
       !form.submitLabel.trim() ||
+      !form.note.trim() ||
       !form.successMessage.trim()
     ) {
       onFlash({
         tone: "error",
-        message: "Complete the hero heading and all required form copy.",
+        message: "Complete the hero and enquiry form copy.",
       });
       return;
     }
@@ -423,10 +435,17 @@ function HeroEditor({
         <div className="mb-4">
           <p className="eyebrow text-[#E3212B]">Enquiry form</p>
           <p className="mt-1 text-xs leading-5 text-slate-500">
-            This is a demo form. Submissions are not sent or stored.
+            Preview only: details are not submitted or stored.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
+          <Input
+            label="Form eyebrow"
+            value={form.eyebrow}
+            onChange={(value) => updateForm({ eyebrow: value })}
+            required
+            testId="input-enquiry-eyebrow"
+          />
           <Input
             label="Form heading"
             value={form.title}
@@ -447,6 +466,13 @@ function HeroEditor({
             onChange={(value) => updateForm({ description: value })}
             multiline
             testId="input-enquiry-description"
+          />
+          <Input
+            label="Preview note"
+            value={form.note}
+            onChange={(value) => updateForm({ note: value })}
+            required
+            testId="input-enquiry-note"
           />
           <Input
             label="Success message"

@@ -9,12 +9,14 @@ import {
 import { logger } from "./logger";
 
 const demoEnquiryForm = {
-  title: "Ask us a question",
+  eyebrow: "ADMISSIONS ENQUIRY",
+  title: "Talk with our team",
   description:
-    "Share a few details to preview the enquiry form. This demo will not send your information.",
-  submitLabel: "Send an enquiry",
+    "Share a few details about your interests so we can guide your next step.",
+  submitLabel: "Preview enquiry",
+  note: "Preview only — your details are not sent or stored.",
   successMessage:
-    "Thanks. Your demo enquiry is complete; nothing was sent or stored.",
+    "This preview is complete. Your details were not sent or stored.",
   fields: [
     {
       name: "fullName",
@@ -57,6 +59,10 @@ type SeedSection = {
   position: number;
 };
 
+function isCmsRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 const initialSections: SeedSection[] = [
   {
     sectionKey: "announcement",
@@ -74,10 +80,10 @@ const initialSections: SeedSection[] = [
     title: "Homepage hero",
     subtitle: null,
     content: {
-      eyebrow: "DEMO COPY · REPLACE BEFORE LAUNCH",
-      headline: "Build your next chapter with curiosity.",
+      eyebrow: "INTERMEDIATE • IIT-JEE MAIN • NEET",
+      headline: "A strong start for everything ahead.",
       introduction:
-        "The words on this homepage are sample copy created for the first build. Replace them with details approved by Shastra Junior College.",
+        "Explore intermediate education and preparation for IIT-JEE Main and NEET at Shastra Junior College. Tell us what you’re aiming for, and we’ll help you explore your next step.",
       imageUrl: null,
       primaryLabel: "Explore pathways",
       primaryPath: "#programs",
@@ -425,14 +431,75 @@ export async function seedInitialHomeContent(): Promise<void> {
       )
       .limit(1);
 
-    if (hero && !("enquiryForm" in hero.content)) {
-      await tx
-        .update(contentSectionsTable)
-        .set({
-          content: { ...hero.content, enquiryForm: demoEnquiryForm },
-          updatedAt: new Date(),
-        })
-        .where(eq(contentSectionsTable.id, hero.id));
+    if (hero) {
+      const heroContent = { ...hero.content };
+      let heroChanged = false;
+
+      if (heroContent.eyebrow === "DEMO COPY · REPLACE BEFORE LAUNCH") {
+        heroContent.eyebrow = "INTERMEDIATE • IIT-JEE MAIN • NEET";
+        heroChanged = true;
+      }
+      if (heroContent.headline === "Build your next chapter with curiosity.") {
+        heroContent.headline = "A strong start for everything ahead.";
+        heroChanged = true;
+      }
+      if (
+        heroContent.introduction ===
+        "The words on this homepage are sample copy created for the first build. Replace them with details approved by Shastra Junior College."
+      ) {
+        heroContent.introduction =
+          "Explore intermediate education and preparation for IIT-JEE Main and NEET at Shastra Junior College. Tell us what you’re aiming for, and we’ll help you explore your next step.";
+        heroChanged = true;
+      }
+
+      const rawForm = heroContent.enquiryForm;
+      const enquiryForm: Record<string, unknown> = isCmsRecord(rawForm)
+        ? { ...rawForm }
+        : { ...demoEnquiryForm };
+      if (!isCmsRecord(rawForm)) {
+        heroChanged = true;
+      }
+
+      if (enquiryForm.title === "Ask us a question") {
+        enquiryForm.title = "Talk with our team";
+        heroChanged = true;
+      }
+      if (
+        enquiryForm.description ===
+        "Share a few details to preview the enquiry form. This demo will not send your information."
+      ) {
+        enquiryForm.description =
+          "Share a few details about your interests so we can guide your next step.";
+        heroChanged = true;
+      }
+      if (enquiryForm.submitLabel === "Send an enquiry") {
+        enquiryForm.submitLabel = "Preview enquiry";
+        heroChanged = true;
+      }
+      if (
+        enquiryForm.successMessage ===
+        "Thanks. Your demo enquiry is complete; nothing was sent or stored."
+      ) {
+        enquiryForm.successMessage =
+          "This preview is complete. Your details were not sent or stored.";
+        heroChanged = true;
+      }
+      if (!("eyebrow" in enquiryForm)) {
+        enquiryForm.eyebrow = demoEnquiryForm.eyebrow;
+        heroChanged = true;
+      }
+      if (!("note" in enquiryForm)) {
+        enquiryForm.note = demoEnquiryForm.note;
+        heroChanged = true;
+      }
+
+      if (heroChanged) {
+        heroContent.enquiryForm = enquiryForm;
+        await tx
+          .update(contentSectionsTable)
+          .set({ content: heroContent, updatedAt: new Date() })
+          .where(eq(contentSectionsTable.id, hero.id));
+      }
     }
 
     const [programs] = await tx
