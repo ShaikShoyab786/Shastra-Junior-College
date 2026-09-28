@@ -1,0 +1,54 @@
+REFINE THE HOMEPAGE HERO ONLY
+
+Use the attached screenshot as the visual reference:
+attached_assets/image_1790612080431.png
+
+Use the reference video for the intended page layout:
+attached_assets/modern_academy_home_page_hero_section_reference_video_1790609254120.mp4
+
+The red circles and X in the screenshot are my annotations indicating unwanted whitespace. Do not reproduce them.
+
+Make these changes to the existing hero section only. Do not redesign the Explore Pathways section, statistics bar, navigation, or admin authentication.
+
+LAYOUT FIXES
+- Reduce the excessive blank space between the navigation bar and the hero content. Move the hero content up so it begins comfortably below the header.
+- Remove or greatly reduce the large empty decorative area above the enquiry form. Do not leave an empty image placeholder or reserved blank media box.
+- On desktop, align the top of the enquiry form with the start of the left content, near the eyebrow text—not halfway down the hero.
+- Make the form card’s height match the complete left content column, from the eyebrow through the CTA buttons. Use a two-column layout that stretches both columns evenly; arrange the form fields naturally within the card.
+- Keep the headline prominent, but tune its width and responsive font size so its line breaks feel intentional and it does not overflow.
+- On mobile, stack the left copy and form with compact, consistent spacing. Do not reintroduce large blank areas.
+
+USE REALISTIC, EDITABLE SAMPLE COPY
+Do not show placeholder wording such as “DEMO COPY,” “REPLACE BEFORE LAUNCH,” or “This demo will not send your information” on the public page. Replace it with this polished sample copy, and make each text field editable in the Home admin editor:
+
+Eyebrow:
+“INTERMEDIATE • IIT-JEE MAIN • NEET”
+
+Headline:
+“A strong start for everything ahead.”
+
+Description:
+“Explore intermediate education and preparation for IIT-JEE Main and NEET at Shastra Junior College. Tell us what you’re aiming for, and we’ll help you explore your next step.”
+
+Enquiry form eyebrow:
+“ADMISSIONS ENQUIRY”
+
+Enquiry form heading:
+“Talk with our team”
+
+Enquiry form description:
+“Share a few details about your interests so we can guide your next step.”
+
+Keep the form labels, placeholders, options, and button text natural and fully editable. Do not invent fees, eligibility, admissions dates, results, rankings, staff, or other college facts.
+
+FORM AND BUTTON BEHAVIOR
+- Keep the current form fields if they already work; otherwise use simple appropriate enquiry fields and validate them.
+- Keep the form connected to any existing working submission backend. Do not claim an enquiry was received unless the submission was actually saved successfully. Do not add email sending or external services without configuration.
+- Keep CTA buttons going to the current Home page or a relevant Home section until those other pages are implemented. Do not create new pages or external destinations.
+
+ADMIN
+- Keep the existing staff-login route and authentication behavior unchanged.
+- Ensure the Home editor can edit and save the eyebrow, headline, description, CTA text, and enquiry-form copy and fields.
+- The saved content must appear on the public page after refresh; do not hardcode a second copy in the frontend.
+
+After making the changes, verify the hero at desktop and mobile sizes. Report what changed and whether the form submits to a real backend or currently uses a preview-only behavior.
