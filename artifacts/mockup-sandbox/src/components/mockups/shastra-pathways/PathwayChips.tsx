@@ -1,7 +1,13 @@
 import "./_group.css";
 import { ArrowRight } from "lucide-react";
 
-const pathways = ["Intermediate", "IIT-JEE Main", "NEET"];
+const pathways = [
+  "Intermediate",
+  "IIT-JEE Main",
+  "NEET",
+  "Degree",
+  "CA Foundation",
+];
 
 export function PathwayChips() {
   return (
