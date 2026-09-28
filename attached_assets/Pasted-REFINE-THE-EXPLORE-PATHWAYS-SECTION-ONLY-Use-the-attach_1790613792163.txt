@@ -1,0 +1,42 @@
+REFINE THE EXPLORE PATHWAYS SECTION ONLY
+
+Use the attached images:
+- Current section to replace: attached_assets/image_1790613345809.png
+- Desired layout reference: attached_assets/image_1790613427356.png
+
+Replace the current large pathway cards with a compact horizontal pathway-chip section modeled on the second image. Do not change the Hero, Statistics bar, navigation, or Staff Login/authentication.
+
+DESIGN
+- Keep a clean, shallow section with a thin divider line.
+- Add the small uppercase label: “EXPLORE PROGRAM PATHWAYS:”
+- Display pathway options as rounded pill buttons in a neat horizontal row on desktop.
+- Use Shastra’s theme: navy text, thin neutral borders, a small red accent dot, and subtle shadows. Do not use the reference image’s orange accent.
+- Remove the large blank image areas, empty card backgrounds, “PATHWAY” labels, placeholder descriptions, and “DEMO COPY — REPLACE BEFORE LAUNCH” text.
+- Keep the section compact and visually consistent with the Shastra logo and the rest of the homepage.
+
+PATHWAY DATA
+Seed the section with these editable items:
+- Intermediate
+- IIT-JEE Main
+- NEET
+
+These labels are based on the Shastra logo. Do not add Degree, CA, CMA, or other offerings that haven’t been confirmed for Shastra. Do not leave the section empty. Avoid unsupported claims in any optional descriptions; use concise, natural sample copy only if the design needs it. Do not show “demo” or “replace this” wording publicly.
+
+HOVER AND INTERACTION
+Create a polished hover state for pointer users:
+- Slightly lift the pill and strengthen its shadow.
+- Shift the background toward navy and the text toward white, keeping the red accent visible.
+- Move the arrow/icon a few pixels to the right and give the accent dot a subtle highlight.
+- Keep transitions smooth and restrained; no pulsing, oversized scaling, or cursor-following effects.
+- Provide equally clear keyboard focus and active states, and respect reduced-motion preferences.
+- On narrow screens, keep every pill accessible without overflow; allow a tidy wrap or horizontal scroll.
+
+ADMIN EDITOR
+- Update the existing Home admin editor so this section’s title and pathway items are manageable.
+- Allow admins to add, edit, delete, reorder, and show/hide items.
+- Persist changes in the existing backend/database and verify that saved edits appear on the public page after refresh.
+- Remove the obsolete image-card fields and placeholder content controls for this section.
+
+Until the individual pathway pages are built, clicking a pathway pill should return to the Home page rather than opening a missing route. Keep the Statistics bar directly below this section.
+
+After implementation, verify the section at desktop and mobile widths, test the hover/focus states, and confirm that an admin edit persists on the public page.
