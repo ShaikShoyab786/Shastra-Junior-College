@@ -111,10 +111,9 @@ const initialSections: SeedSection[] = [
   },
   {
     sectionKey: "programs",
-    title: "Explore Pathways",
-    subtitle:
-      "Explore the areas named in the Shastra logo. Descriptions are demo copy.",
-    content: { isDemo: true },
+    title: "EXPLORE PROGRAM PATHWAYS:",
+    subtitle: null,
+    content: {},
     isVisible: true,
     position: 3,
   },
@@ -234,10 +233,11 @@ export async function seedInitialHomeContent(): Promise<void> {
         sectionId: programSectionId,
         itemType: "program",
         title: "Intermediate",
-        description:
-          "Demo copy: replace with approved information for this option.",
-        linkPath: "#enquire",
-        content: { isDemo: true },
+        description: null,
+        imageUrl: null,
+        linkPath: "/",
+        label: null,
+        content: {},
         isVisible: true,
         position: 0,
       },
@@ -245,10 +245,11 @@ export async function seedInitialHomeContent(): Promise<void> {
         sectionId: programSectionId,
         itemType: "program",
         title: "IIT-JEE Main",
-        description:
-          "Demo copy: replace with approved information for this option.",
-        linkPath: "#enquire",
-        content: { isDemo: true },
+        description: null,
+        imageUrl: null,
+        linkPath: "/",
+        label: null,
+        content: {},
         isVisible: true,
         position: 1,
       },
@@ -256,10 +257,11 @@ export async function seedInitialHomeContent(): Promise<void> {
         sectionId: programSectionId,
         itemType: "program",
         title: "NEET",
-        description:
-          "Demo copy: replace with approved information for this option.",
-        linkPath: "#enquire",
-        content: { isDemo: true },
+        description: null,
+        imageUrl: null,
+        linkPath: "/",
+        label: null,
+        content: {},
         isVisible: true,
         position: 2,
       },
@@ -513,16 +515,122 @@ export async function seedInitialHomeContent(): Promise<void> {
       )
       .limit(1);
 
-    if (programs?.title === "Programs & preparation") {
-      await tx
-        .update(contentSectionsTable)
-        .set({
-          title: "Explore Pathways",
-          subtitle:
-            "Explore the areas named in the Shastra logo. Descriptions are demo copy.",
-          updatedAt: new Date(),
-        })
-        .where(eq(contentSectionsTable.id, programs.id));
+    if (programs) {
+      const nextTitle =
+        programs.title === "Programs & preparation" ||
+        programs.title === "Explore Pathways"
+          ? "EXPLORE PROGRAM PATHWAYS:"
+          : programs.title;
+      const nextSubtitle =
+        programs.subtitle ===
+        "Explore the areas named in the Shastra logo. Descriptions are demo copy."
+          ? null
+          : programs.subtitle;
+
+      if (
+        nextTitle !== programs.title ||
+        nextSubtitle !== programs.subtitle
+      ) {
+        await tx
+          .update(contentSectionsTable)
+          .set({
+            title: nextTitle,
+            subtitle: nextSubtitle,
+            updatedAt: new Date(),
+          })
+          .where(eq(contentSectionsTable.id, programs.id));
+      }
+
+      const [existingProgram] = await tx
+        .select({ id: contentItemsTable.id })
+        .from(contentItemsTable)
+        .where(
+          and(
+            eq(contentItemsTable.sectionId, programs.id),
+            eq(contentItemsTable.itemType, "program"),
+          ),
+        )
+        .limit(1);
+
+      if (!existingProgram) {
+        await tx.insert(contentItemsTable).values([
+          {
+            sectionId: programs.id,
+            itemType: "program",
+            title: "Intermediate",
+            description: null,
+            imageUrl: null,
+            linkPath: "/",
+            label: null,
+            content: {},
+            isVisible: true,
+            position: 0,
+          },
+          {
+            sectionId: programs.id,
+            itemType: "program",
+            title: "IIT-JEE Main",
+            description: null,
+            imageUrl: null,
+            linkPath: "/",
+            label: null,
+            content: {},
+            isVisible: true,
+            position: 1,
+          },
+          {
+            sectionId: programs.id,
+            itemType: "program",
+            title: "NEET",
+            description: null,
+            imageUrl: null,
+            linkPath: "/",
+            label: null,
+            content: {},
+            isVisible: true,
+            position: 2,
+          },
+        ]);
+      }
+
+      const programItems = await tx
+        .select()
+        .from(contentItemsTable)
+        .where(
+          and(
+            eq(contentItemsTable.sectionId, programs.id),
+            eq(contentItemsTable.itemType, "program"),
+          ),
+        );
+      const seededTitles = new Set(["Intermediate", "IIT-JEE Main", "NEET"]);
+      const seededDescription =
+        "Demo copy: replace with approved information for this option.";
+
+      for (const item of programItems) {
+        if (!seededTitles.has(item.title)) continue;
+        const isSeededDescription = item.description === seededDescription;
+        const isSeededLink = isSeededDescription && item.linkPath === "#enquire";
+        const itemContent =
+          typeof item.content === "object" &&
+          item.content !== null &&
+          !Array.isArray(item.content)
+            ? (item.content as Record<string, unknown>)
+            : {};
+        const isSeededDemoFlag =
+          itemContent.isDemo === true && Object.keys(itemContent).length === 1;
+
+        if (!isSeededDescription && !isSeededDemoFlag) continue;
+
+        await tx
+          .update(contentItemsTable)
+          .set({
+            ...(isSeededDescription ? { description: null } : {}),
+            ...(isSeededLink ? { linkPath: "/" } : {}),
+            ...(isSeededDemoFlag ? { content: {} } : {}),
+            updatedAt: new Date(),
+          })
+          .where(eq(contentItemsTable.id, item.id));
+      }
     }
   });
 }

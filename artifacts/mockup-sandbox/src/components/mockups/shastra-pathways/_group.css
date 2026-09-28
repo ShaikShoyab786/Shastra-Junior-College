@@ -1,0 +1,39 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap");
+
+:root {
+  --background: 210 33% 98%;
+  --foreground: 219 45% 16%;
+  --border: 214 25% 88%;
+  --primary: 216 83% 25%;
+  --accent: 0 83% 52%;
+  --app-font-sans: "DM Sans", sans-serif;
+  --app-font-serif: "Manrope", sans-serif;
+}
+
+.dark {
+  --background: 219 45% 12%;
+  --foreground: 210 33% 98%;
+  --border: 216 60% 31%;
+  --primary: 0 0% 100%;
+  --accent: 0 83% 52%;
+}
+
+body {
+  font-family: var(--app-font-sans);
+}
+
+.font-display {
+  font-family: var(--app-font-serif);
+}
+
+.eyebrow {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.focus-ring:focus-visible {
+  outline: 3px solid hsl(var(--accent) / 0.4);
+  outline-offset: 3px;
+}

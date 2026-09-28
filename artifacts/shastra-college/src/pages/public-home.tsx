@@ -498,39 +498,6 @@ function HeroSection({ section }: { section: ContentSection }) {
   );
 }
 
-function PathwayImage({ item, index }: { item: ContentItem; index: number }) {
-  if (item.imageUrl) {
-    return (
-      <img
-        src={item.imageUrl}
-        alt={item.title}
-        className="h-52 w-full object-cover transition-transform duration-500 group-hover:scale-[1.035] sm:h-60"
-        data-testid={`img-pathway-${item.id}`}
-      />
-    );
-  }
-  return (
-    <div
-      className={`relative h-52 overflow-hidden sm:h-60 ${
-        index % 2 === 0 ? "bg-[#dce7f4]" : "bg-[#f1d8d0]"
-      }`}
-      aria-hidden="true"
-      data-testid={`image-fallback-pathway-${item.id}`}
-    >
-      <span
-        className={`absolute -right-10 -top-14 h-44 w-44 rounded-full border-[24px] ${
-          index % 2 === 0 ? "border-[#0b3472]/15" : "border-[#e3212b]/20"
-        }`}
-      />
-      <span
-        className={`absolute bottom-0 left-0 h-24 w-32 rounded-tr-[3rem] ${
-          index % 2 === 0 ? "bg-[#0b3472]/10" : "bg-[#e3212b]/10"
-        }`}
-      />
-    </div>
-  );
-}
-
 function PathwaysSection({
   section,
   items,
@@ -541,95 +508,40 @@ function PathwaysSection({
   return (
     <section
       id="programs"
-      className="bg-[#fbfaf6] px-5 py-16 sm:px-8 sm:py-24"
+      className="border-y border-[#0b3472]/10 bg-[#fbfaf6] px-5 py-5 sm:px-8 sm:py-6"
       data-testid={`section-programs-${section.id}`}
     >
       <div className="mx-auto max-w-7xl">
-        <div className="mb-10 flex flex-col justify-between gap-5 border-b border-[#0b3472]/15 pb-7 sm:flex-row sm:items-end">
-          <div>
-            <SectionKicker>Explore pathways</SectionKicker>
-            <h2
-              className="mt-3 max-w-2xl font-display text-4xl font-extrabold tracking-[-0.045em] text-[#0b3472] sm:text-6xl"
-              data-testid={`text-programs-title-${section.id}`}
-            >
-              {section.title || "Explore Pathways"}
-            </h2>
-          </div>
-          {section.subtitle ? (
-            <p
-              className="max-w-sm text-sm leading-6 text-slate-600 sm:text-right"
-              data-testid={`text-programs-subtitle-${section.id}`}
-            >
-              {section.subtitle}
-            </p>
-          ) : null}
-        </div>
-
-        {items.length > 0 ? (
-          <div className="grid gap-5 md:grid-cols-2">
-            {items.map((item, index) => {
-              const internalPath =
-                item.linkPath && item.linkPath.startsWith("#") ? item.linkPath : null;
-              return (
-                <article
-                  key={item.id}
-                  className={`group overflow-hidden rounded-[1.75rem] border border-[#0b3472]/10 bg-white ${
-                    index === 0 && items.length > 2 ? "md:row-span-2" : ""
-                  }`}
-                  data-testid={`card-pathway-${item.id}`}
+        <h2
+          className="eyebrow mb-3 text-[#0b3472]/75"
+          data-testid={`text-programs-title-${section.id}`}
+        >
+          {section.title || "Explore Program Pathways:"}
+        </h2>
+        <nav aria-label="Program pathways">
+          <ul className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+            {items.map((item) => (
+              <li key={item.id}>
+                <a
+                  href="/"
+                  aria-label={`Return home to explore ${item.title}`}
+                  className="focus-ring pathway-chip group inline-flex min-h-10 items-center gap-2.5 rounded-full border border-[#0b3472]/20 bg-white px-4 py-2 text-sm font-bold text-[#0b3472] shadow-[0_2px_8px_rgba(11,52,114,.05)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#0b3472] hover:bg-[#0b3472] hover:text-white hover:shadow-[0_8px_18px_rgba(11,52,114,.14)] active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:transform-none"
+                  data-testid={`link-pathway-${item.id}`}
                 >
-                  <PathwayImage item={item} index={index} />
-                  <div className="p-6 sm:p-7">
-                    <div className="flex items-start justify-between gap-4">
-                      <span className="text-xs font-bold uppercase tracking-[0.15em] text-[#e3212b]">
-                        Pathway
-                      </span>
-                      <span className="font-mono text-xs text-[#0b3472]/40">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                    </div>
-                    <h3
-                      className="mt-4 font-display text-2xl font-extrabold tracking-tight text-[#0b3472]"
-                      data-testid={`text-pathway-title-${item.id}`}
-                    >
-                      {item.title}
-                    </h3>
-                    {item.description ? (
-                      <p
-                        className="mt-3 max-w-lg text-sm leading-6 text-slate-600"
-                        data-testid={`text-pathway-description-${item.id}`}
-                      >
-                        {item.description}
-                      </p>
-                    ) : null}
-                    {internalPath ? (
-                      <a
-                        href={internalPath}
-                        className="focus-ring mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#0b3472]"
-                        data-testid={`link-pathway-${item.id}`}
-                      >
-                        {item.label || "View pathway"}
-                        <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                      </a>
-                    ) : null}
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        ) : (
-          <div
-            className="rounded-[1.75rem] border border-dashed border-[#0b3472]/20 bg-[#eaf0f8]/50 px-6 py-14 text-center"
-            data-testid="empty-programs"
-          >
-            <p className="font-display text-2xl font-extrabold text-[#0b3472]">
-              Pathways will appear here.
-            </p>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
-              Published programme information will be shown when it is available.
-            </p>
-          </div>
-        )}
+                  <span
+                    className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#e3212b] transition-shadow group-hover:shadow-[0_0_0_3px_rgba(227,33,43,.16)]"
+                    aria-hidden="true"
+                  />
+                  <span>{item.title}</span>
+                  <ArrowRight
+                    className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
+                    aria-hidden="true"
+                  />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </section>
   );

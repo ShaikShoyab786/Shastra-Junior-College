@@ -220,6 +220,7 @@ function SectionDetails({
 }) {
   const client = useQueryClient();
   const update = useUpdateContentSection();
+  const isPathways = section.sectionKey === "programs";
   const [title, setTitle] = useState(section.title);
   const [subtitle, setSubtitle] = useState(section.subtitle || "");
 
@@ -237,7 +238,9 @@ function SectionDetails({
     update.mutate(
       {
         id: section.id,
-        data: { title: title.trim(), subtitle: subtitle.trim() || null },
+        data: isPathways
+          ? { title: title.trim() }
+          : { title: title.trim(), subtitle: subtitle.trim() || null },
       },
       {
         onSuccess: () => {
@@ -254,18 +257,21 @@ function SectionDetails({
     <form onSubmit={save} className="mt-5 rounded-2xl bg-slate-50 p-4 sm:p-5">
       <div className="grid gap-4 md:grid-cols-2">
         <Input
-          label="Section heading"
+          label={isPathways ? "Pathways section title" : "Section heading"}
           value={title}
           onChange={setTitle}
+          placeholder={isPathways ? "EXPLORE PROGRAM PATHWAYS:" : undefined}
           required
           testId={`input-section-heading-${section.sectionKey}`}
         />
-        <Input
-          label="Section description"
-          value={subtitle}
-          onChange={setSubtitle}
-          testId={`input-section-description-${section.sectionKey}`}
-        />
+        {!isPathways ? (
+          <Input
+            label="Section description"
+            value={subtitle}
+            onChange={setSubtitle}
+            testId={`input-section-description-${section.sectionKey}`}
+          />
+        ) : null}
       </div>
       <div className="mt-4 flex justify-end">
         <button
@@ -645,10 +651,6 @@ function ItemEditor({
   const initialContent = record(initial?.content);
   const [title, setTitle] = useState(initial?.title || "");
   const [description, setDescription] = useState(initial?.description || "");
-  const [imageUrl, setImageUrl] = useState(initial?.imageUrl || "");
-  const [linkLabel, setLinkLabel] = useState(
-    initial?.label || (isStatistic ? "" : "Ask a question"),
-  );
   const [value, setValue] = useState(
     String(typeof initialContent.value === "number" ? initialContent.value : 0),
   );
@@ -680,15 +682,17 @@ function ItemEditor({
           suffix: suffix.trim(),
           isDemo,
         }
-      : { ...initialContent, isDemo: true };
+      : initialContent;
     const data: ContentItemInput = {
       sectionId,
       itemType: isStatistic ? "statistic" : "program",
       title: title.trim(),
-      description: description.trim() || null,
-      imageUrl: isStatistic ? null : imageUrl.trim() || null,
-      linkPath: isStatistic ? null : "#enquire",
-      label: isStatistic ? null : linkLabel.trim() || null,
+      description: isStatistic
+        ? description.trim() || null
+        : initial?.description ?? null,
+      imageUrl: isStatistic ? null : initial?.imageUrl ?? null,
+      linkPath: isStatistic ? null : "/",
+      label: isStatistic ? null : initial?.label ?? null,
       content,
       isVisible: initial?.isVisible ?? true,
       position: initial?.position ?? position,
@@ -739,15 +743,7 @@ function ItemEditor({
             required
             testId={`input-statistic-value-${initial?.id || "new"}`}
           />
-        ) : (
-          <Input
-            label="Image URL (optional)"
-            value={imageUrl}
-            onChange={setImageUrl}
-            placeholder="/path/to/image.jpg"
-            testId={`input-pathway-image-${initial?.id || "new"}`}
-          />
-        )}
+        ) : null}
         {isStatistic ? (
           <>
             <Input
@@ -765,23 +761,7 @@ function ItemEditor({
               testId={`input-statistic-suffix-${initial?.id || "new"}`}
             />
           </>
-        ) : (
-          <>
-            <Input
-              label="Card link text"
-              value={linkLabel}
-              onChange={setLinkLabel}
-              testId={`input-pathway-link-label-${initial?.id || "new"}`}
-            />
-            <Input
-              label="Description"
-              value={description}
-              onChange={setDescription}
-              multiline
-              testId={`input-pathway-description-${initial?.id || "new"}`}
-            />
-          </>
-        )}
+        ) : null}
       </div>
       {isStatistic ? (
         <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
@@ -851,6 +831,7 @@ function ItemList({
       ? 0
       : Math.max(...orderedItems.map((item) => item.position)) + 1;
   const isStatistic = kind === "statistic";
+  const visiblePathwayCount = orderedItems.filter((item) => item.isVisible).length;
 
   const move = async (item: ContentItem, direction: -1 | 1) => {
     const index = orderedItems.findIndex((candidate) => candidate.id === item.id);
@@ -875,6 +856,13 @@ function ItemList({
   };
 
   const deleteItem = (item: ContentItem) => {
+    if (!isStatistic && item.isVisible && visiblePathwayCount <= 1) {
+      onFlash({
+        tone: "error",
+        message: "Keep at least one pathway visible on the homepage.",
+      });
+      return;
+    }
     if (!window.confirm(`Delete “${item.title}”?`)) return;
     remove.mutate(
       { id: item.id },
@@ -892,19 +880,50 @@ function ItemList({
     );
   };
 
+  const togglePathwayVisibility = (item: ContentItem) => {
+    if (item.isVisible && visiblePathwayCount <= 1) {
+      onFlash({
+        tone: "error",
+        message: "Keep at least one pathway visible on the homepage.",
+      });
+      return;
+    }
+    const isVisible = !item.isVisible;
+    update.mutate(
+      { id: item.id, data: { isVisible } },
+      {
+        onSuccess: () => {
+          invalidateHome(client);
+          onFlash({
+            tone: "success",
+            message: isVisible
+              ? "Pathway shown on the homepage."
+              : "Pathway hidden from the homepage.",
+          });
+        },
+        onError: (error) =>
+          onFlash({ tone: "error", message: errorMessage(error) }),
+      },
+    );
+  };
+
   return (
     <div className="mt-6">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <h3 className="font-display text-lg font-extrabold text-[#0B3472]">
-            {isStatistic ? "Statistics" : "Pathway cards"}
+            {isStatistic ? "Statistics" : "Pathways"}
           </h3>
           {isStatistic ? (
             <p className="mt-1 text-xs leading-5 text-slate-500">
               Sample values are marked demo until replaced with approved,
               verified figures.
             </p>
-          ) : null}
+          ) : (
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              At least one pathway stays visible on the homepage.
+            </p>
+          )}
         </div>
         <button
           type="button"
@@ -928,17 +947,12 @@ function ItemList({
             return (
               <div
                 key={item.id}
-                className="rounded-2xl border border-slate-200 bg-white p-4"
+                className={`rounded-2xl border border-slate-200 bg-white p-4 ${
+                  !item.isVisible && !isStatistic ? "bg-slate-50" : ""
+                }`}
                 data-testid={`row-${kind}-${item.id}`}
               >
                 <div className="flex flex-wrap items-center gap-3">
-                  {!isStatistic && item.imageUrl ? (
-                    <img
-                      src={item.imageUrl}
-                      alt=""
-                      className="h-14 w-20 rounded-lg object-cover"
-                    />
-                  ) : null}
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-bold text-[#0B3472]">
                       {item.title}
@@ -948,10 +962,33 @@ function ItemList({
                         ? `Value: ${text(String(itemContent.value ?? 0))}${
                             itemContent.isDemo === true ? " · Demo" : ""
                           }`
-                        : item.description || "No description"}
+                        : item.isVisible
+                          ? "Shown on homepage"
+                          : "Hidden from homepage"}
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
+                    {!isStatistic ? (
+                      <button
+                        type="button"
+                        onClick={() => togglePathwayVisibility(item)}
+                        disabled={update.isPending}
+                        aria-label={`${item.isVisible ? "Hide" : "Show"} ${item.title} on the public homepage`}
+                        title={
+                          item.isVisible
+                            ? "Hide from public homepage"
+                            : "Show on public homepage"
+                        }
+                        className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+                        data-testid={`button-toggle-pathway-${item.id}`}
+                      >
+                        {item.isVisible ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       onClick={() => void move(item, -1)}

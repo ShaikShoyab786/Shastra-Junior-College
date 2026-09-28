@@ -274,6 +274,19 @@
   .focus-ring:focus-visible { outline: 3px solid hsl(var(--accent) / .4); outline-offset: 3px; }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .pathway-chip,
+  .pathway-chip * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .pathway-chip:hover,
+  .pathway-chip:hover svg {
+    transform: none !important;
+  }
+}
+
 html { scroll-behavior: smooth; }
 ::selection { background: hsl(var(--accent) / .18); color: hsl(var(--primary)); }
 .site-grid { background-image: linear-gradient(hsl(var(--primary) / .045) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary) / .045) 1px, transparent 1px); background-size: 38px 38px; }
