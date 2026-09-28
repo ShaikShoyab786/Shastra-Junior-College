@@ -24,18 +24,23 @@ export const getHomePageResponseSettingsNavigationItemLabelMax = 80;
 
 export const getHomePageResponseSettingsNavigationItemPathMax = 200;
 
+export const getHomePageResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getHomePageResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
 
 export const GetHomePageResponse = zod.object({
   "settings": zod.object({
   "id": zod.string(),
   "collegeName": zod.string(),
+  "headerTagline": zod.string(),
   "logoUrl": zod.string().nullable(),
   "navigation": zod.array(zod.object({
   "label": zod.string().min(1).max(getHomePageResponseSettingsNavigationItemLabelMax),
   "path": zod.string().min(1).max(getHomePageResponseSettingsNavigationItemPathMax)
 })),
   "footerNote": zod.string(),
+  "primaryColor": zod.string().regex(getHomePageResponseSettingsPrimaryColorRegExp),
+  "accentColor": zod.string().regex(getHomePageResponseSettingsAccentColorRegExp),
   "updatedAt": zod.coerce.date()
 }),
   "sections": zod.array(zod.object({
@@ -69,24 +74,88 @@ export const GetHomePageResponse = zod.object({
 
 
 /**
+ * @summary Submit a public admissions enquiry
+ */
+export const createEnquiryBodyValuesMaxOne = 1000;
+
+
+
+export const CreateEnquiryBody = zod.object({
+  "values": zod.record(zod.string(), zod.string().max(createEnquiryBodyValuesMaxOne))
+})
+
+export const CreateEnquiryResponse = zod.object({
+  "id": zod.string().uuid(),
+  "receivedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List admissions enquiries for authorized staff
+ */
+export const GetAdminEnquiriesResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "answers": zod.array(zod.object({
+  "name": zod.string(),
+  "label": zod.string(),
+  "value": zod.string()
+})),
+  "status": zod.enum(['new', 'handled']),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Update an enquiry's inbox status
+ */
+export const UpdateEnquiryParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const UpdateEnquiryBody = zod.object({
+  "status": zod.enum(['new', 'handled'])
+})
+
+export const UpdateEnquiryResponse = zod.object({
+  "id": zod.string().uuid(),
+  "answers": zod.array(zod.object({
+  "name": zod.string(),
+  "label": zod.string(),
+  "value": zod.string()
+})),
+  "status": zod.enum(['new', 'handled']),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
  * @summary Get all homepage content for an authorized admin
  */
 export const getAdminHomeResponseSettingsNavigationItemLabelMax = 80;
 
 export const getAdminHomeResponseSettingsNavigationItemPathMax = 200;
 
+export const getAdminHomeResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminHomeResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
 
 export const GetAdminHomeResponse = zod.object({
   "settings": zod.object({
   "id": zod.string(),
   "collegeName": zod.string(),
+  "headerTagline": zod.string(),
   "logoUrl": zod.string().nullable(),
   "navigation": zod.array(zod.object({
   "label": zod.string().min(1).max(getAdminHomeResponseSettingsNavigationItemLabelMax),
   "path": zod.string().min(1).max(getAdminHomeResponseSettingsNavigationItemPathMax)
 })),
   "footerNote": zod.string(),
+  "primaryColor": zod.string().regex(getAdminHomeResponseSettingsPrimaryColorRegExp),
+  "accentColor": zod.string().regex(getAdminHomeResponseSettingsAccentColorRegExp),
   "updatedAt": zod.coerce.date()
 }),
   "sections": zod.array(zod.object({
@@ -137,6 +206,8 @@ export const GetAdminHomeSummaryResponse = zod.object({
  */
 export const updateSiteSettingsBodyCollegeNameMax = 120;
 
+export const updateSiteSettingsBodyHeaderTaglineMax = 120;
+
 export const updateSiteSettingsBodyLogoUrlMax = 2048;
 
 export const updateSiteSettingsBodyNavigationItemLabelMax = 80;
@@ -147,35 +218,100 @@ export const updateSiteSettingsBodyNavigationMax = 12;
 
 export const updateSiteSettingsBodyFooterNoteMax = 500;
 
+export const updateSiteSettingsBodyPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateSiteSettingsBodyAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
 
 export const UpdateSiteSettingsBody = zod.object({
   "collegeName": zod.string().min(1).max(updateSiteSettingsBodyCollegeNameMax).optional(),
+  "headerTagline": zod.string().max(updateSiteSettingsBodyHeaderTaglineMax).optional(),
   "logoUrl": zod.string().max(updateSiteSettingsBodyLogoUrlMax).nullish(),
   "navigation": zod.array(zod.object({
   "label": zod.string().min(1).max(updateSiteSettingsBodyNavigationItemLabelMax),
   "path": zod.string().min(1).max(updateSiteSettingsBodyNavigationItemPathMax)
 })).max(updateSiteSettingsBodyNavigationMax).optional(),
-  "footerNote": zod.string().max(updateSiteSettingsBodyFooterNoteMax).optional()
+  "footerNote": zod.string().max(updateSiteSettingsBodyFooterNoteMax).optional(),
+  "primaryColor": zod.string().regex(updateSiteSettingsBodyPrimaryColorRegExp).optional(),
+  "accentColor": zod.string().regex(updateSiteSettingsBodyAccentColorRegExp).optional()
 })
 
 export const updateSiteSettingsResponseNavigationItemLabelMax = 80;
 
 export const updateSiteSettingsResponseNavigationItemPathMax = 200;
 
+export const updateSiteSettingsResponsePrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateSiteSettingsResponseAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
 
 export const UpdateSiteSettingsResponse = zod.object({
   "id": zod.string(),
   "collegeName": zod.string(),
+  "headerTagline": zod.string(),
   "logoUrl": zod.string().nullable(),
   "navigation": zod.array(zod.object({
   "label": zod.string().min(1).max(updateSiteSettingsResponseNavigationItemLabelMax),
   "path": zod.string().min(1).max(updateSiteSettingsResponseNavigationItemPathMax)
 })),
   "footerNote": zod.string(),
+  "primaryColor": zod.string().regex(updateSiteSettingsResponsePrimaryColorRegExp),
+  "accentColor": zod.string().regex(updateSiteSettingsResponseAccentColorRegExp),
   "updatedAt": zod.coerce.date()
 })
+
+
+/**
+ * Returns a presigned GCS URL for direct upload. The client sends JSON
+ * metadata here, then uploads the file directly to the returned URL.
+ * @summary Request a presigned URL for file upload
+ */
+
+
+
+
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string().min(1).describe('Original file name.'),
+  "size": zod.number().int().min(1).describe('File size in bytes.'),
+  "contentType": zod.string().min(1).describe('MIME type of the file.')
+})
+
+
+
+
+
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string().url(),
+  "objectPath": zod.string().describe('Normalized object path to save in site settings.'),
+  "metadata": zod.object({
+  "name": zod.string().min(1).describe('Original file name.'),
+  "size": zod.number().int().min(1).describe('File size in bytes.'),
+  "contentType": zod.string().min(1).describe('MIME type of the file.')
+}).optional()
+})
+
+
+/**
+ * Unconditionally public — no authentication or ACL checks.
+ * Searches PUBLIC_OBJECT_SEARCH_PATHS for the given file path.
+ * @summary Serve a public asset from PUBLIC_OBJECT_SEARCH_PATHS
+ */
+export const GetPublicObjectParams = zod.object({
+  "filePath": zod.coerce.string().describe('Relative file path within the public search paths.')
+})
+
+export const GetPublicObjectResponse = zod.unknown()
+
+
+/**
+ * Streams a logo or other published asset uploaded by an authorized admin.
+ * @summary Serve a public college asset from PRIVATE_OBJECT_DIR
+ */
+export const GetStorageObjectParams = zod.object({
+  "objectPath": zod.coerce.string().describe('Object path within PRIVATE_OBJECT_DIR, such as uploads/uuid.')
+})
+
+export const GetStorageObjectResponse = zod.unknown()
 
 
 /**

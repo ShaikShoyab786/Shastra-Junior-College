@@ -10,9 +10,14 @@ import type { NavigationLink } from './navigationLink';
 export interface SiteSettings {
   id: string;
   collegeName: string;
+  headerTagline: string;
   /** @nullable */
   logoUrl: string | null;
   navigation: NavigationLink[];
   footerNote: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  primaryColor: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  accentColor: string;
   updatedAt: Date;
 }

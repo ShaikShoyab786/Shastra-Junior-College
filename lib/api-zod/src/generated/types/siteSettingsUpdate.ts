@@ -13,6 +13,8 @@ export interface SiteSettingsUpdate {
      * @maxLength 120
      */
   collegeName?: string;
+  /** @maxLength 120 */
+  headerTagline?: string;
   /**
      * @maxLength 2048
      * @nullable
@@ -22,4 +24,8 @@ export interface SiteSettingsUpdate {
   navigation?: NavigationLink[];
   /** @maxLength 500 */
   footerNote?: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  primaryColor?: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  accentColor?: string;
 }

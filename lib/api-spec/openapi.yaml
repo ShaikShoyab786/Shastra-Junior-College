@@ -14,6 +14,10 @@ tags:
     description: Public homepage content
   - name: admin
     description: Protected homepage content administration
+  - name: enquiries
+    description: Public admissions enquiries and the protected staff inbox
+  - name: Storage
+    description: Object storage upload and serving endpoints.
 paths:
   /healthz:
     get:
@@ -40,6 +44,75 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HomePage"
+  /enquiries:
+    post:
+      operationId: createEnquiry
+      tags: [enquiries]
+      summary: Submit a public admissions enquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicEnquirySubmission"
+      responses:
+        "201":
+          description: Enquiry received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnquiryReceipt"
+        "400":
+          description: The enquiry does not match the active form.
+  /admin/enquiries:
+    get:
+      operationId: getAdminEnquiries
+      tags: [admin]
+      summary: List admissions enquiries for authorized staff
+      responses:
+        "200":
+          description: Enquiry inbox
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminEnquiries"
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+  /admin/enquiries/{id}:
+    patch:
+      operationId: updateEnquiry
+      tags: [admin]
+      summary: Update an enquiry's inbox status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEnquiryStatus"
+      responses:
+        "200":
+          description: Updated enquiry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminEnquiry"
+        "400":
+          description: Invalid status
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+        "404":
+          description: Enquiry not found
   /admin/home:
     get:
       operationId: getAdminHome
@@ -96,6 +169,111 @@ paths:
           description: Sign-in required
         "403":
           description: The signed-in account is not an authorized admin
+  /storage/uploads/request-url:
+    post:
+      tags: [Storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      description: |
+        Returns a presigned GCS URL for direct upload. The client sends JSON
+        metadata here, then uploads the file directly to the returned URL.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          description: Missing or invalid required fields.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+        "500":
+          description: Failed to generate upload URL.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /storage/public-objects/{filePath}:
+    get:
+      tags: [Storage]
+      operationId: getPublicObject
+      summary: Serve a public asset from PUBLIC_OBJECT_SEARCH_PATHS
+      description: |
+        Unconditionally public — no authentication or ACL checks.
+        Searches PUBLIC_OBJECT_SEARCH_PATHS for the given file path.
+      parameters:
+        - name: filePath
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Relative file path within the public search paths.
+      responses:
+        "200":
+          description: Object content streamed with correct Content-Type.
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: File not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: Failed to serve public object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /storage/objects/{objectPath}:
+    get:
+      tags: [Storage]
+      operationId: getStorageObject
+      summary: Serve a public college asset from PRIVATE_OBJECT_DIR
+      description: Streams a logo or other published asset uploaded by an authorized admin.
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Object path within PRIVATE_OBJECT_DIR, such as uploads/uuid.
+      responses:
+        "200":
+          description: Object content streamed with correct Content-Type.
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: File not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: Failed to serve object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
   /admin/sections:
     post:
       operationId: createContentSection
@@ -278,6 +456,8 @@ components:
           type: string
         collegeName:
           type: string
+        headerTagline:
+          type: string
         logoUrl:
           type: ["string", "null"]
         navigation:
@@ -286,16 +466,34 @@ components:
             $ref: "#/components/schemas/NavigationLink"
         footerNote:
           type: string
+        primaryColor:
+          type: string
+          pattern: "^#[0-9A-Fa-f]{6}$"
+        accentColor:
+          type: string
+          pattern: "^#[0-9A-Fa-f]{6}$"
         updatedAt:
           type: string
           format: date-time
-      required: [id, collegeName, logoUrl, navigation, footerNote, updatedAt]
+      required:
+        - id
+        - collegeName
+        - headerTagline
+        - logoUrl
+        - navigation
+        - footerNote
+        - primaryColor
+        - accentColor
+        - updatedAt
     SiteSettingsUpdate:
       type: object
       properties:
         collegeName:
           type: string
           minLength: 1
+          maxLength: 120
+        headerTagline:
+          type: string
           maxLength: 120
         logoUrl:
           type: ["string", "null"]
@@ -308,7 +506,113 @@ components:
         footerNote:
           type: string
           maxLength: 500
+        primaryColor:
+          type: string
+          pattern: "^#[0-9A-Fa-f]{6}$"
+        accentColor:
+          type: string
+          pattern: "^#[0-9A-Fa-f]{6}$"
       minProperties: 1
+    PublicEnquirySubmission:
+      type: object
+      properties:
+        values:
+          type: object
+          maxProperties: 20
+          additionalProperties:
+            type: string
+            maxLength: 1000
+      required: [values]
+    EnquiryAnswer:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        value:
+          type: string
+      required: [name, label, value]
+    EnquiryStatus:
+      type: string
+      enum: [new, handled]
+    AdminEnquiry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/EnquiryAnswer"
+        status:
+          $ref: "#/components/schemas/EnquiryStatus"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, answers, status, createdAt, updatedAt]
+    AdminEnquiries:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminEnquiry"
+      required: [items]
+    EnquiryReceipt:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        receivedAt:
+          type: string
+          format: date-time
+      required: [id, receivedAt]
+    UpdateEnquiryStatus:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/EnquiryStatus"
+      required: [status]
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Original file name.
+        size:
+          type: integer
+          minimum: 1
+          description: File size in bytes.
+        contentType:
+          type: string
+          minLength: 1
+          description: MIME type of the file.
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+          format: uri
+        objectPath:
+          type: string
+          description: Normalized object path to save in site settings.
+        metadata:
+          $ref: "#/components/schemas/UploadUrlRequest"
+    ErrorEnvelope:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
     JsonObject:
       type: object
       additionalProperties: true

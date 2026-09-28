@@ -407,3 +407,66 @@ html { scroll-behavior: smooth; }
     inset: -1px;
   }
 }
+
+.statistics-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    min(var(--statistics-columns, 2), 2),
+    minmax(0, 1fr)
+  );
+}
+
+@media (min-width: 1024px) {
+  .statistics-grid {
+    grid-template-columns: repeat(var(--statistics-columns, 4), minmax(0, 1fr));
+  }
+}
+
+.statistics-band {
+  background-color: var(--college-primary, #0b3472);
+}
+
+.statistics-value {
+  color: var(--college-accent, #e3212b);
+}
+
+[data-college-theme] [class~="bg-[#0b3472]"],
+[data-college-theme] [class~="bg-[#082859]"] {
+  background-color: var(--college-primary);
+}
+
+[data-college-theme] [class~="bg-[#0b3472]/95"] {
+  background-color: color-mix(in srgb, var(--college-primary) 95%, transparent);
+}
+
+[data-college-theme] [class~="text-[#0b3472]"] {
+  color: var(--college-primary);
+}
+
+[data-college-theme] [class~="text-[#e3212b]"] {
+  color: var(--college-accent);
+}
+
+[data-college-theme] [class~="bg-[#e3212b]"] {
+  background-color: var(--college-accent);
+}
+
+[data-college-theme] [class~="border-[#0b3472]/10"] {
+  border-color: color-mix(in srgb, var(--college-primary) 10%, transparent);
+}
+
+[data-college-theme] [class~="border-[#0b3472]/20"] {
+  border-color: color-mix(in srgb, var(--college-primary) 20%, transparent);
+}
+
+[data-college-theme] [class~="border-[#e3212b]"] {
+  border-color: var(--college-accent);
+}
+
+[data-college-theme] [class~="hover:text-[#e3212b]"]:hover {
+  color: var(--college-accent);
+}
+
+[data-college-theme] [class~="hover:border-[#e3212b]"]:hover {
+  border-color: var(--college-accent);
+}

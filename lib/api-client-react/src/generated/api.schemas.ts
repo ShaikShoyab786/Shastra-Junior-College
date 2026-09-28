@@ -25,10 +25,15 @@ export interface NavigationLink {
 export interface SiteSettings {
   id: string;
   collegeName: string;
+  headerTagline: string;
   /** @nullable */
   logoUrl: string | null;
   navigation: NavigationLink[];
   footerNote: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  primaryColor: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  accentColor: string;
   updatedAt: string;
 }
 
@@ -38,6 +43,8 @@ export interface SiteSettingsUpdate {
      * @maxLength 120
      */
   collegeName?: string;
+  /** @maxLength 120 */
+  headerTagline?: string;
   /**
      * @maxLength 2048
      * @nullable
@@ -47,6 +54,80 @@ export interface SiteSettingsUpdate {
   navigation?: NavigationLink[];
   /** @maxLength 500 */
   footerNote?: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  primaryColor?: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  accentColor?: string;
+}
+
+export type PublicEnquirySubmissionValues = {[key: string]: string};
+
+export interface PublicEnquirySubmission {
+  values: PublicEnquirySubmissionValues;
+}
+
+export interface EnquiryAnswer {
+  name: string;
+  label: string;
+  value: string;
+}
+
+export type EnquiryStatus = typeof EnquiryStatus[keyof typeof EnquiryStatus];
+
+
+export const EnquiryStatus = {
+  new: 'new',
+  handled: 'handled',
+} as const;
+
+export interface AdminEnquiry {
+  id: string;
+  answers: EnquiryAnswer[];
+  status: EnquiryStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminEnquiries {
+  items: AdminEnquiry[];
+}
+
+export interface EnquiryReceipt {
+  id: string;
+  receivedAt: string;
+}
+
+export interface UpdateEnquiryStatus {
+  status: EnquiryStatus;
+}
+
+export interface UploadUrlRequest {
+  /**
+     * Original file name.
+     * @minLength 1
+     */
+  name: string;
+  /**
+     * File size in bytes.
+     * @minimum 1
+     */
+  size: number;
+  /**
+     * MIME type of the file.
+     * @minLength 1
+     */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  /** Normalized object path to save in site settings. */
+  objectPath: string;
+  metadata?: UploadUrlRequest;
+}
+
+export interface ErrorEnvelope {
+  error: string;
 }
 
 export interface JsonObject { [key: string]: unknown }

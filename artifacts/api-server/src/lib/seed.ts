@@ -13,10 +13,9 @@ const demoEnquiryForm = {
   title: "Talk with our team",
   description:
     "Share a few details about your interests so we can guide your next step.",
-  submitLabel: "Preview enquiry",
-  note: "Preview only — your details are not sent or stored.",
-  successMessage:
-    "This preview is complete. Your details were not sent or stored.",
+  submitLabel: "Send enquiry",
+  note: "Your details will be shared with the college admissions team.",
+  successMessage: "Thank you. Our admissions team has received your enquiry.",
   fields: [
     {
       name: "fullName",

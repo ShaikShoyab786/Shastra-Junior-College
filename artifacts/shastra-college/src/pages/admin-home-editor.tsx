@@ -87,12 +87,25 @@ function getEnquiryForm(content: CmsRecord): EnquiryForm {
       raw.description,
       "Share a few details about your interests so we can guide your next step.",
     ),
-    submitLabel: text(raw.submitLabel, "Preview enquiry"),
-    note: text(raw.note, "Preview only — your details are not sent or stored."),
+    submitLabel:
+      text(raw.submitLabel, "Send enquiry") === "Preview enquiry"
+        ? "Send enquiry"
+        : text(raw.submitLabel, "Send enquiry"),
+    note: text(raw.note).startsWith("Preview only")
+      ? "Your details will be shared with the college admissions team."
+      : text(
+          raw.note,
+          "Your details will be shared with the college admissions team.",
+        ),
     successMessage: text(
       raw.successMessage,
-      "This preview is complete. Your details were not sent or stored.",
-    ),
+      "Thank you. Our admissions team has received your enquiry.",
+    ).startsWith("This preview is complete")
+      ? "Thank you. Our admissions team has received your enquiry."
+      : text(
+          raw.successMessage,
+          "Thank you. Our admissions team has received your enquiry.",
+        ),
     fields,
   };
 }
@@ -441,7 +454,7 @@ function HeroEditor({
         <div className="mb-4">
           <p className="eyebrow text-[#E3212B]">Enquiry form</p>
           <p className="mt-1 text-xs leading-5 text-slate-500">
-            Preview only: details are not submitted or stored.
+            Submissions are stored in the staff dashboard for follow-up.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
@@ -474,7 +487,7 @@ function HeroEditor({
             testId="input-enquiry-description"
           />
           <Input
-            label="Preview note"
+            label="Privacy note"
             value={form.note}
             onChange={(value) => updateForm({ note: value })}
             required
@@ -1100,9 +1113,11 @@ function ContentSectionPanel({
 export default function AdminHomeEditor({
   home,
   onFlash,
+  sectionKey,
 }: {
   home: HomePage;
   onFlash: (flash: Flash) => void;
+  sectionKey: "hero" | "programs" | "statistics";
 }) {
   const sections = useMemo(
     () =>
@@ -1121,15 +1136,15 @@ export default function AdminHomeEditor({
 
   return (
     <div className="space-y-6">
-      {hero ? (
+      {sectionKey === "hero" && hero ? (
         <ContentSectionPanel section={hero} onFlash={onFlash}>
           <HeroEditor section={hero} onFlash={onFlash} />
         </ContentSectionPanel>
-      ) : (
+      ) : sectionKey === "hero" ? (
         <MissingSection title="Hero" />
-      )}
+      ) : null}
 
-      {programs ? (
+      {sectionKey === "programs" && programs ? (
         <ContentSectionPanel section={programs} onFlash={onFlash}>
           <SectionDetails section={programs} onFlash={onFlash} />
           <ItemList
@@ -1139,11 +1154,11 @@ export default function AdminHomeEditor({
             onFlash={onFlash}
           />
         </ContentSectionPanel>
-      ) : (
+      ) : sectionKey === "programs" ? (
         <MissingSection title="Explore Pathways" />
-      )}
+      ) : null}
 
-      {statistics ? (
+      {sectionKey === "statistics" && statistics ? (
         <ContentSectionPanel section={statistics} onFlash={onFlash}>
           <SectionDetails section={statistics} onFlash={onFlash} />
           <ItemList
@@ -1153,9 +1168,9 @@ export default function AdminHomeEditor({
             onFlash={onFlash}
           />
         </ContentSectionPanel>
-      ) : (
+      ) : sectionKey === "statistics" ? (
         <MissingSection title="Statistics" />
-      )}
+      ) : null}
     </div>
   );
 }

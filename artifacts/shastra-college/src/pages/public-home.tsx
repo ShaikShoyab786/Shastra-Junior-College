@@ -1,10 +1,21 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { ArrowRight, Check, ChevronDown, RefreshCw, Send } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  ChevronDown,
+  Menu,
+  RefreshCw,
+  Send,
+  X,
+} from "lucide-react";
 import { Link } from "wouter";
 import {
+  getGetAdminEnquiriesQueryKey,
   getGetHomePageQueryKey,
+  useCreateEnquiry,
   useGetHomePage,
 } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import type {
   ContentItem,
   ContentSection,
@@ -14,6 +25,11 @@ import type {
 const logoPath = "/shastra-college-logo.png";
 
 type UnknownRecord = Record<string, unknown>;
+
+function collegeLogo(path?: string | null) {
+  if (!path) return logoPath;
+  return path.startsWith("/objects/") ? `/api/storage${path}` : path;
+}
 
 type EnquiryField = {
   key: string;
@@ -82,7 +98,7 @@ function Logo({ home }: { home?: HomePage }) {
       data-testid="link-brand"
     >
       <img
-        src={logoPath}
+        src={collegeLogo(home?.settings.logoUrl)}
         alt={home?.settings.collegeName || "Shastra Junior College"}
         className="h-12 w-12 shrink-0 object-contain"
         data-testid="img-college-logo"
@@ -92,7 +108,7 @@ function Logo({ home }: { home?: HomePage }) {
           {home?.settings.collegeName || "Shastra Junior College"}
         </span>
         <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
-          Junior College
+          {home?.settings.headerTagline || "Junior College"}
         </span>
       </span>
     </Link>
@@ -100,35 +116,117 @@ function Logo({ home }: { home?: HomePage }) {
 }
 
 function Header({ home }: { home?: HomePage }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const navigation = home?.settings.navigation || [];
+
   return (
     <header
       className="sticky top-0 z-40 border-b border-[#0b3472]/10 bg-[#f7f5ef]/95 px-5 backdrop-blur-xl sm:px-8"
       data-testid="site-header"
     >
-      <div className="mx-auto flex min-h-[76px] max-w-7xl items-center justify-between gap-8">
+      <div className="relative mx-auto flex min-h-[76px] max-w-7xl items-center justify-between gap-8">
         <Logo home={home} />
         <nav
-          className="flex items-center gap-5 sm:gap-8"
+          className={`${
+            mobileOpen
+              ? "absolute left-0 right-0 top-full flex flex-col items-stretch gap-1 border-b border-[#0b3472]/10 bg-[#f7f5ef] p-4 shadow-lg md:static md:flex-row md:items-center md:gap-5 md:border-0 md:bg-transparent md:p-0 md:shadow-none"
+              : "hidden md:flex md:items-center md:gap-5 lg:gap-8"
+          }`}
           aria-label="Primary navigation"
           data-testid="nav-primary"
         >
-          <Link
-            href="/"
-            className="focus-ring text-sm font-bold text-[#0b3472] transition-colors hover:text-[#e3212b]"
-            data-testid="link-nav-home"
-          >
-            Home
-          </Link>
+          {navigation.length === 0 ? (
+            <Link
+              href="/"
+              onClick={() => setMobileOpen(false)}
+              className="focus-ring rounded-lg px-3 py-2 text-sm font-bold text-[#0b3472] transition-colors hover:text-[#e3212b] md:px-0 md:py-0"
+              data-testid="link-nav-home"
+            >
+              Home
+            </Link>
+          ) : (
+            navigation.map((link, index) => (
+              <Link
+                href={link.path}
+                key={`${link.path}-${index}`}
+                onClick={() => setMobileOpen(false)}
+                className="focus-ring rounded-lg px-3 py-2 text-sm font-bold text-[#0b3472] transition-colors hover:text-[#e3212b] md:px-0 md:py-0"
+                data-testid={`link-nav-custom-${index}`}
+              >
+                {link.label}
+              </Link>
+            ))
+          )}
           <Link
             href="/sign-in"
+            onClick={() => setMobileOpen(false)}
             className="focus-ring rounded-full border border-[#0b3472]/20 px-4 py-2 text-sm font-bold text-[#0b3472] transition-colors hover:border-[#e3212b] hover:text-[#e3212b] sm:px-5 sm:py-2.5"
             data-testid="link-nav-staff-login"
           >
             Staff Login
           </Link>
         </nav>
+        <button
+          type="button"
+          onClick={() => setMobileOpen((open) => !open)}
+          className="focus-ring rounded-lg p-2 text-[#0b3472] md:hidden"
+          aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+          aria-expanded={mobileOpen}
+          data-testid="button-toggle-site-nav"
+        >
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
     </header>
+  );
+}
+
+function Footer({ home }: { home: HomePage }) {
+  const navigation = home.settings.navigation;
+  return (
+    <footer className="bg-[#082859] px-5 py-10 text-white sm:px-8 sm:py-12">
+      <div className="mx-auto flex max-w-7xl flex-col gap-7 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex max-w-xl items-start gap-4">
+          <img
+            src={collegeLogo(home.settings.logoUrl)}
+            alt=""
+            className="h-12 w-12 shrink-0 object-contain"
+          />
+          <div>
+            <p className="font-display text-lg font-extrabold">
+              {home.settings.collegeName}
+            </p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-100/65">
+              {home.settings.headerTagline}
+            </p>
+            {home.settings.footerNote ? (
+              <p className="mt-3 whitespace-pre-line text-sm leading-6 text-blue-100/75">
+                {home.settings.footerNote}
+              </p>
+            ) : null}
+          </div>
+        </div>
+        {navigation.length > 0 ? (
+          <nav
+            className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-blue-100/80"
+            aria-label="Footer navigation"
+          >
+            {navigation.map((link, index) => (
+              <Link
+                href={link.path}
+                key={`${link.path}-${index}`}
+                className="transition-colors hover:text-white"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        ) : null}
+      </div>
+      <div className="mx-auto mt-8 max-w-7xl border-t border-white/15 pt-4 text-xs text-blue-100/55">
+        © {new Date().getFullYear()} {home.settings.collegeName}
+      </div>
+    </footer>
   );
 }
 
@@ -167,10 +265,9 @@ function getHeroFormContent(content: UnknownRecord) {
               ? rawType
               : "text";
           const label = stringValue(raw, ["label", "title", "name"], `Field ${index + 1}`);
-          const key = stringValue(raw, ["name", "key", "id"], label)
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-|-$/g, "") || `field-${index + 1}`;
+          const key =
+            stringValue(raw, ["name", "key", "id"], label).trim() ||
+            `field-${index + 1}`;
           const rawOptions = raw.options;
           const options = Array.isArray(rawOptions)
             ? rawOptions
@@ -213,21 +310,34 @@ function getHeroFormContent(content: UnknownRecord) {
       ["formDescription", "enquiryDescription", "description"],
       "Share a few details about your interests so we can guide your next step.",
     ),
-    button: stringValue(
-      merged,
-      ["formButton", "buttonLabel", "submitLabel"],
-      "Preview enquiry",
-    ),
-    note: stringValue(
-      merged,
-      ["note", "privacyNote"],
-      "Preview only — your details are not sent or stored.",
-    ),
-    successMessage: stringValue(
-      merged,
-      ["successMessage"],
-      "This preview is complete. Your details were not sent or stored.",
-    ),
+    button: (() => {
+      const label = stringValue(
+        merged,
+        ["formButton", "buttonLabel", "submitLabel"],
+        "Send enquiry",
+      );
+      return label === "Preview enquiry" ? "Send enquiry" : label;
+    })(),
+    note: (() => {
+      const note = stringValue(
+        merged,
+        ["note", "privacyNote"],
+        "Your details will be shared with the college admissions team.",
+      );
+      return note.startsWith("Preview only")
+        ? "Your details will be shared with the college admissions team."
+        : note;
+    })(),
+    successMessage: (() => {
+      const message = stringValue(
+        merged,
+        ["successMessage"],
+        "Thank you. Our admissions team has received your enquiry.",
+      );
+      return message.startsWith("This preview is complete")
+        ? "Thank you. Our admissions team has received your enquiry."
+        : message;
+    })(),
     fields:
       fields.length > 0
         ? fields
@@ -268,23 +378,48 @@ function initialFieldValues(fields: EnquiryField[]) {
 }
 
 function EnquiryForm({ section }: { section: ContentSection }) {
+  const queryClient = useQueryClient();
+  const createEnquiry = useCreateEnquiry();
   const config = useMemo(() => getHeroFormContent(section.content), [section.content]);
   const [values, setValues] = useState(() => initialFieldValues(config.fields));
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     setValues(initialFieldValues(config.fields));
     setSubmitted(false);
+    setSubmitError("");
   }, [config.fields]);
 
   const updateValue = (key: string, value: string) => {
     setValues((current) => ({ ...current, [key]: value }));
     if (submitted) setSubmitted(false);
+    if (submitError) setSubmitError("");
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmitted(true);
+    if (createEnquiry.isPending) return;
+    setSubmitError("");
+    createEnquiry.mutate(
+      { data: { values } },
+      {
+        onSuccess: () => {
+          void queryClient.invalidateQueries({
+            queryKey: getGetAdminEnquiriesQueryKey(),
+          });
+          setValues(initialFieldValues(config.fields));
+          setSubmitted(true);
+        },
+        onError: (error) => {
+          setSubmitError(
+            error instanceof Error
+              ? error.message
+              : "Your enquiry could not be sent. Please try again.",
+          );
+        },
+      },
+    );
   };
 
   if (submitted) {
@@ -300,10 +435,10 @@ function EnquiryForm({ section }: { section: ContentSection }) {
             <Check className="h-6 w-6" aria-hidden="true" />
           </div>
           <p className="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-[#f3b9a7]">
-            Preview complete
+            Enquiry received
           </p>
           <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight">
-            Your enquiry preview
+            Thank you
           </h2>
           <p className="mt-4 max-w-sm text-sm leading-6 text-blue-100/75">
             {config.successMessage}
@@ -315,7 +450,7 @@ function EnquiryForm({ section }: { section: ContentSection }) {
           className="focus-ring mt-8 inline-flex w-fit items-center gap-2 rounded-full border border-white/25 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10"
           data-testid="button-submit-another-enquiry"
         >
-          Edit details <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          Send another enquiry <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
     );
@@ -414,12 +549,22 @@ function EnquiryForm({ section }: { section: ContentSection }) {
 
       <button
         type="submit"
+        disabled={createEnquiry.isPending}
         className="focus-ring mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#e3212b] px-5 py-3.5 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
         data-testid="button-submit-enquiry"
       >
-        {config.button}
+        {createEnquiry.isPending ? "Sending…" : config.button}
         <Send className="h-4 w-4" aria-hidden="true" />
       </button>
+      {submitError ? (
+        <p
+          className="mt-3 text-center text-sm font-semibold text-rose-200"
+          role="alert"
+          data-testid="error-enquiry-submit"
+        >
+          {submitError}
+        </p>
+      ) : null}
       <p className="mt-3 text-center text-[11px] leading-5 text-blue-100/55">
         {config.note}
       </p>
@@ -573,7 +718,11 @@ function metricFor(item: ContentItem): Metric {
 
 function formatMetric(metric: Metric, value: number | null) {
   if (value === null) return metric.raw;
-  return `${metric.prefix}${value.toFixed(metric.decimals)}${metric.suffix}`;
+  const formatted = new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: metric.decimals,
+    maximumFractionDigits: metric.decimals,
+  }).format(value);
+  return `${metric.prefix}${formatted}${metric.suffix}`;
 }
 
 function StatisticsBar({
@@ -617,7 +766,7 @@ function StatisticsBar({
       }
 
       const startedAt = performance.now();
-      const duration = 1150;
+      const duration = 1050;
       const tick = (now: number) => {
         const progress = Math.min((now - startedAt) / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
@@ -657,55 +806,43 @@ function StatisticsBar({
     <section
       ref={barRef}
       id="statistics"
-      className="relative overflow-hidden bg-[#0b3472] px-5 py-14 text-white sm:px-8 sm:py-20"
+      className="statistics-band border-y border-white/10 bg-[#0b3472] px-5 py-6 text-white sm:px-8 sm:py-8"
       data-testid={`section-statistics-${section.id}`}
     >
-      <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full border-[34px] border-white/[.07]" />
-      <div className="relative mx-auto max-w-7xl">
-        <div className="mb-9 max-w-xl">
-          <div className="flex flex-wrap items-center gap-3">
-            <SectionKicker dark>Statistics</SectionKicker>
-            <DemoMarker show={isDemo(section.content)} dark />
-          </div>
-          <h2
-            className="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
-            data-testid={`text-statistics-title-${section.id}`}
-          >
-            {section.title || "At a glance"}
-          </h2>
-          {section.subtitle ? (
-            <p
-              className="mt-3 text-sm leading-6 text-blue-100/70"
-              data-testid={`text-statistics-subtitle-${section.id}`}
-            >
-              {section.subtitle}
-            </p>
-          ) : null}
-        </div>
-
+      <div className="mx-auto max-w-7xl">
+        <h2 className="sr-only" data-testid={`text-statistics-title-${section.id}`}>
+          {section.title || "College statistics"}
+        </h2>
         {items.length > 0 ? (
-          <div className="grid border-y border-white/15 sm:grid-cols-2 lg:grid-cols-4">
+          <div
+            className="statistics-grid"
+            style={{ "--statistics-columns": Math.min(items.length, 4) } as React.CSSProperties}
+            data-testid={`grid-statistics-${section.id}`}
+          >
             {items.map((item, index) => {
               const metric = metrics[index];
               const count = metric.value === null ? null : counts[String(index)] ?? 0;
               return (
                 <article
                   key={item.id}
-                  className="border-b border-white/15 px-1 py-6 sm:px-6 sm:nth-[n+3]:border-b-0 lg:border-b-0 lg:border-l lg:first:border-l-0"
+                  className="min-w-0 border-b border-white/15 px-4 py-4 sm:px-6 sm:py-5 lg:border-b-0 lg:border-l lg:first:border-l-0 lg:px-8"
                   data-testid={`stat-${item.id}`}
                 >
                   <div
-                    className="font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl"
+                    className="statistics-value font-display text-4xl font-extrabold leading-none tracking-tight text-[#e3212b] sm:text-5xl"
                     data-testid={`value-stat-${item.id}`}
                   >
                     {formatMetric(metric, count)}
                   </div>
                   <h3
-                    className="mt-3 text-sm font-bold text-white"
+                    className="mt-3 text-[10px] font-bold uppercase leading-5 tracking-[0.14em] text-blue-100/80 sm:text-[11px]"
                     data-testid={`text-stat-title-${item.id}`}
                   >
                     {item.title}
                   </h3>
+                  <span className="mt-2 block">
+                    <DemoMarker show={isDemo(item.content) || isDemo(section.content)} dark />
+                  </span>
                   {item.description ? (
                     <p
                       className="mt-1 text-xs leading-5 text-blue-100/65"
@@ -714,7 +851,6 @@ function StatisticsBar({
                       {item.description}
                     </p>
                   ) : null}
-                  <DemoMarker show={isDemo(item.content)} dark />
                 </article>
               );
             })}
@@ -724,7 +860,7 @@ function StatisticsBar({
             className="border-y border-white/15 py-10 text-sm text-blue-100/70"
             data-testid="empty-statistics"
           >
-            Published statistics will appear here when they are available.
+            Statistics will appear here when approved college figures are available.
           </div>
         )}
       </div>
@@ -835,9 +971,19 @@ export default function PublicHomePage() {
   if (query.isError || !query.data) return <ErrorHome retry={() => query.refetch()} />;
 
   return (
-    <div className="min-h-[100dvh] overflow-hidden bg-[#f7f5ef]">
+    <div
+      className="min-h-[100dvh] overflow-hidden bg-[#f7f5ef]"
+      data-college-theme
+      style={
+        {
+          "--college-primary": query.data.settings.primaryColor,
+          "--college-accent": query.data.settings.accentColor,
+        } as React.CSSProperties
+      }
+    >
       <Header home={query.data} />
       <PageSections home={query.data} />
+      <Footer home={query.data} />
     </div>
   );
 }

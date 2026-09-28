@@ -165,7 +165,7 @@ router.get("/home", async (req, res): Promise<void> => {
   res.json(parsed.data);
 });
 
-adminRouter.use(requireAdmin);
+adminRouter.use("/admin", requireAdmin);
 
 adminRouter.get("/admin/home", async (req, res): Promise<void> => {
   const content = await loadHomePage(true);
