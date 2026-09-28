@@ -15,6 +15,7 @@ export * from './contentItemUpdate';
 export * from './contentSection';
 export * from './contentSectionInput';
 export * from './contentSectionUpdate';
+export * from './enquiryActionResult';
 export * from './enquiryAnswer';
 export * from './enquiryReceipt';
 export * from './enquiryStatus';

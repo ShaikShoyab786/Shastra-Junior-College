@@ -1,4 +1,10 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { useClerk, useUser, Show } from "@clerk/react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -18,11 +24,10 @@ import {
   LogOut,
   Menu,
   Palette,
-  Plus,
-  RefreshCw,
   Save,
   Settings2,
-  ShieldCheck,
+  Trash2,
+  Undo2,
   Upload,
   UserRound,
   X,
@@ -30,32 +35,33 @@ import {
 import {
   getGetAdminEnquiriesQueryKey,
   getGetAdminHomeQueryKey,
+  useDeleteEnquiry,
   useGetAdminEnquiries,
   useGetAdminHome,
-  useGetAdminHomeSummary,
-  useHealthCheck,
   useRequestUploadUrl,
+  useRestoreEnquiry,
   useUpdateEnquiry,
   useUpdateSiteSettings,
 } from "@workspace/api-client-react";
 import type {
   AdminEnquiry,
   HomePage,
-  NavigationLink,
   SiteSettingsUpdate,
 } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import AdminHomeEditor from "./admin-home-editor";
 
-type Flash = { tone: "success" | "error"; message: string } | null;
+type Flash = {
+  tone: "success" | "error";
+  message: string;
+  action?: { label: string; onClick: () => void };
+} | null;
 type WorkspaceView =
   | "dashboard"
-  | "overview"
   | "hero"
   | "programs"
   | "statistics"
   | "identity"
-  | "menus"
   | "about"
   | "results"
   | "faculty"
@@ -176,17 +182,18 @@ function Field({
   );
 }
 
-function StatusPill({ status }: { status: "new" | "handled" }) {
+function StatusPill({ status }: { status: AdminEnquiry["status"] }) {
+  const reviewed = status === "reviewed";
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[.13em] ${
-        status === "new"
-          ? "bg-[#e3212b]/10 text-[#ba1824]"
-          : "bg-emerald-50 text-emerald-700"
+        reviewed
+          ? "bg-emerald-50 text-emerald-700"
+          : "bg-[#e3212b]/10 text-[#ba1824]"
       }`}
       data-testid={`status-enquiry-${status}`}
     >
-      {status}
+      {reviewed ? "Reviewed" : "Needs review"}
     </span>
   );
 }
@@ -204,8 +211,22 @@ function FlashMessage({ flash, onDismiss }: { flash: Flash; onDismiss: () => voi
       data-testid="status-flash"
     >
       {flash.tone === "success" ? <Check className="mt-0.5 h-4 w-4 shrink-0" /> : <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />}
-      <span>{flash.message}</span>
-      <button onClick={onDismiss} className="ml-auto rounded-lg p-1" aria-label="Dismiss message" data-testid="button-dismiss-flash">
+      <span className="min-w-0 flex-1">{flash.message}</span>
+      {flash.action ? (
+        <button
+          type="button"
+          onClick={() => {
+            flash.action?.onClick();
+            onDismiss();
+          }}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white/70 px-2.5 py-1.5 text-xs font-extrabold underline underline-offset-2"
+          data-testid="button-undo-enquiry-delete"
+        >
+          <Undo2 className="h-3.5 w-3.5" />
+          {flash.action.label}
+        </button>
+      ) : null}
+      <button onClick={onDismiss} className="rounded-lg p-1" aria-label="Dismiss message" data-testid="button-dismiss-flash">
         <X className="h-4 w-4" />
       </button>
     </div>
@@ -263,7 +284,30 @@ function Shell({
   const [homeOpen, setHomeOpen] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(true);
   const [pagesOpen, setPagesOpen] = useState(true);
-  const activePage = activeView === "dashboard" ? "Dashboard" : activeView === "identity" || activeView === "menus" ? "Site settings" : activeView === "overview" || activeView === "hero" || activeView === "programs" || activeView === "statistics" ? "Homepage" : "Pages";
+  const homeSectionActive =
+    activeView === "hero" ||
+    activeView === "programs" ||
+    activeView === "statistics";
+  const activePage =
+    activeView === "dashboard"
+      ? "Dashboard"
+      : activeView === "identity"
+        ? "Site settings"
+        : homeSectionActive
+          ? "Pages / Home"
+          : "Pages";
+  const activeTitle =
+    activeView === "dashboard"
+      ? "Dashboard"
+      : activeView === "identity"
+        ? "Site identity"
+        : activeView === "hero"
+          ? "Home · Hero"
+          : activeView === "programs"
+            ? "Home · Pathways"
+            : activeView === "statistics"
+              ? "Home · Statistics"
+              : pageItems.find((item) => item.key === activeView)?.label || "Home";
 
   const go = (view: WorkspaceView) => {
     onNavigate(view);
@@ -295,21 +339,6 @@ function Shell({
           </div>
 
           <div>
-            <button onClick={() => setHomeOpen((current) => !current)} className="flex w-full items-center justify-between px-3 text-left" data-testid="button-toggle-home-nav">
-              <span className={`eyebrow ${activePage === "Homepage" ? "text-[#ffb3b6]" : "text-blue-300"}`}>Homepage</span>
-              {homeOpen ? <ChevronDown className="h-3.5 w-3.5 text-blue-300" /> : <ChevronRight className="h-3.5 w-3.5 text-blue-300" />}
-            </button>
-            {homeOpen ? (
-              <div className="mt-2 space-y-1">
-                <NavRow icon={FileText} label="Overview" nested active={activeView === "overview"} onClick={() => go("overview")} />
-                <NavRow icon={FileText} label="Hero" nested active={activeView === "hero"} onClick={() => go("hero")} />
-                <NavRow icon={Link2} label="Pathways" nested active={activeView === "programs"} onClick={() => go("programs")} />
-                <NavRow icon={ClipboardList} label="Statistics" nested active={activeView === "statistics"} onClick={() => go("statistics")} />
-              </div>
-            ) : null}
-          </div>
-
-          <div>
             <button onClick={() => setSettingsOpen((current) => !current)} className="flex w-full items-center justify-between px-3 text-left" data-testid="button-toggle-settings-nav">
               <span className={`eyebrow ${activePage === "Site settings" ? "text-[#ffb3b6]" : "text-blue-300"}`}>Site settings</span>
               {settingsOpen ? <ChevronDown className="h-3.5 w-3.5 text-blue-300" /> : <ChevronRight className="h-3.5 w-3.5 text-blue-300" />}
@@ -317,7 +346,6 @@ function Shell({
             {settingsOpen ? (
               <div className="mt-2 space-y-1">
                 <NavRow icon={Settings2} label="Site identity" nested active={activeView === "identity"} onClick={() => go("identity")} />
-                <NavRow icon={Link2} label="Mega menus" nested active={activeView === "menus"} onClick={() => go("menus")} />
               </div>
             ) : null}
           </div>
@@ -329,6 +357,34 @@ function Shell({
             </button>
             {pagesOpen ? (
               <div className="mt-2 space-y-1">
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setHomeOpen((current) => !current)}
+                    aria-expanded={homeOpen}
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${
+                      homeSectionActive
+                        ? "bg-white/10 text-white"
+                        : "text-blue-100 hover:bg-white/10 hover:text-white"
+                    }`}
+                    data-testid="button-toggle-home-page-nav"
+                  >
+                    <FileText className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0 flex-1">Home</span>
+                    {homeOpen ? (
+                      <ChevronDown className="h-3.5 w-3.5 text-blue-300" />
+                    ) : (
+                      <ChevronRight className="h-3.5 w-3.5 text-blue-300" />
+                    )}
+                  </button>
+                  {homeOpen ? (
+                    <div className="ml-3 mt-1 space-y-1 border-l border-white/10 pl-2">
+                      <NavRow icon={FileText} label="Hero" nested active={activeView === "hero"} onClick={() => go("hero")} />
+                      <NavRow icon={Link2} label="Pathways" nested active={activeView === "programs"} onClick={() => go("programs")} />
+                      <NavRow icon={ClipboardList} label="Statistics" nested active={activeView === "statistics"} onClick={() => go("statistics")} />
+                    </div>
+                  ) : null}
+                </div>
                 {pageItems.map((item) => (
                   <NavRow key={item.key} icon={FolderOpen} label={item.label} nested active={activeView === item.key} onClick={() => go(item.key)} badge={item.note ? "Soon" : undefined} />
                 ))}
@@ -356,7 +412,7 @@ function Shell({
             <button onClick={() => setMobileNav(true)} className="focus-ring rounded-lg p-2 text-[#0b3472] md:hidden" aria-label="Open sidebar" data-testid="button-open-sidebar"><Menu className="h-5 w-5" /></button>
             <div>
               <p className="eyebrow text-[#e3212b]">{activePage}</p>
-              <p className="font-display text-lg font-extrabold text-[#0b3472]">{activeView === "dashboard" ? "Keep the public site current." : activeView === "identity" ? "Site identity" : activeView === "menus" ? "Mega menus" : activeView === "overview" ? "Homepage overview" : activeView === "hero" ? "Hero" : activeView === "programs" ? "Pathways" : activeView === "statistics" ? "Statistics" : "Page workspace"}</p>
+              <p className="font-display text-lg font-extrabold text-[#0b3472]">{activeTitle}</p>
             </div>
           </div>
           <Link href="/" className="focus-ring inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-bold text-[#0b3472] shadow-sm" data-testid="link-view-site">
@@ -386,104 +442,229 @@ function PageIntro({ eyebrow, title, description, actions }: { eyebrow: string; 
   );
 }
 
-function StatisticsStrip({ home, summary, enquiryCount, newCount }: { home: HomePage; summary?: { sectionCount: number; visibleSectionCount: number; itemCount: number; visibleItemCount: number }; enquiryCount: number; newCount: number }) {
-  const stats = [
-    { label: "Sections live", value: `${summary?.visibleSectionCount ?? 0}/${summary?.sectionCount ?? 0}`, detail: "homepage sections" },
-    { label: "Items published", value: `${summary?.visibleItemCount ?? 0}/${summary?.itemCount ?? 0}`, detail: "content items" },
-    { label: "Enquiries", value: String(enquiryCount), detail: `${newCount} need attention` },
-    { label: "Last changed", value: dateLabel(home.settings.updatedAt).split(",")[0], detail: "site settings" },
-  ];
-  return (
-    <div className="mb-7 overflow-hidden rounded-3xl bg-[#0a2e63] text-white shadow-[0_14px_32px_rgba(10,46,99,.18)]" data-testid="strip-admin-statistics">
-      <div className="flex flex-col justify-between gap-4 border-b border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:px-7">
-        <div>
-          <p className="eyebrow text-[#ffb3b6]">Publishing pulse</p>
-          <p className="mt-1 text-sm font-semibold text-blue-100">A quick read on what visitors can see right now.</p>
-        </div>
-        <div className="inline-flex items-center gap-2 text-xs font-bold text-blue-200"><ShieldCheck className="h-4 w-4 text-[#ff878c]" /> Staff-only snapshot</div>
-      </div>
-      <div className="grid grid-cols-2 divide-x divide-y divide-white/10 sm:grid-cols-4 sm:divide-y-0">
-        {stats.map((stat) => (
-          <div key={stat.label} className="px-5 py-5 sm:px-7" data-testid={`stat-${stat.label.toLowerCase().replaceAll(" ", "-")}`}>
-            <p className="text-2xl font-extrabold tracking-tight">{stat.value}</p>
-            <p className="mt-1 text-xs font-bold text-white">{stat.label}</p>
-            <p className="mt-0.5 text-[11px] text-blue-200">{stat.detail}</p>
-          </div>
-        ))}
-      </div>
-    </div>
+function EnquiryCard({
+  enquiry,
+  onToggleReview,
+  onDelete,
+  pending,
+}: {
+  enquiry: AdminEnquiry;
+  onToggleReview: () => void;
+  onDelete: () => void;
+  pending: boolean;
+}) {
+  const lead =
+    enquiry.answers.find((answer) => answer.name === "fullName") ??
+    enquiry.answers[0];
+  const details = enquiry.answers.filter(
+    (answer) => answer.name !== lead?.name,
   );
-}
+  const reviewed = enquiry.status === "reviewed";
 
-function EnquiryCard({ enquiry, onHandled, pending }: { enquiry: AdminEnquiry; onHandled: () => void; pending: boolean }) {
-  const lead = enquiry.answers[0];
-  const secondary = enquiry.answers.slice(1, 3);
   return (
-    <article className="rounded-2xl border border-slate-200 bg-[#fbfcfe] p-4" data-testid={`card-enquiry-${enquiry.id}`}>
+    <article
+      className="rounded-2xl border border-slate-200 bg-[#fbfcfe] p-4 sm:p-5"
+      data-testid={`card-enquiry-${enquiry.id}`}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-extrabold text-[#0b3472]">{lead?.value || "Admissions enquiry"}</p>
-          <p className="mt-1 text-xs text-slate-500">{dateLabel(enquiry.createdAt)}</p>
+          <h3 className="truncate text-sm font-extrabold text-[#0b3472]">
+            {lead?.value || "Admissions enquiry"}
+          </h3>
+          <p className="mt-1 text-xs text-slate-500">
+            {dateLabel(enquiry.createdAt)}
+          </p>
         </div>
         <StatusPill status={enquiry.status} />
       </div>
-      {secondary.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{secondary.map((answer) => <div key={`${enquiry.id}-${answer.name}`}><p className="text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-400">{answer.label}</p><p className="mt-0.5 truncate text-xs font-semibold text-slate-700">{answer.value || "Not provided"}</p></div>)}</div> : null}
-      {enquiry.status === "new" ? <button onClick={onHandled} disabled={pending} className="mt-4 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-extrabold text-[#0b3472] hover:bg-slate-50 disabled:opacity-50" data-testid={`button-mark-handled-${enquiry.id}`}><Check className="h-3.5 w-3.5" /> {pending ? "Updating" : "Mark handled"}</button> : null}
+      {details.length ? (
+        <dl className="mt-4 grid gap-x-5 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+          {details.map((answer) => (
+            <div key={`${enquiry.id}-${answer.name}`} className="min-w-0">
+              <dt className="text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-400">
+                {answer.label}
+              </dt>
+              <dd className="mt-0.5 break-words text-xs font-semibold text-slate-700">
+                {answer.value || "Not provided"}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={onToggleReview}
+          disabled={pending}
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-extrabold text-[#0b3472] hover:bg-slate-50 disabled:opacity-50"
+          data-testid={`button-toggle-review-${enquiry.id}`}
+        >
+          <Check className="h-3.5 w-3.5" />
+          {pending
+            ? "Saving…"
+            : reviewed
+              ? "Mark not reviewed"
+              : "Mark reviewed"}
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={pending}
+          className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-extrabold text-red-700 hover:bg-red-50 disabled:opacity-50"
+          data-testid={`button-delete-enquiry-${enquiry.id}`}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+          Delete
+        </button>
+      </div>
     </article>
   );
 }
 
-function DashboardView({ home, summary, enquiries, onFlash }: { home: HomePage; summary?: { sectionCount: number; visibleSectionCount: number; itemCount: number; visibleItemCount: number }; enquiries: AdminEnquiry[]; onFlash: (flash: Flash) => void }) {
+function DashboardView({
+  enquiries,
+  enquiriesError,
+  onRefresh,
+  onFlash,
+}: {
+  enquiries: AdminEnquiry[];
+  enquiriesError: boolean;
+  onRefresh: () => void;
+  onFlash: (flash: Flash) => void;
+}) {
   const client = useQueryClient();
   const updateEnquiry = useUpdateEnquiry();
-  const newCount = enquiries.filter((item) => item.status === "new").length;
-  const recent = enquiries.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
-  const markHandled = (id: string) => updateEnquiry.mutate({ id, data: { status: "handled" } }, { onSuccess: () => { void client.invalidateQueries({ queryKey: getGetAdminEnquiriesQueryKey() }); onFlash({ tone: "success", message: "Enquiry marked as handled." }); }, onError: (error) => onFlash({ tone: "error", message: errorMessage(error) }) });
+  const deleteEnquiry = useDeleteEnquiry();
+  const restoreEnquiry = useRestoreEnquiry();
+  const pending =
+    updateEnquiry.isPending ||
+    deleteEnquiry.isPending ||
+    restoreEnquiry.isPending;
+  const ordered = enquiries
+    .slice()
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+
+  const invalidateEnquiries = () =>
+    client.invalidateQueries({ queryKey: getGetAdminEnquiriesQueryKey() });
+  const restore = (id: string) =>
+    restoreEnquiry.mutate(
+      { id },
+      {
+        onSuccess: () => {
+          void invalidateEnquiries();
+          onFlash({ tone: "success", message: "Enquiry restored." });
+        },
+        onError: (error) =>
+          onFlash({ tone: "error", message: errorMessage(error) }),
+      },
+    );
+  const toggleReview = (enquiry: AdminEnquiry) =>
+    updateEnquiry.mutate(
+      {
+        id: enquiry.id,
+        data: {
+          status: enquiry.status === "reviewed" ? "new" : "reviewed",
+        },
+      },
+      {
+        onSuccess: () => {
+          void invalidateEnquiries();
+          onFlash({
+            tone: "success",
+            message:
+              enquiry.status === "reviewed"
+                ? "Enquiry marked as not reviewed."
+                : "Enquiry marked as reviewed.",
+          });
+        },
+        onError: (error) =>
+          onFlash({ tone: "error", message: errorMessage(error) }),
+      },
+    );
+  const remove = (id: string) =>
+    deleteEnquiry.mutate(
+      { id },
+      {
+        onSuccess: () => {
+          void invalidateEnquiries();
+          onFlash({
+            tone: "success",
+            message: "Enquiry deleted.",
+            action: { label: "Undo", onClick: () => restore(id) },
+          });
+        },
+        onError: (error) =>
+          onFlash({ tone: "error", message: errorMessage(error) }),
+      },
+    );
+
   return (
     <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
-      <PageIntro eyebrow="Dashboard" title="Good morning, team." description="Keep the essentials within reach, then open one focused editor when something needs attention." actions={<Button onClick={() => window.location.reload()} testId="button-refresh-dashboard" variant="outline"><RefreshCw className="h-4 w-4" /> Refresh</Button>} />
-      <StatisticsStrip home={home} summary={summary} enquiryCount={enquiries.length} newCount={newCount} />
-      <div className="grid gap-6 xl:grid-cols-[1.35fr_.8fr]">
-        <SectionCard testId="panel-recent-enquiries">
-          <div className="flex items-start justify-between gap-3">
-            <div><p className="eyebrow text-[#e3212b]">Admissions inbox</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Recent enquiries</h2><p className="mt-1 text-sm text-slate-500">{newCount ? `${newCount} new ${newCount === 1 ? "enquiry" : "enquiries"} waiting for a reply.` : "No new enquiries waiting for a reply."}</p></div>
-            <span className="rounded-xl bg-[#0b3472]/[.06] px-3 py-2 text-sm font-extrabold text-[#0b3472]" data-testid="text-enquiries-count">{enquiries.length}</span>
-          </div>
-          <div className="mt-6 space-y-3">
-            {recent.length ? recent.map((enquiry) => <EnquiryCard key={enquiry.id} enquiry={enquiry} pending={updateEnquiry.isPending} onHandled={() => markHandled(enquiry.id)} />) : <div className="rounded-2xl border border-dashed border-slate-300 px-5 py-10 text-center"><ClipboardList className="mx-auto h-8 w-8 text-slate-300" /><p className="mt-3 text-sm font-bold text-slate-600">Your admissions inbox is clear.</p><p className="mt-1 text-xs text-slate-400">New public enquiries will appear here.</p></div>}
-          </div>
-        </SectionCard>
-        <SectionCard>
-          <div><p className="eyebrow text-[#e3212b]">Quick checks</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Content health</h2><p className="mt-1 text-sm text-slate-500">Small checks that help prevent stale public content.</p></div>
-          <div className="mt-6 space-y-3">
-            <HealthRow label="Homepage sections" value={`${summary?.visibleSectionCount ?? 0} visible`} tone={(summary?.visibleSectionCount ?? 0) > 0 ? "good" : "warn"} />
-            <HealthRow label="Homepage content items" value={`${summary?.visibleItemCount ?? 0} published`} tone={(summary?.visibleItemCount ?? 0) > 0 ? "good" : "warn"} />
-            <HealthRow label="Site identity" value={home.settings.collegeName ? "Complete" : "Needs review"} tone={home.settings.collegeName ? "good" : "warn"} />
-          </div>
-          <div className="mt-6 rounded-2xl bg-[#f4f7fc] p-4"><p className="text-xs font-extrabold uppercase tracking-[.12em] text-[#0b3472]">Tip for this week</p><p className="mt-2 text-sm leading-6 text-slate-600">Use the Homepage group to edit one section at a time. The public site updates after each save.</p></div>
-        </SectionCard>
+      <div className="mb-8">
+        <p className="eyebrow text-[#e3212b]">Dashboard</p>
+        <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-[#0b3472] sm:text-4xl">
+          Good morning, team.
+        </h1>
       </div>
+      <SectionCard testId="panel-enquiries">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="eyebrow text-[#e3212b]">Admissions inbox</p>
+            <h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">
+              Enquiries
+            </h2>
+          </div>
+          <span
+            className="rounded-xl bg-[#0b3472]/[.06] px-3 py-2 text-sm font-extrabold text-[#0b3472]"
+            data-testid="text-enquiries-count"
+          >
+            {enquiries.length}
+          </span>
+        </div>
+        <div className="mt-6 space-y-3">
+          {enquiriesError ? (
+            <div
+              className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800"
+              role="alert"
+            >
+              <p>Enquiries could not be loaded.</p>
+              <button
+                type="button"
+                onClick={onRefresh}
+                className="mt-2 font-extrabold underline underline-offset-2"
+                data-testid="button-retry-enquiries"
+              >
+                Try again
+              </button>
+            </div>
+          ) : ordered.length ? (
+            ordered.map((enquiry) => (
+              <EnquiryCard
+                key={enquiry.id}
+                enquiry={enquiry}
+                pending={pending}
+                onToggleReview={() => toggleReview(enquiry)}
+                onDelete={() => remove(enquiry.id)}
+              />
+            ))
+          ) : (
+            <div className="rounded-2xl border border-dashed border-slate-300 px-5 py-10 text-center">
+              <ClipboardList className="mx-auto h-8 w-8 text-slate-300" />
+              <p className="mt-3 text-sm font-bold text-slate-600">
+                Your admissions inbox is clear.
+              </p>
+              <p className="mt-1 text-xs text-slate-400">
+                New public enquiries will appear here.
+              </p>
+            </div>
+          )}
+        </div>
+      </SectionCard>
     </div>
   );
-}
-
-function HealthRow({ label, value, tone }: { label: string; value: string; tone: "good" | "warn" }) {
-  return <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3.5 py-3" data-testid={`health-row-${label.toLowerCase().replaceAll(" ", "-")}`}><span className="text-sm font-bold text-slate-700">{label}</span><span className={`inline-flex items-center gap-1.5 text-xs font-extrabold ${tone === "good" ? "text-emerald-700" : "text-amber-700"}`}><span className={`h-1.5 w-1.5 rounded-full ${tone === "good" ? "bg-emerald-500" : "bg-amber-500"}`} />{value}</span></div>;
-}
-
-function OverviewView({ home, summary, onNavigate }: { home: HomePage; summary?: { sectionCount: number; visibleSectionCount: number; hiddenSectionCount: number; itemCount: number; visibleItemCount: number; hiddenItemCount: number }; onNavigate: (view: WorkspaceView) => void }) {
-  const orderedSections = home.sections.slice().sort((a, b) => a.position - b.position);
-  const sectionMeta: Record<string, { label: string; key: WorkspaceView; detail: string }> = {
-    hero: { label: "Hero", key: "hero", detail: "Introduction and admissions enquiry form" },
-    programs: { label: "Pathways", key: "programs", detail: "Programme cards shown to prospective students" },
-    statistics: { label: "Statistics", key: "statistics", detail: "Compact proof points on the homepage" },
-  };
-  return <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10"><PageIntro eyebrow="Homepage / overview" title="Everything public, at a glance." description="Review visibility and open one homepage section when you are ready to edit it." /><div className="grid gap-6 lg:grid-cols-[1fr_.72fr]"><SectionCard><div className="flex items-start justify-between gap-4"><div><p className="eyebrow text-[#e3212b]">Publishing map</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Homepage sections</h2></div><div className="text-right"><p className="text-2xl font-extrabold text-[#0b3472]">{summary?.visibleSectionCount ?? 0}<span className="text-sm font-bold text-slate-400">/{summary?.sectionCount ?? orderedSections.length}</span></p><p className="text-xs text-slate-500">visible</p></div></div><div className="mt-6 space-y-3">{orderedSections.map((section, index) => { const meta = sectionMeta[section.sectionKey]; return <button key={section.id} onClick={() => meta && onNavigate(meta.key)} disabled={!meta} className="flex w-full items-center gap-4 rounded-2xl border border-slate-200 p-4 text-left transition hover:border-[#0b3472]/30 hover:bg-[#f8faff] disabled:cursor-default" data-testid={`row-home-section-${section.sectionKey}`}><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0b3472]/[.07] text-sm font-extrabold text-[#0b3472]">0{index + 1}</span><span className="min-w-0 flex-1"><span className="block font-extrabold text-[#0b3472]">{meta?.label || section.title}</span><span className="mt-1 block text-xs text-slate-500">{meta?.detail || "Homepage content section"}</span></span><span className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[.1em] ${section.isVisible ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{section.isVisible ? "Visible" : "Hidden"}</span><ChevronRight className="h-4 w-4 text-slate-400" /></button>; })}</div></SectionCard><SectionCard><p className="eyebrow text-[#e3212b]">Content counts</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Publishing totals</h2><div className="mt-6 space-y-4"><CountLine label="Visible sections" value={summary?.visibleSectionCount ?? 0} total={summary?.sectionCount ?? 0} /><CountLine label="Hidden sections" value={summary?.hiddenSectionCount ?? 0} total={summary?.sectionCount ?? 0} muted /><CountLine label="Published items" value={summary?.visibleItemCount ?? 0} total={summary?.itemCount ?? 0} /><CountLine label="Hidden items" value={summary?.hiddenItemCount ?? 0} total={summary?.itemCount ?? 0} muted /></div><div className="mt-7 border-t border-slate-200 pt-5"><p className="text-xs font-bold text-slate-500">Site identity last updated</p><p className="mt-1 text-sm font-extrabold text-[#0b3472]">{dateLabel(home.settings.updatedAt)}</p></div></SectionCard></div></div>;
-}
-
-function CountLine({ label, value, total, muted = false }: { label: string; value: number; total: number; muted?: boolean }) {
-  const percent = total ? Math.min(100, Math.round((value / total) * 100)) : 0;
-  return <div><div className="flex items-center justify-between text-sm"><span className={`font-bold ${muted ? "text-slate-500" : "text-slate-700"}`}>{label}</span><span className="font-extrabold text-[#0b3472]">{value}</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full ${muted ? "bg-slate-300" : "bg-[#e3212b]"}`} style={{ width: `${percent}%` }} /></div></div>;
 }
 
 function IdentityView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flash) => void }) {
@@ -544,21 +725,6 @@ function ColorField({ label, value, onChange, testId }: { label: string; value: 
   return <label className="block text-sm font-bold text-slate-700">{label}<div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2"><input type="color" value={/^#[0-9A-Fa-f]{6}$/.test(value) ? value : "#0B3472"} onChange={(event) => onChange(event.target.value.toUpperCase())} className="h-9 w-10 cursor-pointer rounded-lg border-0 bg-transparent" data-testid={testId} /><input value={value} onChange={(event) => onChange(event.target.value)} className="min-w-0 flex-1 bg-transparent px-1 text-sm font-bold text-slate-700 outline-none" aria-label={`${label} hex value`} data-testid={`${testId}-hex`} /></div></label>;
 }
 
-function MenusView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flash) => void }) {
-  const client = useQueryClient();
-  const updateSettings = useUpdateSiteSettings();
-  const [links, setLinks] = useState<NavigationLink[]>([]);
-  const [expanded, setExpanded] = useState(true);
-  useEffect(() => setLinks(home.settings.navigation.map((link) => ({ ...link }))), [home.settings.navigation]);
-  const updateLink = (index: number, key: keyof NavigationLink, value: string) => setLinks((current) => current.map((link, row) => row === index ? { ...link, [key]: value } : link));
-  const save = (event: FormEvent) => {
-    event.preventDefault();
-    if (links.some((link) => !link.label.trim() || !link.path.trim())) { onFlash({ tone: "error", message: "Each navigation link needs a label and path." }); return; }
-    updateSettings.mutate({ data: { navigation: links.map((link) => ({ label: link.label.trim(), path: link.path.trim() })) } }, { onSuccess: () => { void client.invalidateQueries({ queryKey: getGetAdminHomeQueryKey() }); onFlash({ tone: "success", message: "Navigation links saved." }); }, onError: (error) => onFlash({ tone: "error", message: errorMessage(error) }) });
-  };
-  return <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10"><PageIntro eyebrow="Site settings / navigation" title="Shape the main menu." description="Keep the public header concise. Reorder links with the controls below and save once the structure feels right." /><form onSubmit={save} className="max-w-4xl"><SectionCard><button type="button" onClick={() => setExpanded((current) => !current)} className="flex w-full items-center justify-between text-left" data-testid="button-toggle-menu-editor"><span><span className="eyebrow text-[#e3212b]">Primary navigation</span><span className="mt-1 block font-display text-2xl font-extrabold text-[#0b3472]">Existing menu links</span></span>{expanded ? <ChevronDown className="h-5 w-5 text-slate-400" /> : <ChevronRight className="h-5 w-5 text-slate-400" />}</button>{expanded ? <><div className="mt-6 space-y-3">{links.length ? links.map((link, index) => <div key={`${index}-${link.path}`} className="grid gap-3 rounded-2xl border border-slate-200 bg-[#fbfcfe] p-4 sm:grid-cols-[auto_1fr_1fr_auto] sm:items-end" data-testid={`row-navigation-${index}`}><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0b3472]/[.07] text-xs font-extrabold text-[#0b3472]">{index + 1}</span><Field label="Label" value={link.label} onChange={(value) => updateLink(index, "label", value)} placeholder="Menu label" testId={`input-navigation-label-${index}`} /><Field label="Path" value={link.path} onChange={(value) => updateLink(index, "path", value)} placeholder="/about" testId={`input-navigation-path-${index}`} /><button type="button" onClick={() => setLinks((current) => current.filter((_, row) => row !== index))} className="mb-1 rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-700" aria-label={`Remove navigation link ${index + 1}`} data-testid={`button-remove-navigation-${index}`}><X className="h-4 w-4" /></button></div>) : <div className="rounded-2xl border border-dashed border-slate-300 px-5 py-10 text-center"><Link2 className="mx-auto h-8 w-8 text-slate-300" /><p className="mt-3 text-sm font-bold text-slate-600">No navigation links saved.</p></div>}</div><div className="mt-5 flex flex-wrap items-center justify-between gap-3"><button type="button" onClick={() => setLinks((current) => [...current, { label: "", path: "" }])} className="inline-flex items-center gap-2 rounded-xl border border-dashed border-[#0b3472]/30 px-3.5 py-2.5 text-sm font-bold text-[#0b3472] hover:bg-[#0b3472]/5" data-testid="button-add-navigation"><Plus className="h-4 w-4" /> Add link</button><Button type="submit" onClick={() => undefined} disabled={updateSettings.isPending} testId="button-save-navigation" variant="primary"><Save className="h-4 w-4" />{updateSettings.isPending ? "Saving…" : "Save menu"}</Button></div></> : null}</SectionCard></form></div>;
-}
-
 function PlaceholderView({ label }: { label: string }) {
   return <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10"><PageIntro eyebrow={`Pages / ${label}`} title={`${label} is ready for content.`} description="This page is reserved in the workspace so the staff team has a clear place to manage it when its API-backed content becomes available." /><SectionCard className="max-w-3xl"><div className="flex items-start gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0b3472]/[.07] text-[#0b3472]"><CircleHelp className="h-5 w-5" /></span><div><h2 className="font-display text-xl font-extrabold text-[#0b3472]">Page editor coming soon</h2><p className="mt-2 text-sm leading-6 text-slate-500">The navigation is in place, but there are no existing API entities for {label.toLowerCase()} content yet. Nothing has been invented or saved here.</p></div></div></SectionCard></div>;
 }
@@ -576,19 +742,91 @@ function AccessDenied({ userId, error }: { userId?: string; error: unknown }) {
 function AdminWorkspace() {
   const { user } = useUser();
   const admin = useGetAdminHome();
-  const summary = useGetAdminHomeSummary();
   const enquiries = useGetAdminEnquiries();
-  const health = useHealthCheck();
   const [activeView, setActiveView] = useState<WorkspaceView>("dashboard");
   const [flash, setFlash] = useState<Flash>(null);
+  const flashTimeout = useRef<number | undefined>(undefined);
   const home = admin.data;
   const enquiryItems = enquiries.data?.items || [];
-  const showFlash = (message: Flash) => { setFlash(message); window.setTimeout(() => setFlash(null), 4500); };
+  const showFlash = (message: Flash) => {
+    window.clearTimeout(flashTimeout.current);
+    setFlash(message);
+    if (message) {
+      flashTimeout.current = window.setTimeout(
+        () => setFlash(null),
+        message.action ? 10_000 : 4_500,
+      );
+    }
+  };
+  const dismissFlash = () => {
+    window.clearTimeout(flashTimeout.current);
+    setFlash(null);
+  };
 
-  if (admin.isLoading || summary.isLoading || enquiries.isLoading) return <AdminLoading />;
+  useEffect(
+    () => () => window.clearTimeout(flashTimeout.current),
+    [],
+  );
+
+  if (admin.isLoading || enquiries.isLoading) return <AdminLoading />;
   if (admin.isError || !home) return <AccessDenied userId={user?.id} error={admin.error} />;
-  const body = activeView === "dashboard" ? <DashboardView home={home} summary={summary.data} enquiries={enquiryItems} onFlash={showFlash} /> : activeView === "overview" ? <OverviewView home={home} summary={summary.data} onNavigate={setActiveView} /> : activeView === "identity" ? <IdentityView home={home} onFlash={showFlash} /> : activeView === "menus" ? <MenusView home={home} onFlash={showFlash} /> : activeView === "hero" || activeView === "programs" || activeView === "statistics" ? <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10"><PageIntro eyebrow={`Homepage / ${activeView === "programs" ? "pathways" : activeView}`} title={`Edit the ${activeView === "programs" ? "pathways" : activeView} section.`} description="Changes are saved to the public homepage database. Only this focused subsection is open right now." /><AdminHomeEditor home={home} onFlash={showFlash} sectionKey={activeView} /></div> : <PlaceholderView label={pageItems.find((item) => item.key === activeView)?.label || "Page"} />;
-  return <Shell home={home} activeView={activeView} onNavigate={setActiveView}><div className="mx-auto max-w-7xl px-5 pt-6 sm:px-8"><FlashMessage flash={flash} onDismiss={() => setFlash(null)} />{health.isError ? <div className="mb-4 flex items-center gap-2 text-xs font-bold text-amber-700"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> API health check unavailable; saved actions may still work.</div> : null}</div>{body}</Shell>;
+  let body: ReactNode;
+  if (activeView === "dashboard") {
+    body = (
+      <DashboardView
+        enquiries={enquiryItems}
+        enquiriesError={enquiries.isError}
+        onRefresh={() => void enquiries.refetch()}
+        onFlash={showFlash}
+      />
+    );
+  } else if (activeView === "identity") {
+    body = <IdentityView home={home} onFlash={showFlash} />;
+  } else if (
+    activeView === "hero" ||
+    activeView === "programs" ||
+    activeView === "statistics"
+  ) {
+    const sectionName =
+      activeView === "programs"
+        ? "Pathways"
+        : activeView === "statistics"
+          ? "Statistics"
+          : "Hero";
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow={`Pages / Home / ${sectionName}`}
+          title={`Edit the ${sectionName.toLowerCase()} section.`}
+          description="Changes are saved to the public homepage database. Only this focused subsection is open right now."
+        />
+        <AdminHomeEditor
+          home={home}
+          onFlash={showFlash}
+          sectionKey={activeView}
+        />
+      </div>
+    );
+  } else {
+    body = (
+      <PlaceholderView
+        label={
+          pageItems.find((item) => item.key === activeView)?.label || "Page"
+        }
+      />
+    );
+  }
+
+  return (
+    <Shell home={home} activeView={activeView} onNavigate={setActiveView}>
+      {flash ? (
+        <div className="mx-auto max-w-7xl px-5 pt-4 sm:px-8">
+          <FlashMessage flash={flash} onDismiss={dismissFlash} />
+        </div>
+      ) : null}
+      {body}
+    </Shell>
+  );
 }
 
 export default function AdminPage() {

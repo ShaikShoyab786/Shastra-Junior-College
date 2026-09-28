@@ -39,7 +39,11 @@ export const siteSettingsTable = pgTable("site_settings", {
 export const siteEnquiriesTable = pgTable("site_enquiries", {
   id: uuid("id").primaryKey().defaultRandom(),
   answers: jsonb("answers").$type<EnquiryAnswer[]>().notNull().default([]),
-  status: text("status").$type<"new" | "handled">().notNull().default("new"),
+  status: text("status")
+    .$type<"new" | "reviewed" | "handled">()
+    .notNull()
+    .default("new"),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

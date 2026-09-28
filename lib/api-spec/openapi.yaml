@@ -113,6 +113,55 @@ paths:
           description: The signed-in account is not an authorized admin
         "404":
           description: Enquiry not found
+    delete:
+      operationId: deleteEnquiry
+      tags: [admin]
+      summary: Soft-delete an enquiry so it can be restored
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Deleted enquiry identifier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnquiryActionResult"
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+        "404":
+          description: Enquiry not found
+  /admin/enquiries/{id}/restore:
+    post:
+      operationId: restoreEnquiry
+      tags: [admin]
+      summary: Restore a soft-deleted enquiry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Restored enquiry identifier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnquiryActionResult"
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+        "404":
+          description: Deleted enquiry not found
   /admin/home:
     get:
       operationId: getAdminHome
@@ -535,7 +584,7 @@ components:
       required: [name, label, value]
     EnquiryStatus:
       type: string
-      enum: [new, handled]
+      enum: [new, reviewed]
     AdminEnquiry:
       type: object
       properties:
@@ -563,6 +612,13 @@ components:
           items:
             $ref: "#/components/schemas/AdminEnquiry"
       required: [items]
+    EnquiryActionResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+      required: [id]
     EnquiryReceipt:
       type: object
       properties:

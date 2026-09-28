@@ -29,6 +29,7 @@ import type {
   ContentSection,
   ContentSectionInput,
   ContentSectionUpdate,
+  EnquiryActionResult,
   EnquiryReceipt,
   ErrorEnvelope,
   HealthStatus,
@@ -475,6 +476,154 @@ export const useUpdateEnquiry = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getUpdateEnquiryMutationOptions(options));
+    }
+
+export const getDeleteEnquiryUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/enquiries/${id}`
+}
+
+/**
+ * @summary Soft-delete an enquiry so it can be restored
+ */
+export const deleteEnquiry = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<EnquiryActionResult> => {
+
+  return customFetch<EnquiryActionResult>(getDeleteEnquiryUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteEnquiryMutationKey = () => ['deleteEnquiry'] as const;
+
+export const getDeleteEnquiryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteEnquiry>>, TError,DeleteEnquiryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteEnquiry>>, TError,DeleteEnquiryMutationVariables, TContext> => {
+
+const mutationKey = getDeleteEnquiryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteEnquiry>>, DeleteEnquiryMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteEnquiry(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteEnquiryMutationResult = NonNullable<Awaited<ReturnType<typeof deleteEnquiry>>>
+
+    export type DeleteEnquiryMutationError = ErrorType<void>
+    export type DeleteEnquiryMutationVariables = {id: string}
+
+    /**
+ * @summary Soft-delete an enquiry so it can be restored
+ */
+export const useDeleteEnquiry = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteEnquiry>>, TError,DeleteEnquiryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteEnquiry>>,
+        TError,
+        DeleteEnquiryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteEnquiryMutationOptions(options));
+    }
+
+export const getRestoreEnquiryUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/enquiries/${id}/restore`
+}
+
+/**
+ * @summary Restore a soft-deleted enquiry
+ */
+export const restoreEnquiry = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<EnquiryActionResult> => {
+
+  return customFetch<EnquiryActionResult>(getRestoreEnquiryUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRestoreEnquiryMutationKey = () => ['restoreEnquiry'] as const;
+
+export const getRestoreEnquiryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof restoreEnquiry>>, TError,RestoreEnquiryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof restoreEnquiry>>, TError,RestoreEnquiryMutationVariables, TContext> => {
+
+const mutationKey = getRestoreEnquiryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof restoreEnquiry>>, RestoreEnquiryMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  restoreEnquiry(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RestoreEnquiryMutationResult = NonNullable<Awaited<ReturnType<typeof restoreEnquiry>>>
+
+    export type RestoreEnquiryMutationError = ErrorType<void>
+    export type RestoreEnquiryMutationVariables = {id: string}
+
+    /**
+ * @summary Restore a soft-deleted enquiry
+ */
+export const useRestoreEnquiry = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof restoreEnquiry>>, TError,RestoreEnquiryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof restoreEnquiry>>,
+        TError,
+        RestoreEnquiryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRestoreEnquiryMutationOptions(options));
     }
 
 export const getGetAdminHomeUrl = () => {

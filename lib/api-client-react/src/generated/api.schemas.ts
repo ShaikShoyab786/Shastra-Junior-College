@@ -77,7 +77,7 @@ export type EnquiryStatus = typeof EnquiryStatus[keyof typeof EnquiryStatus];
 
 export const EnquiryStatus = {
   new: 'new',
-  handled: 'handled',
+  reviewed: 'reviewed',
 } as const;
 
 export interface AdminEnquiry {
@@ -90,6 +90,10 @@ export interface AdminEnquiry {
 
 export interface AdminEnquiries {
   items: AdminEnquiry[];
+}
+
+export interface EnquiryActionResult {
+  id: string;
 }
 
 export interface EnquiryReceipt {

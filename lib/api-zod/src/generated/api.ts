@@ -101,7 +101,7 @@ export const GetAdminEnquiriesResponse = zod.object({
   "label": zod.string(),
   "value": zod.string()
 })),
-  "status": zod.enum(['new', 'handled']),
+  "status": zod.enum(['new', 'reviewed']),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 }))
@@ -116,7 +116,7 @@ export const UpdateEnquiryParams = zod.object({
 })
 
 export const UpdateEnquiryBody = zod.object({
-  "status": zod.enum(['new', 'handled'])
+  "status": zod.enum(['new', 'reviewed'])
 })
 
 export const UpdateEnquiryResponse = zod.object({
@@ -126,9 +126,33 @@ export const UpdateEnquiryResponse = zod.object({
   "label": zod.string(),
   "value": zod.string()
 })),
-  "status": zod.enum(['new', 'handled']),
+  "status": zod.enum(['new', 'reviewed']),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Soft-delete an enquiry so it can be restored
+ */
+export const DeleteEnquiryParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const DeleteEnquiryResponse = zod.object({
+  "id": zod.string().uuid()
+})
+
+
+/**
+ * @summary Restore a soft-deleted enquiry
+ */
+export const RestoreEnquiryParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const RestoreEnquiryResponse = zod.object({
+  "id": zod.string().uuid()
 })
 
 

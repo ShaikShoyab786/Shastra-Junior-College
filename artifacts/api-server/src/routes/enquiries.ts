@@ -1,9 +1,13 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { Router, type IRouter } from "express";
 import {
   CreateEnquiryBody,
   CreateEnquiryResponse,
+  DeleteEnquiryParams,
+  DeleteEnquiryResponse,
   GetAdminEnquiriesResponse,
+  RestoreEnquiryParams,
+  RestoreEnquiryResponse,
   UpdateEnquiryBody,
   UpdateEnquiryParams,
   UpdateEnquiryResponse,
@@ -59,7 +63,9 @@ function configuredFields(value: unknown): ConfiguredField[] {
 
 function serializeEnquiry(enquiry: typeof siteEnquiriesTable.$inferSelect) {
   return {
-    ...enquiry,
+    id: enquiry.id,
+    answers: enquiry.answers,
+    status: enquiry.status === "handled" ? "reviewed" : enquiry.status,
     createdAt: enquiry.createdAt.toISOString(),
     updatedAt: enquiry.updatedAt.toISOString(),
   };
@@ -145,6 +151,7 @@ adminRouter.get("/admin/enquiries", async (req, res): Promise<void> => {
   const enquiries = await db
     .select()
     .from(siteEnquiriesTable)
+    .where(isNull(siteEnquiriesTable.deletedAt))
     .orderBy(desc(siteEnquiriesTable.createdAt))
     .limit(100);
 
@@ -174,7 +181,12 @@ adminRouter.patch("/admin/enquiries/:id", async (req, res): Promise<void> => {
   const [updated] = await db
     .update(siteEnquiriesTable)
     .set({ status: body.data.status, updatedAt: new Date() })
-    .where(eq(siteEnquiriesTable.id, params.data.id))
+    .where(
+      and(
+        eq(siteEnquiriesTable.id, params.data.id),
+        isNull(siteEnquiriesTable.deletedAt),
+      ),
+    )
     .returning();
   if (!updated) {
     res.status(404).json({ error: "Enquiry not found." });
@@ -183,6 +195,59 @@ adminRouter.patch("/admin/enquiries/:id", async (req, res): Promise<void> => {
 
   res.json(UpdateEnquiryResponse.parse(serializeEnquiry(updated)));
 });
+
+adminRouter.delete("/admin/enquiries/:id", async (req, res): Promise<void> => {
+  const params = DeleteEnquiryParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: "Invalid enquiry ID." });
+    return;
+  }
+
+  const [deleted] = await db
+    .update(siteEnquiriesTable)
+    .set({ deletedAt: new Date(), updatedAt: new Date() })
+    .where(
+      and(
+        eq(siteEnquiriesTable.id, params.data.id),
+        isNull(siteEnquiriesTable.deletedAt),
+      ),
+    )
+    .returning({ id: siteEnquiriesTable.id });
+  if (!deleted) {
+    res.status(404).json({ error: "Enquiry not found." });
+    return;
+  }
+
+  res.json(DeleteEnquiryResponse.parse({ id: deleted.id }));
+});
+
+adminRouter.post(
+  "/admin/enquiries/:id/restore",
+  async (req, res): Promise<void> => {
+    const params = RestoreEnquiryParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid enquiry ID." });
+      return;
+    }
+
+    const [restored] = await db
+      .update(siteEnquiriesTable)
+      .set({ deletedAt: null, updatedAt: new Date() })
+      .where(
+        and(
+          eq(siteEnquiriesTable.id, params.data.id),
+          isNotNull(siteEnquiriesTable.deletedAt),
+        ),
+      )
+      .returning({ id: siteEnquiriesTable.id });
+    if (!restored) {
+      res.status(404).json({ error: "Deleted enquiry not found." });
+      return;
+    }
+
+    res.json(RestoreEnquiryResponse.parse({ id: restored.id }));
+  },
+);
 
 router.use(adminRouter);
 
