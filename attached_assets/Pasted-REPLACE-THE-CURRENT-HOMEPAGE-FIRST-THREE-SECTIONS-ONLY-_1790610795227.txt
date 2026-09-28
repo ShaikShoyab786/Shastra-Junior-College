@@ -1,0 +1,67 @@
+REPLACE THE CURRENT HOMEPAGE — FIRST THREE SECTIONS ONLY
+
+The current sample homepage is not what I want. Redesign it using the attached reference video for the visual layout, but follow the Shastra-specific requirements below. Work only in the currently open project. Do not search for or reuse another college project.
+
+REFERENCE VIDEO
+Use:
+attached_assets/modern_academy_home_page_hero_section_reference_video_1790609254120.mp4
+
+The reference site is Modern Academy. Use its layout as visual guidance only. Do not use its name, logo, text, images, statistics, or other college-specific content.
+
+BRAND AND THEME
+- College name: Shastra Junior College.
+- Use the Shastra logo if it is available in this project’s assets. Do not search other projects for it. If it is unavailable, keep a simple text-logo fallback and report that the logo needs to be uploaded.
+- Use the agreed logo-inspired palette: navy primary (#0B3472 approximately), red accents (#E3212B approximately), white and light neutrals.
+
+HOMEPAGE — ONLY THESE THREE SECTIONS, IN THIS ORDER
+1. Hero
+2. Explore Pathways
+3. Statistics bar with a count-up effect
+
+Remove all other existing homepage sections. Do not add a footer or any content section below the statistics bar in this phase.
+
+1. HERO
+Match the reference video’s two-column layout:
+- Left: eyebrow text, large multi-line heading, short description, and CTA buttons.
+- Right: a prominent enquiry/admission form styled like the reference.
+- Make the form fields, labels, placeholders, options, and button text editable in the Home admin editor.
+- On mobile, stack the text and form cleanly.
+- Use neutral demo copy. Do not claim admissions are open or invent college facts.
+- The form should validate its fields and show a clear demo success state on submission. Do not send email or trigger an external action unless an existing, working form backend is already present.
+
+2. EXPLORE PATHWAYS
+- Create a heading and editable pathway cards.
+- Use these editable card titles, which appear in the Shastra logo: Intermediate, IIT-JEE Main, and NEET.
+- Descriptions and card imagery must be demo content, editable, and free of unsupported claims.
+- Do not invent course streams, eligibility, fees, faculty, or results.
+
+3. STATISTICS BAR
+- Place this immediately below Explore Pathways.
+- Use a contrasting navy bar with editable values and labels.
+- Animate values counting up when the bar enters view, once per page visit; respect reduced-motion accessibility settings.
+- Do not copy statistics from the reference website or present invented numbers as verified facts. Mark any sample values as demo in the admin editor.
+
+NAVIGATION AND BUTTONS
+- The public navigation must contain exactly: Home and Staff Login, with Staff Login at the far right.
+- Keep the existing Staff Login route and authentication flow working exactly as they do now.
+- Remove all other navigation items for now; other pages will be built one at a time later.
+- Until those pages are built, any other navigation or CTA action should return to the same Home page (`/`). Do not create placeholder pages or dead external links.
+- The Home link returns to `/`. The Staff Login link goes to the existing login route.
+
+ADMIN DASHBOARD AND CLEANUP
+- Preserve the current admin authentication process exactly. Do not change or delete admin accounts, roles, login routes, sessions, or authentication configuration.
+- Remove the old homepage sections from the public page and remove their legacy content-editing controls/modules from the admin interface.
+- For now, the content area of the admin dashboard should provide a clean Home editor for the Hero, Explore Pathways, and Statistics sections only.
+- Admins must be able to edit and save all content in those sections. For repeatable cards and statistics, support add, edit, delete, and reordering. Allow the sections to be shown or hidden.
+- Save changes to persistent backend/database storage. The public Home page must load from that stored content; do not use hardcoded frontend copy or browser localStorage as the source of truth.
+- Keep the content model reusable for adding the other pages later. Do not overbuild CMS features that are not needed for these three sections.
+- Do not permanently delete legacy database content or drop tables as part of cleanup without first creating a restorable backup and asking me. It is okay to remove legacy sections from the public page and their editors from the admin interface.
+
+IMPLEMENTATION
+- Inspect only this project’s current files, database, routes, and admin authentication. Preserve the existing tech stack and working authentication.
+- Implement the new Home layout and matching admin editor; do not stop at a plan.
+- Keep the page responsive and accessible. Show loading, save, validation, and error states in the editor.
+- Verify that changing a field in the admin editor, saving, and refreshing the public page shows the saved value.
+- Do not claim a test passed unless you actually ran it.
+
+When finished, report the Home page URL, Staff Login URL, Home editor location, how its content is saved, and which checks you ran.
