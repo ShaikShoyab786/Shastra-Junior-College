@@ -105,10 +105,10 @@ function Logo({ home }: { home?: HomePage }) {
         data-testid="img-college-logo"
       />
       <span className="flex min-w-0 flex-col justify-center">
-        <span className="font-telugu text-[10px] font-semibold leading-tight text-[#0b3472] sm:text-xs">
+        <span className="font-telugu text-[10px] font-semibold leading-tight text-[#0b3472] sm:text-[13px]">
           జి.పి.రెడ్డి గ్రూప్
         </span>
-        <span className="font-telugu mt-0.5 flex items-baseline gap-[0.34em] whitespace-nowrap text-[clamp(1rem,5.8vw,1.45rem)] font-black leading-tight">
+        <span className="font-telugu mt-0.5 flex items-baseline gap-[0.34em] whitespace-nowrap text-[clamp(1rem,6vw,1.65rem)] font-black leading-tight">
           <span className="brand-name-red">శస్త్ర</span>
           <span className="brand-name-blue">విద్యాసంస్థలు</span>
         </span>
