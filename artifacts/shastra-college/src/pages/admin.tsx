@@ -51,6 +51,7 @@ import type {
 import { Link } from "wouter";
 import AdminHomeEditor from "./admin-home-editor";
 import AdminGalleryEditor from "./admin-gallery-editor";
+import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
 
 type Flash = {
   tone: "success" | "error";
@@ -62,6 +63,7 @@ type WorkspaceView =
   | "hero"
   | "programs"
   | "statistics"
+  | "placement-records"
   | "identity"
   | "about"
   | "results"
@@ -287,7 +289,8 @@ function Shell({
   const homeSectionActive =
     activeView === "hero" ||
     activeView === "programs" ||
-    activeView === "statistics";
+    activeView === "statistics" ||
+    activeView === "placement-records";
   const activePage =
     activeView === "dashboard"
       ? "Dashboard"
@@ -307,9 +310,11 @@ function Shell({
             ? "Home · Pathways"
             : activeView === "statistics"
               ? "Home · Statistics"
-              : activeView === "gallery"
-                ? "Gallery"
-              : pageItems.find((item) => item.key === activeView)?.label || "Home";
+              : activeView === "placement-records"
+                ? "Home · Placement Record"
+                : activeView === "gallery"
+                  ? "Gallery"
+                  : pageItems.find((item) => item.key === activeView)?.label || "Home";
 
   const go = (view: WorkspaceView) => {
     onNavigate(view);
@@ -384,6 +389,7 @@ function Shell({
                       <NavRow icon={FileText} label="Hero" nested active={activeView === "hero"} onClick={() => go("hero")} />
                       <NavRow icon={Link2} label="Pathways" nested active={activeView === "programs"} onClick={() => go("programs")} />
                       <NavRow icon={ClipboardList} label="Statistics" nested active={activeView === "statistics"} onClick={() => go("statistics")} />
+                      <NavRow icon={ClipboardList} label="Placement Record" nested active={activeView === "placement-records"} onClick={() => go("placement-records")} />
                     </div>
                   ) : null}
                 </div>
@@ -819,6 +825,17 @@ function AdminWorkspace() {
           description="Publish an honest, well-captioned view of the learning spaces and moments families can expect at Shastra."
         />
         <AdminGalleryEditor home={home} onFlash={showFlash} />
+      </div>
+    );
+  } else if (activeView === "placement-records") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / Home / Placement Record"
+          title="Manage placement records."
+          description="Add and maintain placement details approved for public sharing. Unpublished records remain available in this workspace."
+        />
+        <AdminPlacementRecordsEditor home={home} onFlash={showFlash} />
       </div>
     );
   } else {

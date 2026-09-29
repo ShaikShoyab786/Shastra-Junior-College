@@ -835,4 +835,47 @@ export async function seedInitialHomeContent(): Promise<void> {
       }
     }
   });
+
+  // Placement samples are inserted only when this section is first created.
+  // Later admin deletions or edits are never overwritten during startup.
+  await db.transaction(async (tx) => {
+    const [createdSection] = await tx
+      .insert(contentSectionsTable)
+      .values({
+        pageSlug: "home",
+        sectionKey: "placement-records",
+        title: "Global Placement Record",
+        subtitle: "Illustrative placement profiles for layout preview.",
+        content: { isDemo: true },
+        isVisible: true,
+        position: 11,
+      })
+      .onConflictDoNothing()
+      .returning({ id: contentSectionsTable.id });
+
+    if (!createdSection) return;
+
+    await tx.insert(contentItemsTable).values(
+      Array.from({ length: 12 }, (_, index) => {
+        const sampleNumber = String(index + 1).padStart(2, "0");
+        return {
+          sectionId: createdSection.id,
+          itemType: "placement-record",
+          title: `Sample Student ${sampleNumber}`,
+          description: null,
+          imageUrl: null,
+          linkPath: null,
+          label: null,
+          content: {
+            employer: `Illustrative Employer ${sampleNumber}`,
+            role: `Illustrative Role ${sampleNumber}`,
+            cohort: "Sample cohort",
+            isDemo: true,
+          },
+          isVisible: true,
+          position: index,
+        };
+      }),
+    );
+  });
 }

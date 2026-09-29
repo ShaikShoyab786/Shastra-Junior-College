@@ -25,6 +25,7 @@ import {
   getGalleryCategories,
   normalizeGalleryCategory,
 } from "../lib/gallery-categories";
+import PlacementRecordsSection from "./placement-records-section";
 
 const logoPath = "/shastra-college-logo.png";
 
@@ -1105,6 +1106,21 @@ function PageSections({ home }: { home: HomePage }) {
       ]),
     );
   }, [home.items, sections]);
+  const placementSection = home.sections.find(
+    (section) =>
+      section.sectionKey.toLowerCase() === "placement-records" &&
+      section.isVisible,
+  );
+  const placementItems = placementSection
+    ? home.items
+        .filter(
+          (item) =>
+            item.sectionId === placementSection.id &&
+            item.itemType === "placement-record" &&
+            item.isVisible,
+        )
+        .sort((a, b) => a.position - b.position)
+    : [];
 
   return (
     <main className="flex flex-col" data-testid="homepage-sections">
@@ -1118,6 +1134,12 @@ function PageSections({ home }: { home: HomePage }) {
         }
         return <StatisticsBar key={section.id} section={section} items={items} />;
       })}
+      {placementSection ? (
+        <PlacementRecordsSection
+          section={placementSection}
+          items={placementItems}
+        />
+      ) : null}
       {sections.some(
         (section) => section.sectionKey.toLowerCase() === "statistics",
       ) ? <GalleryPreviewSection home={home} /> : null}

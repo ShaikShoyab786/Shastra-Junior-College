@@ -135,8 +135,30 @@ router.get(
           ),
         )
         .limit(1);
+      const [placementRecordImage] = await db
+        .select({ id: contentItemsTable.id })
+        .from(contentItemsTable)
+        .innerJoin(
+          contentSectionsTable,
+          eq(contentItemsTable.sectionId, contentSectionsTable.id),
+        )
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "home"),
+            eq(contentSectionsTable.sectionKey, "placement-records"),
+            eq(contentItemsTable.itemType, "placement-record"),
+            or(
+              eq(contentItemsTable.imageUrl, `/objects/${objectPath}`),
+              eq(
+                contentItemsTable.imageUrl,
+                `/api/storage/objects/${objectPath}`,
+              ),
+            ),
+          ),
+        )
+        .limit(1);
 
-      if (logoDoesNotMatch && !galleryImage) {
+      if (logoDoesNotMatch && !galleryImage && !placementRecordImage) {
         res.status(404).json({ error: "Object not found." });
         return;
       }
