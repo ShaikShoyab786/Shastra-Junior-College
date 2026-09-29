@@ -94,21 +94,23 @@ function Logo({ home }: { home?: HomePage }) {
   return (
     <Link
       href="/"
-      className="focus-ring flex min-w-0 items-center gap-3"
+      aria-label="జి.పి.రెడ్డి గ్రూప్, శస్త్ర విద్యాసంస్థలు"
+      className="focus-ring flex min-w-0 items-center gap-2.5 sm:gap-3"
       data-testid="link-brand"
     >
       <img
         src={collegeLogo(home?.settings.logoUrl)}
-        alt={home?.settings.collegeName || "Shastra Junior College"}
-        className="h-12 w-12 shrink-0 object-contain"
+        alt=""
+        className="h-11 w-11 shrink-0 object-contain sm:h-12 sm:w-12"
         data-testid="img-college-logo"
       />
-      <span className="min-w-0">
-        <span className="block truncate font-display text-[1.05rem] font-extrabold tracking-tight text-[#0b3472]">
-          {home?.settings.collegeName || "Shastra Junior College"}
+      <span className="flex min-w-0 flex-col justify-center">
+        <span className="font-telugu text-[10px] font-semibold leading-tight text-[#0b3472] sm:text-xs">
+          జి.పి.రెడ్డి గ్రూప్
         </span>
-        <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
-          {home?.settings.headerTagline || "Junior College"}
+        <span className="font-telugu mt-0.5 flex items-baseline gap-[0.34em] whitespace-nowrap text-[clamp(1rem,5.8vw,1.45rem)] font-black leading-tight">
+          <span className="brand-name-red">శస్త్ర</span>
+          <span className="brand-name-blue">విద్యాసంస్థలు</span>
         </span>
       </span>
     </Link>
@@ -124,7 +126,7 @@ function Header({ home }: { home?: HomePage }) {
       className="sticky top-0 z-40 border-b border-[#0b3472]/10 bg-[#f7f5ef]/95 px-5 backdrop-blur-xl sm:px-8"
       data-testid="site-header"
     >
-      <div className="relative mx-auto flex min-h-[76px] max-w-7xl items-center justify-between gap-8">
+      <div className="relative mx-auto flex min-h-[76px] max-w-7xl items-center justify-between gap-4 sm:gap-8">
         <Logo home={home} />
         <nav
           className={`${
