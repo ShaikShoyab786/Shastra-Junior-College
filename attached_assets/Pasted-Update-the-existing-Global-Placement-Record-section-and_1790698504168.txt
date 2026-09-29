@@ -1,0 +1,39 @@
+Update the existing Global Placement Record section and its Admin settings.
+
+SECTION ORDER
+- On the public Home page, place Global Placement Record directly beneath Gallery Preview.
+- In Admin → Pages → Home, show the sections in this order:
+  Hero → Pathways → Statistics → Gallery Preview → Placement Record.
+- Do not change the other sections or the existing login/authentication.
+
+REMOVE THE PUBLIC DISCLAIMER
+- Remove the banner that says “Some records are illustrative samples, not verified outcomes.”
+- Do not show any public-facing sample/demo/verification disclaimer, badge, or similar notice anywhere in this section.
+- Keep the cards populated with complete demo content and images.
+
+DEMO CONTENT
+- Seed at least 12 complete, believable demo placement profiles so “Load More” can be tested.
+- Use natural names, not “Sample Student 01/02” or other numbered placeholders. Start with names such as Aarav Sharma, Ananya Reddy, Rohan Verma, Priya Nair, Kabir Khan, Meera Patel, Aditya Rao, Ishita Desai, Vikram Singh, Sana Ali, Arjun Menon, and Kavya Iyer.
+- Give each profile a distinct demo student portrait, plus editable placement details such as employer, role, batch/year, and package.
+- Use illustrative demo images—not generic empty circles or broken-image placeholders.
+- Do not hardcode the records in the public-page component. Store them through the existing data/backend system and manage them through Admin settings.
+- Seed the records once without duplicating or resetting them on each app start. Admin edits must persist after refresh.
+
+CARD DESIGN
+- Use the reference image’s clean three-column placement-card layout, but match Shastra Junior College’s navy, red, and light-neutral theme.
+- Include a small circular student portrait and the student’s name on every card, along with the placement details.
+- Make the cards polished, responsive, and consistent with the existing Home page.
+
+LOAD MORE
+- Show 6 records initially, in 3 columns and 2 rows on desktop.
+- Each “Load More” click reveals the next 6 records (2 more rows).
+- Show “View Less” after expanding; clicking it collapses the list to the first 6 and returns to the section heading.
+- Hide “Load More” when no additional records remain.
+
+ADMIN SETTINGS
+- Under Admin → Pages → Home → Placement Record, allow admins to add, edit, delete, reorder, publish/unpublish, and manage any number of records.
+- Make every displayed field editable, including the name, photo, employer, role, batch/year, and package.
+- Include an image upload/replace control and show all records in Admin; show published records on the public page.
+- Confirm before deleting a record.
+
+Verify that the public section appears beneath Gallery Preview, the disclaimer is gone, the cards show complete names and images, and Admin changes persist after refresh.
