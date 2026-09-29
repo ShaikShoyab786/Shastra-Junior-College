@@ -836,46 +836,236 @@ export async function seedInitialHomeContent(): Promise<void> {
     }
   });
 
-  // Placement samples are inserted only when this section is first created.
-  // Later admin deletions or edits are never overwritten during startup.
+  const placementProfiles = [
+    {
+      name: "Aarav Sharma",
+      employer: "Northstar Dataworks",
+      role: "Associate Data Analyst",
+      cohort: "2025–26",
+      package: "₹8.4 LPA",
+      imageUrl: "/placement-portraits/aarav-sharma.jpg",
+    },
+    {
+      name: "Ananya Reddy",
+      employer: "Orchid Cloud Systems",
+      role: "Software Developer",
+      cohort: "2025–26",
+      package: "₹9.2 LPA",
+      imageUrl: "/placement-portraits/ananya-reddy.jpg",
+    },
+    {
+      name: "Rohan Verma",
+      employer: "Novaforge Digital",
+      role: "Junior Cloud Engineer",
+      cohort: "2024–25",
+      package: "₹7.8 LPA",
+      imageUrl: "/placement-portraits/rohan-verma.jpg",
+    },
+    {
+      name: "Priya Nair",
+      employer: "BlueQuarry Analytics",
+      role: "Business Analyst",
+      cohort: "2025–26",
+      package: "₹8.1 LPA",
+      imageUrl: "/placement-portraits/priya-nair.jpg",
+    },
+    {
+      name: "Kabir Khan",
+      employer: "Copperline Automation",
+      role: "Associate QA Engineer",
+      cohort: "2024–25",
+      package: "₹7.5 LPA",
+      imageUrl: "/placement-portraits/kabir-khan.jpg",
+    },
+    {
+      name: "Meera Patel",
+      employer: "Marigold Fintech",
+      role: "Financial Operations Analyst",
+      cohort: "2025–26",
+      package: "₹8.7 LPA",
+      imageUrl: "/placement-portraits/meera-patel.jpg",
+    },
+    {
+      name: "Aditya Rao",
+      employer: "PixelHarbor Technologies",
+      role: "Frontend Developer",
+      cohort: "2024–25",
+      package: "₹9.6 LPA",
+      imageUrl: "/placement-portraits/aditya-rao.jpg",
+    },
+    {
+      name: "Ishita Desai",
+      employer: "VantagePoint HealthTech",
+      role: "Data Quality Analyst",
+      cohort: "2025–26",
+      package: "₹7.9 LPA",
+      imageUrl: "/placement-portraits/ishita-desai.jpg",
+    },
+    {
+      name: "Vikram Singh",
+      employer: "CedarPeak Networks",
+      role: "Systems Support Engineer",
+      cohort: "2024–25",
+      package: "₹8.8 LPA",
+      imageUrl: "/placement-portraits/vikram-singh.jpg",
+    },
+    {
+      name: "Sana Ali",
+      employer: "LumenTrail Design Labs",
+      role: "UX Research Associate",
+      cohort: "2025–26",
+      package: "₹7.6 LPA",
+      imageUrl: "/placement-portraits/sana-ali.jpg",
+    },
+    {
+      name: "Arjun Menon",
+      employer: "SaffronWorks Engineering",
+      role: "Automation Engineer",
+      cohort: "2024–25",
+      package: "₹9.1 LPA",
+      imageUrl: "/placement-portraits/arjun-menon.jpg",
+    },
+    {
+      name: "Kavya Iyer",
+      employer: "BrightArc Mobile Systems",
+      role: "Mobile App Developer",
+      cohort: "2025–26",
+      package: "₹9.8 LPA",
+      imageUrl: "/placement-portraits/kavya-iyer.jpg",
+    },
+  ] as const;
+
+  const placementContent = (profile: (typeof placementProfiles)[number]) => ({
+    employer: profile.employer,
+    role: profile.role,
+    cohort: profile.cohort,
+    package: profile.package,
+    altText: `Portrait of ${profile.name}`,
+    isDemo: true,
+  });
+
+  // Seed once. On existing installs, update only untouched legacy demo rows;
+  // the version marker prevents later startup from overwriting admin edits.
   await db.transaction(async (tx) => {
-    const [createdSection] = await tx
-      .insert(contentSectionsTable)
-      .values({
-        pageSlug: "home",
-        sectionKey: "placement-records",
-        title: "Global Placement Record",
-        subtitle: "Illustrative placement profiles for layout preview.",
-        content: { isDemo: true },
-        isVisible: true,
-        position: 11,
-      })
-      .onConflictDoNothing()
-      .returning({ id: contentSectionsTable.id });
+    const [existingSection] = await tx
+      .select()
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "home"),
+          eq(contentSectionsTable.sectionKey, "placement-records"),
+        ),
+      )
+      .limit(1);
 
-    if (!createdSection) return;
+    if (!existingSection) {
+      const [createdSection] = await tx
+        .insert(contentSectionsTable)
+        .values({
+          pageSlug: "home",
+          sectionKey: "placement-records",
+          title: "Global Placement Record",
+          subtitle: "Student placements by employer, role, batch, and year.",
+          content: { isDemo: true, placementProfilesSeedVersion: 3 },
+          isVisible: true,
+          position: 11,
+        })
+        .onConflictDoNothing()
+        .returning({ id: contentSectionsTable.id });
 
-    await tx.insert(contentItemsTable).values(
-      Array.from({ length: 12 }, (_, index) => {
-        const sampleNumber = String(index + 1).padStart(2, "0");
-        return {
+      if (!createdSection) return;
+
+      await tx.insert(contentItemsTable).values(
+        placementProfiles.map((profile, index) => ({
           sectionId: createdSection.id,
           itemType: "placement-record",
-          title: `Sample Student ${sampleNumber}`,
+          title: profile.name,
           description: null,
-          imageUrl: null,
+          imageUrl: profile.imageUrl,
           linkPath: null,
           label: null,
-          content: {
-            employer: `Illustrative Employer ${sampleNumber}`,
-            role: `Illustrative Role ${sampleNumber}`,
-            cohort: "Sample cohort",
-            isDemo: true,
-          },
+          content: placementContent(profile),
           isVisible: true,
           position: index,
-        };
-      }),
-    );
+        })),
+      );
+      return;
+    }
+
+    const sectionContent = isCmsRecord(existingSection.content)
+      ? existingSection.content
+      : {};
+    if (sectionContent.placementProfilesSeedVersion === 3) return;
+
+    const existingItems = await tx
+      .select()
+      .from(contentItemsTable)
+      .where(
+        and(
+          eq(contentItemsTable.sectionId, existingSection.id),
+          eq(contentItemsTable.itemType, "placement-record"),
+        ),
+      );
+
+    const migratedLegacyItemIds = new Set<string>();
+    for (const [index, profile] of placementProfiles.entries()) {
+      const legacyNumber = String(index + 1).padStart(2, "0");
+      const legacyItem = existingItems.find(
+        (item) => item.title === `Sample Student ${legacyNumber}`,
+      );
+      if (!legacyItem || legacyItem.imageUrl !== null) continue;
+
+      const legacyContent = isCmsRecord(legacyItem.content)
+        ? legacyItem.content
+        : {};
+      const isUntouchedSeed =
+        legacyContent.isDemo === true &&
+        legacyContent.employer === `Illustrative Employer ${legacyNumber}` &&
+        legacyContent.role === `Illustrative Role ${legacyNumber}` &&
+        legacyContent.cohort === "Sample cohort" &&
+        Object.keys(legacyContent).length === 4;
+      if (!isUntouchedSeed) continue;
+
+      await tx
+        .update(contentItemsTable)
+        .set({
+          title: profile.name,
+          imageUrl: profile.imageUrl,
+          content: placementContent(profile),
+          updatedAt: new Date(),
+        })
+        .where(eq(contentItemsTable.id, legacyItem.id));
+      migratedLegacyItemIds.add(legacyItem.id);
+    }
+
+    for (const item of existingItems) {
+      if (migratedLegacyItemIds.has(item.id)) continue;
+      const itemContent = isCmsRecord(item.content) ? item.content : {};
+      if (itemContent.cohort !== "Sample cohort") continue;
+
+      await tx
+        .update(contentItemsTable)
+        .set({
+          content: { ...itemContent, cohort: "2025–26" },
+          updatedAt: new Date(),
+        })
+        .where(eq(contentItemsTable.id, item.id));
+    }
+
+    await tx
+      .update(contentSectionsTable)
+      .set({
+        content: {
+          ...sectionContent,
+          placementProfilesSeedVersion: 3,
+        },
+        subtitle:
+          existingSection.subtitle ===
+          "Illustrative placement profiles for layout preview."
+            ? "Student placements by employer, role, batch, and year."
+            : existingSection.subtitle,
+        updatedAt: new Date(),
+      })
+      .where(eq(contentSectionsTable.id, existingSection.id));
   });
 }

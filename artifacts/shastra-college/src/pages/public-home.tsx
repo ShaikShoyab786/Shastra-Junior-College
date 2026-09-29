@@ -1134,15 +1134,15 @@ function PageSections({ home }: { home: HomePage }) {
         }
         return <StatisticsBar key={section.id} section={section} items={items} />;
       })}
+      {sections.some(
+        (section) => section.sectionKey.toLowerCase() === "statistics",
+      ) ? <GalleryPreviewSection home={home} /> : null}
       {placementSection ? (
         <PlacementRecordsSection
           section={placementSection}
           items={placementItems}
         />
       ) : null}
-      {sections.some(
-        (section) => section.sectionKey.toLowerCase() === "statistics",
-      ) ? <GalleryPreviewSection home={home} /> : null}
     </main>
   );
 }

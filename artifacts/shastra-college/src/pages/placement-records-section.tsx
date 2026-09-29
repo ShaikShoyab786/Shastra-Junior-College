@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, CircleAlert } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import type { ContentItem, ContentSection } from "@workspace/api-client-react";
 
 type CmsRecord = Record<string, unknown>;
@@ -31,7 +31,7 @@ function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
       <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">{label}</dt>
-      <dd className="mt-1 truncate text-sm font-bold text-[#0b3472]" title={value}>{value}</dd>
+      <dd className="mt-1 break-words text-sm font-bold leading-5 text-[#0b3472]" title={value}>{value}</dd>
     </div>
   );
 }
@@ -45,7 +45,7 @@ function PlacementCard({ item }: { item: ContentItem }) {
   const details = [
     { label: "Employer", value: text(content.employer) },
     { label: "Role", value: text(content.role) },
-    { label: "Cohort", value: text(content.cohort) },
+    { label: "Batch / Year", value: text(content.cohort) },
     { label: "Package", value: text(content.package) },
   ].filter((detail) => detail.value.trim());
   return (
@@ -56,7 +56,7 @@ function PlacementCard({ item }: { item: ContentItem }) {
       <div className="flex items-center gap-4">
         <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border-4 border-[#f7f5ef] bg-[#e9eef7] shadow-sm">
           {image ? (
-            <img src={image} alt={altText} className="h-full w-full object-cover" data-testid={`img-placement-record-${item.id}`} />
+            <img src={image} alt={altText} loading="eager" decoding="async" className="h-full w-full object-cover" data-testid={`img-placement-record-${item.id}`} />
           ) : (
             <span className="flex h-full w-full items-center justify-center bg-[#0b3472] font-display text-lg font-extrabold text-white" aria-hidden="true" data-testid={`fallback-placement-record-${item.id}`}>
               {initials(name)}
@@ -96,7 +96,6 @@ export default function PlacementRecordsSection({ section, items }: PlacementRec
   );
   const displayed = records.slice(0, visibleCount);
   const expanded = visibleCount > 6;
-  const hasSamples = displayed.some((item) => record(item.content).isDemo === true);
 
   if (!section.isVisible) return null;
 
@@ -117,16 +116,9 @@ export default function PlacementRecordsSection({ section, items }: PlacementRec
             Global Placement Record
           </h2>
           <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
-            Explore placement details by employer, role, and cohort.
+            Explore placement details by employer, role, and graduating batch.
           </p>
         </div>
-
-        {hasSamples ? (
-          <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#0b3472]/10 bg-white/70 px-3 py-1.5 text-xs font-semibold text-slate-500" role="note" data-testid="note-placement-record-samples">
-            <CircleAlert className="h-3.5 w-3.5 text-[#e3212b]" aria-hidden="true" />
-            Some records are illustrative samples, not verified outcomes.
-          </p>
-        ) : null}
 
         {displayed.length ? (
           <div className="mt-9 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3" data-testid="grid-placement-records">
@@ -138,17 +130,20 @@ export default function PlacementRecordsSection({ section, items }: PlacementRec
           </div>
         )}
 
-        {records.length > 6 && displayed.length < records.length ? (
+        {records.length > 6 && (displayed.length < records.length || expanded) ? (
           <div className="mt-9 flex justify-center">
-            <button type="button" onClick={() => setVisibleCount((current) => Math.min(current + 6, records.length))} className="focus-ring inline-flex items-center gap-2 rounded-full bg-[#0b3472] px-5 py-3 text-sm font-bold text-white transition-transform hover:-translate-y-0.5" data-testid="button-placement-load-more">
-              Load More <ChevronDown className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
-        ) : records.length > 6 && expanded ? (
-          <div className="mt-9 flex justify-center">
-            <button type="button" onClick={resetToInitial} className="focus-ring inline-flex items-center gap-2 rounded-full border border-[#0b3472]/20 bg-white px-5 py-3 text-sm font-bold text-[#0b3472] transition-colors hover:border-[#e3212b] hover:text-[#e3212b]" data-testid="button-placement-view-less">
-              View Less <ChevronUp className="h-4 w-4" aria-hidden="true" />
-            </button>
+            <div className="flex flex-wrap justify-center gap-3">
+              {displayed.length < records.length ? (
+                <button type="button" onClick={() => setVisibleCount((current) => Math.min(current + 6, records.length))} className="focus-ring inline-flex items-center gap-2 rounded-full bg-[#0b3472] px-5 py-3 text-sm font-bold text-white transition-transform hover:-translate-y-0.5" data-testid="button-placement-load-more">
+                  Load More <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                </button>
+              ) : null}
+              {expanded ? (
+                <button type="button" onClick={resetToInitial} className="focus-ring inline-flex items-center gap-2 rounded-full border border-[#0b3472]/20 bg-white px-5 py-3 text-sm font-bold text-[#0b3472] transition-colors hover:border-[#e3212b] hover:text-[#e3212b]" data-testid="button-placement-view-less">
+                  View Less <ChevronUp className="h-4 w-4" aria-hidden="true" />
+                </button>
+              ) : null}
+            </div>
           </div>
         ) : null}
       </div>

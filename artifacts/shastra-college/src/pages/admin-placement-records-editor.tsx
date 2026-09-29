@@ -253,7 +253,7 @@ function PlacementItemForm({
         <Input label="Student name" value={name} onChange={setName} required placeholder="Enter the student name" testId={`input-placement-name-${initial?.id || "new"}`} />
         <Input label="Employer" value={employer} onChange={setEmployer} required placeholder="Enter the employer" testId={`input-placement-employer-${initial?.id || "new"}`} />
         <Input label="Role" value={role} onChange={setRole} required placeholder="Enter the role" testId={`input-placement-role-${initial?.id || "new"}`} />
-        <Input label="Cohort" value={cohort} onChange={setCohort} placeholder="e.g. 2023–24" testId={`input-placement-cohort-${initial?.id || "new"}`} />
+        <Input label="Batch / Year" value={cohort} onChange={setCohort} placeholder="e.g. 2025–26" testId={`input-placement-cohort-${initial?.id || "new"}`} />
         <Input label="Package" value={packageValue} onChange={setPackageValue} placeholder="e.g. As reported by the college" testId={`input-placement-package-${initial?.id || "new"}`} />
         <Input label="Photo alt text" value={altText} onChange={setAltText} required={Boolean(imageUrl)} placeholder="Describe the student photo" testId={`input-placement-alt-${initial?.id || "new"}`} />
       </div>

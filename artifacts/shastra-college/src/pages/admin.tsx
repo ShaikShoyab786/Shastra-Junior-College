@@ -290,6 +290,7 @@ function Shell({
     activeView === "hero" ||
     activeView === "programs" ||
     activeView === "statistics" ||
+    activeView === "gallery" ||
     activeView === "placement-records";
   const activePage =
     activeView === "dashboard"
@@ -313,7 +314,7 @@ function Shell({
               : activeView === "placement-records"
                 ? "Home · Placement Record"
                 : activeView === "gallery"
-                  ? "Gallery"
+                   ? "Home · Gallery Preview"
                   : pageItems.find((item) => item.key === activeView)?.label || "Home";
 
   const go = (view: WorkspaceView) => {
@@ -389,11 +390,11 @@ function Shell({
                       <NavRow icon={FileText} label="Hero" nested active={activeView === "hero"} onClick={() => go("hero")} />
                       <NavRow icon={Link2} label="Pathways" nested active={activeView === "programs"} onClick={() => go("programs")} />
                       <NavRow icon={ClipboardList} label="Statistics" nested active={activeView === "statistics"} onClick={() => go("statistics")} />
+                      <NavRow icon={ImagePlus} label="Gallery Preview" nested active={activeView === "gallery"} onClick={() => go("gallery")} />
                       <NavRow icon={ClipboardList} label="Placement Record" nested active={activeView === "placement-records"} onClick={() => go("placement-records")} />
                     </div>
                   ) : null}
                 </div>
-                <NavRow icon={ImagePlus} label="Gallery" nested active={activeView === "gallery"} onClick={() => go("gallery")} />
                 {pageItems.map((item) => (
                   <NavRow key={item.key} icon={FolderOpen} label={item.label} nested active={activeView === item.key} onClick={() => go(item.key)} badge={item.note ? "Soon" : undefined} />
                 ))}
@@ -820,9 +821,9 @@ function AdminWorkspace() {
     body = (
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
         <PageIntro
-          eyebrow="Pages / Gallery"
-          title="Manage the campus gallery."
-          description="Publish an honest, well-captioned view of the learning spaces and moments families can expect at Shastra."
+          eyebrow="Pages / Home / Gallery Preview"
+          title="Manage the gallery and Home preview."
+          description="Manage the public gallery collection and choose which images appear in the Home page preview."
         />
         <AdminGalleryEditor home={home} onFlash={showFlash} />
       </div>
