@@ -1,0 +1,39 @@
+Add a “Global Placement Record” section to the Home page and make it fully manageable from the Admin dashboard.
+
+Use the attached images as guidance:
+- The placement-card layout reference: attached_assets/image_1790696054544.png
+- The Admin sidebar location: attached_assets/image_1790696370487.png
+
+PLACEMENT ON THE PAGE
+- Add the section directly below Statistics and before Gallery Preview.
+- In the Admin sidebar, add “Placement Record” under Pages → Home, directly below Statistics.
+- Do not modify the completed Hero, Pathways, Statistics, Gallery Preview, navigation, or login/authentication.
+
+DESIGN
+- Use the reference image for the three-column card layout only. Do not copy its colors or branding.
+- Match the existing Shastra Junior College design: navy, red accents, white/light backgrounds, consistent typography, spacing, borders, and shadows.
+- Keep the heading “Global Placement Record” and use a concise supporting line. Do not add unsupported claims about the college.
+- Each card should include a small circular student photo and the student’s name, arranged neatly alongside or above the placement details.
+- Use a consistent photo size and crop. If an image is missing, show a polished initials avatar rather than a broken or empty image.
+- Keep the layout responsive: 3 columns on desktop, 2 on medium screens, and 1 on mobile.
+
+RECORDS AND “LOAD MORE”
+- Show 6 published records initially on the public Home page: 3 cards per row and 2 rows.
+- “Load More” should reveal the next 6 records (2 more rows) each time it is clicked. Keep allowing additional groups of 6 while records remain.
+- Show “View Less” once the list has expanded. It should collapse the list back to the first 6 records and return the user to the section heading.
+- Hide “Load More” when there are no more records to show.
+- Do not limit how many records an admin can create.
+
+ADMIN MANAGEMENT
+Under Pages → Home → Placement Record, allow admins to:
+- Add, edit, delete, reorder, publish, and unpublish records.
+- Upload or replace the student photo.
+- Edit the student name and any placement details used by the card, such as employer, role, cohort/year, and package.
+- Save changes to the existing backend/database and confirm they persist after refresh.
+- View all records in Admin, including unpublished records; show only published records on the public page.
+- Include clear required-field validation and a confirmation before deleting a record.
+
+CONTENT ACCURACY
+No verified student or placement records have been provided yet. Do not invent real student identities, employers, job titles, years, or salary/package claims. For layout preview, use clearly illustrative sample records with non-identifiable avatar images, mark them as sample content in Admin, and make them easy to replace. If sample records are visible on the public page, include a discreet note that the profiles are illustrative until replaced with verified records. Never use real student photos unless supplied or approved.
+
+Before finishing, verify that records can be added, edited, reordered, published/unpublished, and deleted; that “Load More” reveals exactly 6 more records per click; and that “View Less” collapses to the initial 6. Check desktop, tablet, and mobile layouts.
