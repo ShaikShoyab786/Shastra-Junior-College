@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  ArrowRight,
   ArrowDown,
   ArrowUp,
   Eye,
@@ -1110,14 +1111,114 @@ function ContentSectionPanel({
   );
 }
 
+function PreviewSettingsEditor({
+  section,
+  targetLabel,
+  onNavigate,
+  onFlash,
+}: {
+  section: ContentSection;
+  targetLabel: string;
+  onNavigate: () => void;
+  onFlash: (flash: Flash) => void;
+}) {
+  const client = useQueryClient();
+  const update = useUpdateContentSection();
+  const content = record(section.content);
+  const [eyebrow, setEyebrow] = useState(text(content.eyebrow));
+  const [heading, setHeading] = useState(section.title);
+  const [description, setDescription] = useState(section.subtitle ?? "");
+  const defaultLabel = targetLabel === "Faculty" ? "Meet Our Faculty" : "View Gallery";
+  const [ctaLabel, setCtaLabel] = useState(text(content.ctaLabel, defaultLabel));
+
+  useEffect(() => {
+    const nextContent = record(section.content);
+    setEyebrow(text(nextContent.eyebrow));
+    setHeading(section.title);
+    setDescription(section.subtitle ?? "");
+    setCtaLabel(text(nextContent.ctaLabel, defaultLabel));
+  }, [section.id, section.updatedAt]);
+
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    try {
+      await update.mutateAsync({
+        id: section.id,
+        data: {
+          title: heading.trim(),
+          subtitle: description.trim(),
+          content: {
+            ...record(section.content),
+            eyebrow: eyebrow.trim(),
+            ctaLabel: ctaLabel.trim(),
+          },
+        },
+      });
+      invalidateHome(client);
+      onFlash({ tone: "success", message: `${targetLabel} preview saved.` });
+    } catch (error) {
+      onFlash({ tone: "error", message: errorMessage(error) });
+    }
+  }
+
+  return (
+    <section
+      className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"
+      data-testid={`panel-home-${section.sectionKey}`}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="eyebrow text-[#E3212B]">Home preview settings</p>
+          <h2 className="mt-2 font-display text-2xl font-extrabold text-[#0B3472]">
+            {targetLabel} Preview
+          </h2>
+        </div>
+        <button
+          type="button"
+          onClick={onNavigate}
+          className="focus-ring inline-flex items-center gap-2 rounded-xl border border-[#0B3472]/15 bg-white px-4 py-2.5 text-sm font-bold text-[#0B3472] transition hover:border-[#E3212B] hover:text-[#E3212B]"
+          data-testid={`button-manage-${targetLabel.toLowerCase()}`}
+        >
+          Manage {targetLabel}
+          <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+      <form onSubmit={save} className="mt-6 space-y-4">
+        <Input label="Eyebrow" value={eyebrow} onChange={setEyebrow} required testId={`input-${section.sectionKey}-eyebrow`} />
+        <Input label="Heading" value={heading} onChange={setHeading} required testId={`input-${section.sectionKey}-heading`} />
+        <Input label="Description" value={description} onChange={setDescription} multiline testId={`input-${section.sectionKey}-description`} />
+        <Input label="CTA label" value={ctaLabel} onChange={setCtaLabel} required testId={`input-${section.sectionKey}-cta-label`} />
+        <div className="flex justify-end border-t border-slate-100 pt-4">
+          <button
+            type="submit"
+            disabled={update.isPending}
+            className="focus-ring inline-flex items-center gap-2 rounded-xl bg-[#0B3472] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#E3212B] disabled:opacity-50"
+            data-testid={`button-save-${section.sectionKey}`}
+          >
+            <Save className="h-4 w-4" />
+            {update.isPending ? "Saving…" : "Save preview"}
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
 export default function AdminHomeEditor({
   home,
   onFlash,
   sectionKey,
+  onNavigate,
 }: {
   home: HomePage;
   onFlash: (flash: Flash) => void;
-  sectionKey: "hero" | "programs" | "statistics";
+  sectionKey:
+    | "hero"
+    | "programs"
+    | "statistics"
+    | "faculty-preview"
+    | "gallery-preview";
+  onNavigate: (page: "faculty" | "gallery") => void;
 }) {
   const sections = useMemo(
     () =>
@@ -1129,6 +1230,8 @@ export default function AdminHomeEditor({
   const hero = sections.get("hero");
   const programs = sections.get("programs");
   const statistics = sections.get("statistics");
+  const facultyPreview = sections.get("faculty-preview");
+  const galleryPreview = sections.get("gallery-preview");
   const itemsBySection = (section?: ContentSection) =>
     section
       ? home.items.filter((item) => item.sectionId === section.id)
@@ -1170,6 +1273,28 @@ export default function AdminHomeEditor({
         </ContentSectionPanel>
       ) : sectionKey === "statistics" ? (
         <MissingSection title="Statistics" />
+      ) : null}
+
+      {sectionKey === "faculty-preview" && facultyPreview ? (
+        <PreviewSettingsEditor
+          section={facultyPreview}
+          targetLabel="Faculty"
+          onNavigate={() => onNavigate("faculty")}
+          onFlash={onFlash}
+        />
+      ) : sectionKey === "faculty-preview" ? (
+        <MissingSection title="Faculty Preview" />
+      ) : null}
+
+      {sectionKey === "gallery-preview" && galleryPreview ? (
+        <PreviewSettingsEditor
+          section={galleryPreview}
+          targetLabel="Gallery"
+          onNavigate={() => onNavigate("gallery")}
+          onFlash={onFlash}
+        />
+      ) : sectionKey === "gallery-preview" ? (
+        <MissingSection title="Gallery Preview" />
       ) : null}
     </div>
   );

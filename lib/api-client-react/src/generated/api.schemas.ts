@@ -306,6 +306,12 @@ export interface HomePage {
   items: ContentItem[];
 }
 
+export interface CmsPage {
+  settings: SiteSettings;
+  sections: ContentSection[];
+  items: ContentItem[];
+}
+
 export interface AdminHomeSummary {
   sectionCount: number;
   visibleSectionCount: number;

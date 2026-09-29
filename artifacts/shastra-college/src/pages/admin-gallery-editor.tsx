@@ -12,15 +12,15 @@ import {
   Upload,
 } from "lucide-react";
 import {
-  getGetAdminHomeQueryKey,
-  getGetHomePageQueryKey,
+  getGetAdminCmsPageQueryKey,
+  getGetCmsPageQueryKey,
   useCreateContentItem,
   useDeleteContentItem,
   useRequestUploadUrl,
   useUpdateContentItem,
   useUpdateContentSection,
 } from "@workspace/api-client-react";
-import type { ContentItem, ContentItemInput, ContentSection, HomePage } from "@workspace/api-client-react";
+import type { CmsPage, ContentItem, ContentItemInput, ContentSection } from "@workspace/api-client-react";
 import {
   getGalleryCategories,
   normalizeGalleryCategory,
@@ -28,6 +28,7 @@ import {
 
 type Flash = { tone: "success" | "error"; message: string } | null;
 type CmsRecord = Record<string, unknown>;
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function record(value: unknown): CmsRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as CmsRecord) : {};
@@ -45,12 +46,15 @@ function errorMessage(error: unknown) {
 
 function assetUrl(path: string | null) {
   if (!path) return "";
-  return path.startsWith("/objects/") ? `/api/storage${path}` : path;
+  if (path.startsWith("/objects/")) return `/api/storage${path}`;
+  return path.startsWith("/") && basePath && !path.startsWith(`${basePath}/`)
+    ? `${basePath}${path}`
+    : path;
 }
 
-function invalidateHome(client: ReturnType<typeof useQueryClient>) {
-  void client.invalidateQueries({ queryKey: getGetAdminHomeQueryKey() });
-  void client.invalidateQueries({ queryKey: getGetHomePageQueryKey() });
+function invalidateGallery(client: ReturnType<typeof useQueryClient>) {
+  void client.invalidateQueries({ queryKey: getGetAdminCmsPageQueryKey("gallery") });
+  void client.invalidateQueries({ queryKey: getGetCmsPageQueryKey("gallery") });
 }
 
 function Input({ label, value, onChange, placeholder, multiline = false, required = false, testId }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; multiline?: boolean; required?: boolean; testId: string }) {
@@ -84,7 +88,7 @@ function SectionEditor({ section, items, onFlash }: { section: ContentSection; i
       subtitle: subtitle.trim() || null,
       content: { ...record(section.content), eyebrow: eyebrow.trim() || "Life at Shastra" },
     } }, {
-      onSuccess: () => { invalidateHome(client); onFlash({ tone: "success", message: "Gallery introduction saved." }); },
+      onSuccess: () => { invalidateGallery(client); onFlash({ tone: "success", message: "Gallery introduction saved." }); },
       onError: (error) => onFlash({ tone: "error", message: errorMessage(error) }),
     });
   };
@@ -117,7 +121,7 @@ function SectionEditor({ section, items, onFlash }: { section: ContentSection; i
       {
         onSuccess: () => {
           setCategoryDraft("");
-          invalidateHome(client);
+          invalidateGallery(client);
           onFlash({
             tone: "success",
             message: `${newCategory} was added. It is now available for gallery uploads.`,
@@ -255,7 +259,7 @@ function GalleryItemEditor({ sectionId, categories, initial, position, onFlash, 
       position: initial?.position ?? position,
     };
     const options = {
-      onSuccess: () => { invalidateHome(client); onFlash({ tone: "success", message: initial ? "Gallery entry saved." : "Gallery image added." }); onClose(); },
+      onSuccess: () => { invalidateGallery(client); onFlash({ tone: "success", message: initial ? "Gallery entry saved." : "Gallery image added." }); onClose(); },
       onError: (failure: unknown) => setError(errorMessage(failure)),
     };
     if (initial) update.mutate({ id: initial.id, data }, options);
@@ -316,55 +320,13 @@ function GalleryItems({ section, items, onFlash }: { section: ContentSection; it
     if (!target) return;
     try {
       await Promise.all([update.mutateAsync({ id: item.id, data: { position: target.position } }), update.mutateAsync({ id: target.id, data: { position: item.position } })]);
-      invalidateHome(client); onFlash({ tone: "success", message: "Gallery order saved." });
+      invalidateGallery(client); onFlash({ tone: "success", message: "Gallery order saved." });
     } catch (failure) { onFlash({ tone: "error", message: errorMessage(failure) }); }
   };
-  const toggle = (item: ContentItem) => update.mutate({ id: item.id, data: { isVisible: !item.isVisible } }, { onSuccess: () => { invalidateHome(client); onFlash({ tone: "success", message: item.isVisible ? "Image hidden from the public gallery." : "Image shown in the public gallery." }); }, onError: (failure) => onFlash({ tone: "error", message: errorMessage(failure) }) });
-  const toggleHomePreview = async (item: ContentItem) => {
-    const itemContent = record(item.content);
-    const category = text(itemContent.category, "Campus");
-    const showOnHome = itemContent.showOnHome !== true;
-
-    try {
-      if (showOnHome) {
-        const previousFeatured = orderedItems.find((candidate) => {
-          const candidateContent = record(candidate.content);
-          return (
-            candidate.id !== item.id &&
-            candidateContent.showOnHome === true &&
-            text(candidateContent.category, "Campus") === category
-          );
-        });
-
-        if (previousFeatured) {
-          await update.mutateAsync({
-            id: previousFeatured.id,
-            data: {
-              content: { ...record(previousFeatured.content), showOnHome: false },
-            },
-          });
-        }
-      }
-
-      await update.mutateAsync({
-        id: item.id,
-        data: { content: { ...itemContent, showOnHome } },
-      });
-      invalidateHome(client);
-      onFlash({
-        tone: "success",
-        message: showOnHome
-          ? `${category} image selected for the homepage preview.`
-          : `${category} image removed from the homepage preview.`,
-      });
-    } catch (failure) {
-      invalidateHome(client);
-      onFlash({ tone: "error", message: errorMessage(failure) });
-    }
-  };
+  const toggle = (item: ContentItem) => update.mutate({ id: item.id, data: { isVisible: !item.isVisible } }, { onSuccess: () => { invalidateGallery(client); onFlash({ tone: "success", message: item.isVisible ? "Image hidden from the public gallery." : "Image shown in the public gallery." }); }, onError: (failure) => onFlash({ tone: "error", message: errorMessage(failure) }) });
   const deleteItem = (item: ContentItem) => {
     if (!window.confirm(`Delete “${item.title}” from the gallery?`)) return;
-    remove.mutate({ id: item.id }, { onSuccess: () => { invalidateHome(client); onFlash({ tone: "success", message: "Gallery image deleted." }); }, onError: (failure) => onFlash({ tone: "error", message: errorMessage(failure) }) });
+    remove.mutate({ id: item.id }, { onSuccess: () => { invalidateGallery(client); onFlash({ tone: "success", message: "Gallery image deleted." }); }, onError: (failure) => onFlash({ tone: "error", message: errorMessage(failure) }) });
   };
   return (
     <div className="mt-8">
@@ -373,7 +335,7 @@ function GalleryItems({ section, items, onFlash }: { section: ContentSection; it
           <p className="eyebrow text-[#e3212b]">Gallery collection</p>
           <h3 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Campus stories</h3>
           <p className="mt-1 max-w-xl text-sm leading-5 text-slate-500">
-            Select one image in each category to feature it on the homepage. Hidden images stay out of the public gallery and preview.
+            Publish and arrange the images shown in the public gallery.
           </p>
         </div>
         <button
@@ -439,18 +401,6 @@ function GalleryItems({ section, items, onFlash }: { section: ContentSection; it
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-1">
-                    <label className="inline-flex items-center gap-2 rounded-lg px-2 py-2 text-xs font-semibold text-[#0b3472] hover:bg-[#0b3472]/5">
-                      <input
-                        type="checkbox"
-                        checked={itemContent.showOnHome === true}
-                        onChange={() => void toggleHomePreview(item)}
-                        disabled={update.isPending}
-                        aria-label={`Show ${item.title} in the homepage gallery preview`}
-                        className="h-4 w-4 accent-[#0b3472]"
-                        data-testid={`checkbox-home-gallery-${item.id}`}
-                      />
-                      <span>Home preview</span>
-                    </label>
                     <button type="button" onClick={() => toggle(item)} disabled={update.isPending} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30" aria-label={`${item.isVisible ? "Hide" : "Show"} ${item.title}`} data-testid={`button-toggle-gallery-${item.id}`}>
                       {item.isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -478,15 +428,15 @@ function GalleryItems({ section, items, onFlash }: { section: ContentSection; it
   );
 }
 
-export default function AdminGalleryEditor({ home, onFlash }: { home: HomePage; onFlash: (flash: Flash) => void }) {
+export default function AdminGalleryEditor({ page, onFlash }: { page: CmsPage; onFlash: (flash: Flash) => void }) {
   const client = useQueryClient();
   const updateSection = useUpdateContentSection();
-  const section = home.sections.find((candidate) => candidate.sectionKey.toLowerCase() === "gallery");
-  const items = section ? home.items.filter((item) => item.sectionId === section.id && item.itemType === "gallery-image") : [];
+  const section = page.sections.find((candidate) => candidate.sectionKey.toLowerCase() === "gallery");
+  const items = section ? page.items.filter((item) => item.sectionId === section.id && item.itemType === "gallery-image") : [];
   if (!section) return <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-900" data-testid="missing-gallery-section">The gallery section is not available in the current CMS response. Create the section in the existing content service, then refresh this editor.</div>;
   return <div className="space-y-6" data-testid="admin-gallery-editor">
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-      <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="eyebrow text-[#e3212b]">04 · Gallery</p><h2 className="mt-2 font-display text-2xl font-extrabold text-[#0b3472]">Public gallery</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Keep the collection current with carefully captioned views of the college. Only visible gallery images appear on the public page.</p></div><button type="button" onClick={() => updateSection.mutate({ id: section.id, data: { isVisible: !section.isVisible } }, { onSuccess: () => { invalidateHome(client); onFlash({ tone: "success", message: section.isVisible ? "Gallery hidden from the public site." : "Gallery shown on the public site." }); }, onError: (failure) => onFlash({ tone: "error", message: errorMessage(failure) }) })} disabled={updateSection.isPending} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-[#0b3472] hover:bg-slate-50 disabled:opacity-50" data-testid="button-toggle-gallery-section">{section.isVisible ? <><EyeOff className="h-4 w-4" />Hide gallery</> : <><Eye className="h-4 w-4" />Show gallery</>}</button></div>
+      <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="eyebrow text-[#e3212b]">Pages / Gallery</p><h2 className="mt-2 font-display text-2xl font-extrabold text-[#0b3472]">Public gallery</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Keep the collection current with carefully captioned views of the college. Only visible gallery images appear on the public page.</p></div><button type="button" onClick={() => updateSection.mutate({ id: section.id, data: { isVisible: !section.isVisible } }, { onSuccess: () => { invalidateGallery(client); onFlash({ tone: "success", message: section.isVisible ? "Gallery hidden from the public site." : "Gallery shown on the public site." }); }, onError: (failure) => onFlash({ tone: "error", message: errorMessage(failure) }) })} disabled={updateSection.isPending} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-[#0b3472] hover:bg-slate-50 disabled:opacity-50" data-testid="button-toggle-gallery-section">{section.isVisible ? <><EyeOff className="h-4 w-4" />Hide gallery</> : <><Eye className="h-4 w-4" />Show gallery</>}</button></div>
       <SectionEditor section={section} items={items} onFlash={onFlash} />
       <GalleryItems section={section} items={items} onFlash={onFlash} />
     </section>

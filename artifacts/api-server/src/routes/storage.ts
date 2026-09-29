@@ -1,4 +1,4 @@
-import { and, eq, or } from "drizzle-orm";
+import { and, eq, inArray, or } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import { Readable } from "node:stream";
 import {
@@ -123,7 +123,7 @@ router.get(
         )
         .where(
           and(
-            eq(contentSectionsTable.pageSlug, "home"),
+            inArray(contentSectionsTable.pageSlug, ["home", "gallery"]),
             eq(contentSectionsTable.sectionKey, "gallery"),
             or(
               eq(contentItemsTable.imageUrl, `/objects/${objectPath}`),
@@ -157,8 +157,35 @@ router.get(
           ),
         )
         .limit(1);
+      const [facultyPortrait] = await db
+        .select({ id: contentItemsTable.id })
+        .from(contentItemsTable)
+        .innerJoin(
+          contentSectionsTable,
+          eq(contentItemsTable.sectionId, contentSectionsTable.id),
+        )
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "faculty"),
+            eq(contentSectionsTable.sectionKey, "faculty"),
+            eq(contentItemsTable.itemType, "faculty-profile"),
+            or(
+              eq(contentItemsTable.imageUrl, `/objects/${objectPath}`),
+              eq(
+                contentItemsTable.imageUrl,
+                `/api/storage/objects/${objectPath}`,
+              ),
+            ),
+          ),
+        )
+        .limit(1);
 
-      if (logoDoesNotMatch && !galleryImage && !placementRecordImage) {
+      if (
+        logoDoesNotMatch &&
+        !galleryImage &&
+        !placementRecordImage &&
+        !facultyPortrait
+      ) {
         res.status(404).json({ error: "Object not found." });
         return;
       }

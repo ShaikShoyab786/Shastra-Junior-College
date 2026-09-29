@@ -2,16 +2,17 @@ import { useMemo, useState } from "react";
 import { ArrowRight, Image as ImageIcon, RefreshCw, X } from "lucide-react";
 import { Link } from "wouter";
 import {
-  getGetHomePageQueryKey,
-  useGetHomePage,
+  getGetCmsPageQueryKey,
+  useGetCmsPage,
 } from "@workspace/api-client-react";
-import type { ContentItem, ContentSection, HomePage } from "@workspace/api-client-react";
+import type { ContentItem, ContentSection, CmsPage } from "@workspace/api-client-react";
 import {
   getGalleryCategories,
   normalizeGalleryCategory,
 } from "../lib/gallery-categories";
 import { Footer, Header } from "./public-home";
 
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 type CmsRecord = Record<string, unknown>;
 
 function record(value: unknown): CmsRecord {
@@ -24,7 +25,10 @@ function value(source: CmsRecord, key: string, fallback = "") {
 
 function assetUrl(path: string | null) {
   if (!path) return "";
-  return path.startsWith("/objects/") ? `/api/storage${path}` : path;
+  if (path.startsWith("/objects/")) return `/api/storage${path}`;
+  return path.startsWith("/") && basePath && !path.startsWith(`${basePath}/`)
+    ? `${basePath}${path}`
+    : path;
 }
 
 function GalleryLoading() {
@@ -125,7 +129,7 @@ function GalleryLightbox({ item, onClose }: { item: ContentItem; onClose: () => 
   );
 }
 
-function GalleryContent({ home }: { home: HomePage }) {
+function GalleryContent({ home }: { home: CmsPage }) {
   const section = home.sections.find((candidate) => candidate.sectionKey.toLowerCase() === "gallery" && candidate.isVisible);
   const items = useMemo(() => home.items.filter((item) => item.sectionId === section?.id && item.itemType === "gallery-image" && item.isVisible).sort((a, b) => a.position - b.position), [home.items, section?.id]);
   const categories = useMemo(
@@ -158,7 +162,9 @@ function GalleryContent({ home }: { home: HomePage }) {
 }
 
 export default function GalleryPage() {
-  const query = useGetHomePage({ query: { queryKey: getGetHomePageQueryKey() } });
+  const query = useGetCmsPage("gallery", {
+    query: { queryKey: getGetCmsPageQueryKey("gallery") },
+  });
   if (query.isLoading) return <GalleryLoading />;
   if (query.isError || !query.data) return <GalleryError retry={() => query.refetch()} />;
   return <div className="min-h-[100dvh] overflow-hidden bg-[#f7f5ef]" data-college-theme style={{ "--college-primary": query.data.settings.primaryColor, "--college-accent": query.data.settings.accentColor } as React.CSSProperties}><Header home={query.data} /><GalleryContent home={query.data} /><Footer home={query.data} /></div>;

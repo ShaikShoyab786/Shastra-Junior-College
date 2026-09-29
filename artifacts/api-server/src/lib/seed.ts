@@ -1,5 +1,5 @@
 import { db } from "@workspace/db";
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import {
   contentItemsTable,
   contentSectionsTable,
@@ -282,7 +282,8 @@ export async function seedInitialHomeContent(): Promise<void> {
         logoUrl: "/shastra-college-logo.png",
         navigation: [
           { label: "Home", path: "/" },
-          { label: "Staff Login", path: "/sign-in" },
+          { label: "Faculty", path: "/faculty" },
+          { label: "Gallery", path: "/gallery" },
         ],
         footerNote:
           "Homepage demo content — replace with college-approved copy before publishing.",
@@ -301,8 +302,18 @@ export async function seedInitialHomeContent(): Promise<void> {
           ),
         )
         .limit(1);
+      const [galleryPageSection] = await tx
+        .select({ id: contentSectionsTable.id })
+        .from(contentSectionsTable)
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "gallery"),
+            eq(contentSectionsTable.sectionKey, "gallery"),
+          ),
+        )
+        .limit(1);
 
-      if (!gallerySection) {
+      if (!gallerySection && !galleryPageSection) {
         const [createdGallerySection] = await tx
           .insert(contentSectionsTable)
           .values({ ...initialSections.find((section) => section.sectionKey === "gallery")!, pageSlug: "home" })
@@ -1067,5 +1078,380 @@ export async function seedInitialHomeContent(): Promise<void> {
         updatedAt: new Date(),
       })
       .where(eq(contentSectionsTable.id, existingSection.id));
+  });
+
+  await seedFacultyAndGalleryPages();
+}
+
+const facultyProfiles = [
+  {
+    name: "Dr. Ananya Rao",
+    professionalTitle: "Senior Lecturer · Mathematics",
+    shortDescription: "Makes challenging ideas feel clear, practical, and within reach.",
+    imageUrl: "/faculty-portraits/faculty-ananya-rao.jpg",
+    qualifications: "Ph.D. Mathematics, M.Sc. Mathematics, B.Ed.",
+    subjectsTaught: ["Mathematics", "Statistics"],
+    experience: "18 years",
+    biography:
+      "Dr. Ananya Rao has spent eighteen years helping students build confidence with mathematical reasoning. Her classes connect strong fundamentals with practical problem-solving, and she is especially committed to helping every student ask questions, test ideas, and learn from the process.",
+  },
+  {
+    name: "Mr. Kiran Reddy",
+    professionalTitle: "Physics Faculty · Physics",
+    shortDescription: "Connects physics principles to experiments and everyday observations.",
+    imageUrl: "/faculty-portraits/faculty-kiran-reddy.jpg",
+    qualifications: "M.Sc. Physics, M.Ed., Certificate in Experimental Physics",
+    subjectsTaught: ["Physics", "Applied Mechanics"],
+    experience: "16 years",
+    biography:
+      "Mr. Kiran Reddy brings sixteen years of classroom and laboratory experience to physics. He encourages students to investigate how ideas work in the real world, building a careful approach to observation, experimentation, and clear scientific explanation.",
+  },
+  {
+    name: "Ms. Meera Nair",
+    professionalTitle: "Chemistry Faculty · Chemistry",
+    shortDescription: "Builds strong chemistry foundations through careful, hands-on learning.",
+    imageUrl: "/faculty-portraits/faculty-meera-nair.jpg",
+    qualifications: "M.Sc. Chemistry, B.Ed., Diploma in Laboratory Safety",
+    subjectsTaught: ["Chemistry", "Environmental Science"],
+    experience: "13 years",
+    biography:
+      "Ms. Meera Nair has thirteen years of experience teaching chemistry and guiding student laboratory work. Her teaching pairs clear explanations with safe, structured practical learning so students can understand both the concepts and the evidence behind them.",
+  },
+  {
+    name: "Mr. Arjun Sharma",
+    professionalTitle: "Biology Faculty · Biology",
+    shortDescription: "Brings the living world into focus with visual, inquiry-led lessons.",
+    imageUrl: "/faculty-portraits/faculty-arjun-sharma.jpg",
+    qualifications: "M.Sc. Zoology, B.Ed., Certificate in Life Sciences Education",
+    subjectsTaught: ["Biology", "Zoology"],
+    experience: "14 years",
+    biography:
+      "Mr. Arjun Sharma has taught biology for fourteen years, with a focus on making complex systems easier to observe and understand. He uses diagrams, guided inquiry, and discussion to help students connect foundational science to the living world around them.",
+  },
+] as const;
+
+const facultySectionContent: CmsJson = {
+  eyebrow: "MEET OUR FACULTY",
+  headline: "Guidance that brings learning to life",
+  description:
+    "Get to know the teachers who help students build strong foundations and take their next steps with confidence.",
+};
+
+const galleryPreviewContent: CmsJson = {
+  eyebrow: "CAMPUS GALLERY",
+  headline: "A closer look at Shastra",
+  description:
+    "Explore the learning spaces, campus moments, and community that make up college life.",
+  ctaLabel: "View Gallery",
+};
+
+const facultyPreviewContent: CmsJson = {
+  eyebrow: "MEET OUR FACULTY",
+  headline: "Get to know the people who guide every next step",
+  description:
+    "Meet the teachers who support students with subject expertise, encouragement, and practical guidance.",
+  ctaLabel: "Meet Our Faculty",
+};
+
+async function seedFacultyAndGalleryPages(): Promise<void> {
+  await db.transaction(async (tx) => {
+    const [campusLife] = await tx
+      .select()
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "home"),
+          eq(contentSectionsTable.sectionKey, "campus-life"),
+        ),
+      )
+      .limit(1);
+    if (campusLife?.isVisible) {
+      await tx
+        .update(contentSectionsTable)
+        .set({ isVisible: false, updatedAt: new Date() })
+        .where(eq(contentSectionsTable.id, campusLife.id));
+    }
+
+    const [homeGallery] = await tx
+      .select()
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "home"),
+          eq(contentSectionsTable.sectionKey, "gallery"),
+        ),
+      )
+      .limit(1);
+    let galleryPageSection = (
+      await tx
+        .select()
+        .from(contentSectionsTable)
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "gallery"),
+            eq(contentSectionsTable.sectionKey, "gallery"),
+          ),
+        )
+        .limit(1)
+    )[0];
+
+    if (homeGallery && !galleryPageSection) {
+      const [moved] = await tx
+        .update(contentSectionsTable)
+        .set({ pageSlug: "gallery", updatedAt: new Date() })
+        .where(eq(contentSectionsTable.id, homeGallery.id))
+        .returning();
+      galleryPageSection = moved;
+    } else if (homeGallery && galleryPageSection) {
+      const galleryItems = await tx
+        .select()
+        .from(contentItemsTable)
+        .where(eq(contentItemsTable.sectionId, homeGallery.id))
+        .orderBy(asc(contentItemsTable.position));
+      const galleryExistingItems = await tx
+        .select({ position: contentItemsTable.position })
+        .from(contentItemsTable)
+        .where(eq(contentItemsTable.sectionId, galleryPageSection.id));
+      const nextPosition =
+        galleryExistingItems.length > 0
+          ? Math.max(...galleryExistingItems.map((item) => item.position)) + 1
+          : 0;
+      for (const [index, item] of galleryItems.entries()) {
+        await tx
+          .update(contentItemsTable)
+          .set({
+            sectionId: galleryPageSection.id,
+            position: nextPosition + index,
+            updatedAt: new Date(),
+          })
+          .where(eq(contentItemsTable.id, item.id));
+      }
+      await tx
+        .delete(contentSectionsTable)
+        .where(eq(contentSectionsTable.id, homeGallery.id));
+    }
+
+    if (!galleryPageSection) {
+      const [created] = await tx
+        .insert(contentSectionsTable)
+        .values({
+          pageSlug: "gallery",
+          sectionKey: "gallery",
+          title: "A closer look at Shastra",
+          subtitle: "Explore the places and moments that shape college life.",
+          content: { eyebrow: "Campus gallery" },
+          isVisible: true,
+          position: 0,
+        })
+        .onConflictDoNothing()
+        .returning();
+      galleryPageSection = created;
+    }
+
+    if (galleryPageSection) {
+      const gallerySectionContent =
+        galleryPageSection.content as Record<string, unknown>;
+      if (gallerySectionContent.gallerySeedCleanupVersion !== 2) {
+        const galleryItems = await tx
+          .select()
+          .from(contentItemsTable)
+          .where(eq(contentItemsTable.sectionId, galleryPageSection.id));
+        const firstBySignature = new Map<
+          string,
+          (typeof galleryItems)[number]
+        >();
+        for (const item of galleryItems) {
+          const itemContent = item.content as Record<string, unknown>;
+          const signature = JSON.stringify([
+            item.itemType,
+            item.title,
+            item.description,
+            item.imageUrl,
+            itemContent.category,
+          ]);
+          const firstItem = firstBySignature.get(signature);
+          if (!firstItem) {
+            firstBySignature.set(signature, item);
+            continue;
+          }
+          if (itemContent.isDemo === true) {
+            await tx
+              .update(contentItemsTable)
+              .set({ isVisible: false, updatedAt: new Date() })
+              .where(eq(contentItemsTable.id, item.id));
+          } else if (item.isVisible) {
+            await tx
+              .update(contentItemsTable)
+              .set({ isVisible: false, updatedAt: new Date() })
+              .where(eq(contentItemsTable.id, item.id));
+          }
+          if (
+            (firstItem.content as Record<string, unknown>).isDemo === true &&
+            !firstItem.isVisible
+          ) {
+            await tx
+              .update(contentItemsTable)
+              .set({ isVisible: true, updatedAt: new Date() })
+              .where(eq(contentItemsTable.id, firstItem.id));
+          }
+        }
+        await tx
+          .update(contentSectionsTable)
+          .set({
+            content: {
+              ...gallerySectionContent,
+              gallerySeedCleanupVersion: 2,
+            },
+            updatedAt: new Date(),
+          })
+          .where(eq(contentSectionsTable.id, galleryPageSection.id));
+      }
+    }
+
+    const [existingHomeGalleryPreview] = await tx
+      .select({ id: contentSectionsTable.id })
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "home"),
+          eq(contentSectionsTable.sectionKey, "gallery-preview"),
+        ),
+      )
+      .limit(1);
+    if (!existingHomeGalleryPreview) {
+      await tx
+        .insert(contentSectionsTable)
+        .values({
+          pageSlug: "home",
+          sectionKey: "gallery-preview",
+          title: "A closer look at Shastra",
+          subtitle: "Explore the learning spaces, campus moments, and community that make up college life.",
+          content: galleryPreviewContent,
+          isVisible: true,
+          position: homeGallery?.position ?? 10,
+        })
+        .onConflictDoNothing();
+    }
+
+    const [existingHomeFacultyPreview] = await tx
+      .select({ id: contentSectionsTable.id })
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "home"),
+          eq(contentSectionsTable.sectionKey, "faculty-preview"),
+        ),
+      )
+      .limit(1);
+    if (!existingHomeFacultyPreview) {
+      await tx
+        .insert(contentSectionsTable)
+        .values({
+          pageSlug: "home",
+          sectionKey: "faculty-preview",
+          title: "Get to know the people who guide every next step",
+          subtitle:
+            "Meet the teachers who support students with subject expertise, encouragement, and practical guidance.",
+          content: facultyPreviewContent,
+          isVisible: true,
+          position: 12,
+        })
+        .onConflictDoNothing();
+    }
+
+    let [facultySection] = await tx
+      .select()
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "faculty"),
+          eq(contentSectionsTable.sectionKey, "faculty"),
+        ),
+      )
+      .limit(1);
+    if (!facultySection) {
+      [facultySection] = await tx
+        .insert(contentSectionsTable)
+        .values({
+          pageSlug: "faculty",
+          sectionKey: "faculty",
+          title: "Guidance that brings learning to life",
+          subtitle:
+            "Get to know the teachers who help students build strong foundations and take their next steps with confidence.",
+          content: facultySectionContent,
+          isVisible: true,
+          position: 0,
+        })
+        .onConflictDoNothing()
+        .returning();
+    }
+    if (!facultySection) return;
+
+    const facultyContent = isCmsRecord(facultySection.content)
+      ? facultySection.content
+      : {};
+    if (facultyContent.facultyProfilesSeedVersion === 2) return;
+
+    const existingProfiles = await tx
+      .select({ title: contentItemsTable.title })
+      .from(contentItemsTable)
+      .where(
+        and(
+          eq(contentItemsTable.sectionId, facultySection.id),
+          eq(contentItemsTable.itemType, "faculty-profile"),
+        ),
+      );
+    const existingNames = new Set(existingProfiles.map((item) => item.title));
+    const itemsToSeed = facultyProfiles
+      .filter((profile) => !existingNames.has(profile.name))
+      .map((profile, index) => ({
+        sectionId: facultySection.id,
+        itemType: "faculty-profile",
+        title: profile.name,
+        description: profile.shortDescription,
+        imageUrl: profile.imageUrl,
+        linkPath: null,
+        label: null,
+        content: {
+          professionalTitle: profile.professionalTitle,
+          shortDescription: profile.shortDescription,
+          qualifications: profile.qualifications,
+          subjectsTaught: [...profile.subjectsTaught],
+          experience: profile.experience,
+          biography: profile.biography,
+          socialLinks: {
+            linkedin: "",
+            facebook: "",
+            instagram: "",
+            website: "",
+          },
+          showOnHome: true,
+        },
+        isVisible: true,
+        position: existingProfiles.length + index,
+      }));
+    if (itemsToSeed.length) await tx.insert(contentItemsTable).values(itemsToSeed);
+    await tx
+      .update(contentSectionsTable)
+      .set({
+        content: {
+          ...facultyContent,
+          facultyProfilesSeedVersion: 2,
+          eyebrow:
+            typeof facultyContent.eyebrow === "string"
+              ? facultyContent.eyebrow
+              : facultySectionContent.eyebrow,
+          headline:
+            typeof facultyContent.headline === "string"
+              ? facultyContent.headline
+              : facultySectionContent.headline,
+          description:
+            typeof facultyContent.description === "string"
+              ? facultyContent.description
+              : facultySectionContent.description,
+        },
+        updatedAt: new Date(),
+      })
+      .where(eq(contentSectionsTable.id, facultySection.id));
   });
 }

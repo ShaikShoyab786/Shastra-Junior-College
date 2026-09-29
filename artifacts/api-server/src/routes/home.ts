@@ -1,12 +1,14 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { Router, type IRouter } from "express";
 import {
+  GetAdminCmsPageResponse,
   CreateContentItemBody,
   CreateContentItemResponse,
   CreateContentSectionBody,
   CreateContentSectionResponse,
   DeleteContentItemParams,
   DeleteContentSectionParams,
+  GetCmsPageResponse,
   GetAdminHomeResponse,
   GetAdminHomeSummaryResponse,
   GetHomePageResponse,
@@ -30,8 +32,20 @@ import { requireAdmin } from "../middlewares/requireAdmin";
 const router: IRouter = Router();
 const adminRouter: IRouter = Router();
 const homePageSlug = "home";
+const managedPageSlugs = ["home", "faculty", "gallery"] as const;
+const publicPageSlugs = ["faculty", "gallery"] as const;
+type ManagedPageSlug = (typeof managedPageSlugs)[number];
+type PublicPageSlug = (typeof publicPageSlugs)[number];
 
 type CmsRecord = Record<string, unknown>;
+
+function isManagedPageSlug(value: unknown): value is ManagedPageSlug {
+  return typeof value === "string" && managedPageSlugs.includes(value as ManagedPageSlug);
+}
+
+function isPublicPageSlug(value: unknown): value is PublicPageSlug {
+  return typeof value === "string" && publicPageSlugs.includes(value as PublicPageSlug);
+}
 
 function isSafeImageReference(value: string | null): boolean {
   if (value === null || value.trim() === "") {
@@ -107,7 +121,7 @@ function serializeItem(item: typeof contentItemsTable.$inferSelect) {
   };
 }
 
-async function loadHomePage(includeHidden: boolean) {
+async function loadCmsPage(pageSlug: ManagedPageSlug, includeHidden: boolean) {
   const [settings] = await db
     .select()
     .from(siteSettingsTable)
@@ -121,7 +135,7 @@ async function loadHomePage(includeHidden: boolean) {
   const allSections = await db
     .select()
     .from(contentSectionsTable)
-    .where(eq(contentSectionsTable.pageSlug, homePageSlug))
+    .where(eq(contentSectionsTable.pageSlug, pageSlug))
     .orderBy(asc(contentSectionsTable.position), asc(contentSectionsTable.createdAt));
   const sections = includeHidden
     ? allSections
@@ -147,7 +161,7 @@ async function loadHomePage(includeHidden: boolean) {
 }
 
 router.get("/home", async (req, res): Promise<void> => {
-  const content = await loadHomePage(false);
+  const content = await loadCmsPage(homePageSlug, false);
 
   if (!content) {
     req.log.error("Homepage settings are missing.");
@@ -165,10 +179,29 @@ router.get("/home", async (req, res): Promise<void> => {
   res.json(parsed.data);
 });
 
+router.get("/pages/:pageSlug", async (req, res): Promise<void> => {
+  if (!isPublicPageSlug(req.params.pageSlug)) {
+    res.status(404).json({ error: "Page not found." });
+    return;
+  }
+  const content = await loadCmsPage(req.params.pageSlug, false);
+  if (!content) {
+    res.status(404).json({ error: "Page not found." });
+    return;
+  }
+  const parsed = GetCmsPageResponse.safeParse(content);
+  if (!parsed.success) {
+    req.log.error({ errors: parsed.error.flatten() }, "Invalid public page response.");
+    res.status(500).json({ error: "Page content could not be loaded." });
+    return;
+  }
+  res.json(parsed.data);
+});
+
 adminRouter.use("/admin", requireAdmin);
 
 adminRouter.get("/admin/home", async (req, res): Promise<void> => {
-  const content = await loadHomePage(true);
+  const content = await loadCmsPage(homePageSlug, true);
   if (!content) {
     res.status(503).json({ error: "Homepage content is not ready." });
     return;
@@ -184,6 +217,25 @@ adminRouter.get("/admin/home", async (req, res): Promise<void> => {
     return;
   }
 
+  res.json(parsed.data);
+});
+
+adminRouter.get("/admin/pages/:pageSlug", async (req, res): Promise<void> => {
+  if (!isPublicPageSlug(req.params.pageSlug)) {
+    res.status(404).json({ error: "Page not found." });
+    return;
+  }
+  const content = await loadCmsPage(req.params.pageSlug, true);
+  if (!content) {
+    res.status(404).json({ error: "Page not found." });
+    return;
+  }
+  const parsed = GetAdminCmsPageResponse.safeParse(content);
+  if (!parsed.success) {
+    req.log.error({ errors: parsed.error.flatten() }, "Invalid admin page response.");
+    res.status(500).json({ error: "Page content could not be loaded." });
+    return;
+  }
   res.json(parsed.data);
 });
 
@@ -263,8 +315,8 @@ adminRouter.post("/admin/sections", async (req, res): Promise<void> => {
     return;
   }
 
-  if (parsed.data.pageSlug !== homePageSlug) {
-    res.status(400).json({ error: "This editor manages homepage sections only." });
+  if (!isManagedPageSlug(parsed.data.pageSlug)) {
+    res.status(400).json({ error: "Choose Home, Faculty, or Gallery as the page." });
     return;
   }
 
@@ -310,8 +362,8 @@ adminRouter.patch("/admin/sections/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  if (parsed.data.pageSlug && parsed.data.pageSlug !== homePageSlug) {
-    res.status(400).json({ error: "This editor manages homepage sections only." });
+  if (parsed.data.pageSlug && !isManagedPageSlug(parsed.data.pageSlug)) {
+    res.status(400).json({ error: "Choose Home, Faculty, or Gallery as the page." });
     return;
   }
   if (
@@ -331,15 +383,24 @@ adminRouter.patch("/admin/sections/:id", async (req, res): Promise<void> => {
     }
   }
 
+  const [existingSection] = await db
+    .select({ id: contentSectionsTable.id, pageSlug: contentSectionsTable.pageSlug })
+    .from(contentSectionsTable)
+    .where(eq(contentSectionsTable.id, params.data.id))
+    .limit(1);
+  if (!existingSection || !isManagedPageSlug(existingSection.pageSlug)) {
+    res.status(404).json({ error: "Section not found." });
+    return;
+  }
+  if (parsed.data.pageSlug && parsed.data.pageSlug !== existingSection.pageSlug) {
+    res.status(400).json({ error: "Sections cannot be moved between pages." });
+    return;
+  }
+
   const [updated] = await db
     .update(contentSectionsTable)
     .set({ ...parsed.data, updatedAt: new Date() })
-    .where(
-      and(
-        eq(contentSectionsTable.id, params.data.id),
-        eq(contentSectionsTable.pageSlug, homePageSlug),
-      ),
-    )
+    .where(eq(contentSectionsTable.id, existingSection.id))
     .returning();
   if (!updated) {
     res.status(404).json({ error: "Section not found." });
@@ -361,7 +422,7 @@ adminRouter.delete("/admin/sections/:id", async (req, res): Promise<void> => {
     .where(
       and(
         eq(contentSectionsTable.id, params.data.id),
-        eq(contentSectionsTable.pageSlug, homePageSlug),
+        inArray(contentSectionsTable.pageSlug, [...managedPageSlugs]),
       ),
     )
     .returning({ id: contentSectionsTable.id });
@@ -386,7 +447,7 @@ adminRouter.post("/admin/items", async (req, res): Promise<void> => {
     .where(
       and(
         eq(contentSectionsTable.id, parsed.data.sectionId),
-        eq(contentSectionsTable.pageSlug, homePageSlug),
+        inArray(contentSectionsTable.pageSlug, [...managedPageSlugs]),
       ),
     )
     .limit(1);
@@ -440,7 +501,7 @@ adminRouter.patch("/admin/items/:id", async (req, res): Promise<void> => {
       .where(
         and(
           eq(contentSectionsTable.id, parsed.data.sectionId),
-          eq(contentSectionsTable.pageSlug, homePageSlug),
+        inArray(contentSectionsTable.pageSlug, [...managedPageSlugs]),
         ),
       )
       .limit(1);
@@ -480,7 +541,7 @@ adminRouter.patch("/admin/items/:id", async (req, res): Promise<void> => {
     .where(
       and(
         eq(contentItemsTable.id, params.data.id),
-        eq(contentSectionsTable.pageSlug, homePageSlug),
+        inArray(contentSectionsTable.pageSlug, [...managedPageSlugs]),
       ),
     )
     .limit(1);
@@ -515,7 +576,7 @@ adminRouter.delete("/admin/items/:id", async (req, res): Promise<void> => {
     .where(
       and(
         eq(contentItemsTable.id, params.data.id),
-        eq(contentSectionsTable.pageSlug, homePageSlug),
+        inArray(contentSectionsTable.pageSlug, [...managedPageSlugs]),
       ),
     )
     .limit(1);

@@ -74,6 +74,66 @@ export const GetHomePageResponse = zod.object({
 
 
 /**
+ * @summary Get published Faculty or Gallery content
+ */
+export const GetCmsPageParams = zod.object({
+  "pageSlug": zod.enum(['faculty', 'gallery'])
+})
+
+export const getCmsPageResponseSettingsNavigationItemLabelMax = 80;
+
+export const getCmsPageResponseSettingsNavigationItemPathMax = 200;
+
+export const getCmsPageResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getCmsPageResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+
+
+export const GetCmsPageResponse = zod.object({
+  "settings": zod.object({
+  "id": zod.string(),
+  "collegeName": zod.string(),
+  "headerTagline": zod.string(),
+  "logoUrl": zod.string().nullable(),
+  "navigation": zod.array(zod.object({
+  "label": zod.string().min(1).max(getCmsPageResponseSettingsNavigationItemLabelMax),
+  "path": zod.string().min(1).max(getCmsPageResponseSettingsNavigationItemPathMax)
+})),
+  "footerNote": zod.string(),
+  "primaryColor": zod.string().regex(getCmsPageResponseSettingsPrimaryColorRegExp),
+  "accentColor": zod.string().regex(getCmsPageResponseSettingsAccentColorRegExp),
+  "updatedAt": zod.coerce.date()
+}),
+  "sections": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "pageSlug": zod.string(),
+  "sectionKey": zod.string(),
+  "title": zod.string(),
+  "subtitle": zod.string().nullable(),
+  "content": zod.record(zod.string(), zod.unknown()),
+  "isVisible": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "items": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "sectionId": zod.string().uuid(),
+  "itemType": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "linkPath": zod.string().nullable(),
+  "label": zod.string().nullable(),
+  "content": zod.record(zod.string(), zod.unknown()),
+  "isVisible": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+/**
  * @summary Submit a public admissions enquiry
  */
 export const createEnquiryBodyValuesMaxOne = 1000;
@@ -180,6 +240,66 @@ export const GetAdminHomeResponse = zod.object({
   "footerNote": zod.string(),
   "primaryColor": zod.string().regex(getAdminHomeResponseSettingsPrimaryColorRegExp),
   "accentColor": zod.string().regex(getAdminHomeResponseSettingsAccentColorRegExp),
+  "updatedAt": zod.coerce.date()
+}),
+  "sections": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "pageSlug": zod.string(),
+  "sectionKey": zod.string(),
+  "title": zod.string(),
+  "subtitle": zod.string().nullable(),
+  "content": zod.record(zod.string(), zod.unknown()),
+  "isVisible": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "items": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "sectionId": zod.string().uuid(),
+  "itemType": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "linkPath": zod.string().nullable(),
+  "label": zod.string().nullable(),
+  "content": zod.record(zod.string(), zod.unknown()),
+  "isVisible": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Get Faculty or Gallery content for authorized staff
+ */
+export const GetAdminCmsPageParams = zod.object({
+  "pageSlug": zod.enum(['faculty', 'gallery'])
+})
+
+export const getAdminCmsPageResponseSettingsNavigationItemLabelMax = 80;
+
+export const getAdminCmsPageResponseSettingsNavigationItemPathMax = 200;
+
+export const getAdminCmsPageResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminCmsPageResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+
+
+export const GetAdminCmsPageResponse = zod.object({
+  "settings": zod.object({
+  "id": zod.string(),
+  "collegeName": zod.string(),
+  "headerTagline": zod.string(),
+  "logoUrl": zod.string().nullable(),
+  "navigation": zod.array(zod.object({
+  "label": zod.string().min(1).max(getAdminCmsPageResponseSettingsNavigationItemLabelMax),
+  "path": zod.string().min(1).max(getAdminCmsPageResponseSettingsNavigationItemPathMax)
+})),
+  "footerNote": zod.string(),
+  "primaryColor": zod.string().regex(getAdminCmsPageResponseSettingsPrimaryColorRegExp),
+  "accentColor": zod.string().regex(getAdminCmsPageResponseSettingsAccentColorRegExp),
   "updatedAt": zod.coerce.date()
 }),
   "sections": zod.array(zod.object({

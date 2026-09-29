@@ -10,9 +10,11 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import {
+  getGetCmsPageQueryKey,
   getGetAdminEnquiriesQueryKey,
   getGetHomePageQueryKey,
   useCreateEnquiry,
+  useGetCmsPage,
   useGetHomePage,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,19 +23,19 @@ import type {
   ContentSection,
   HomePage,
 } from "@workspace/api-client-react";
-import {
-  getGalleryCategories,
-  normalizeGalleryCategory,
-} from "../lib/gallery-categories";
 import PlacementRecordsSection from "./placement-records-section";
 
 const logoPath = "/shastra-college-logo.png";
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 type UnknownRecord = Record<string, unknown>;
 
 function collegeLogo(path?: string | null) {
-  if (!path) return logoPath;
-  return path.startsWith("/objects/") ? `/api/storage${path}` : path;
+  if (!path) return `${basePath}${logoPath}`;
+  if (path.startsWith("/objects/")) return `/api/storage${path}`;
+  return path.startsWith("/") && basePath && !path.startsWith(`${basePath}/`)
+    ? `${basePath}${path}`
+    : path;
 }
 
 type EnquiryField = {
@@ -125,9 +127,7 @@ function Logo({ home }: { home?: HomePage }) {
 export function Header({ home }: { home?: HomePage }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const cmsNavigation = home?.settings.navigation || [];
-  const navigation = cmsNavigation.some((link) => link.path === "/gallery")
-    ? cmsNavigation
-    : [...cmsNavigation, { label: "Gallery", path: "/gallery" }];
+  const navigation = publicNavigation(cmsNavigation);
 
   return (
     <header
@@ -191,11 +191,51 @@ export function Header({ home }: { home?: HomePage }) {
   );
 }
 
+function publicNavigation(
+  links: Array<{ label: string; path: string }>,
+): Array<{ label: string; path: string }> {
+  const campusIndex = links.findIndex(
+    (link) =>
+      link.path === "/campus-life" || /campus life/i.test(link.label),
+  );
+  const retainedBeforeCampus =
+    campusIndex < 0
+      ? -1
+      : links
+          .slice(0, campusIndex)
+          .filter(
+            (link) =>
+              link.path !== "/faculty" &&
+              link.path !== "/gallery" &&
+              link.path !== "/sign-in" &&
+              !/staff login/i.test(link.label),
+          ).length;
+  const navigation = links.filter(
+    (link) =>
+      link.path !== "/campus-life" &&
+      link.path !== "/faculty" &&
+      link.path !== "/gallery" &&
+      link.path !== "/sign-in" &&
+      !/campus life|staff login/i.test(link.label),
+  );
+  const homeIndex = navigation.findIndex((link) => link.path === "/");
+  const insertAt =
+    retainedBeforeCampus >= 0
+      ? Math.min(retainedBeforeCampus, navigation.length)
+      : homeIndex >= 0
+        ? homeIndex + 1
+        : 0;
+  navigation.splice(
+    insertAt,
+    0,
+    { label: "Faculty", path: "/faculty" },
+    { label: "Gallery", path: "/gallery" },
+  );
+  return navigation;
+}
+
 export function Footer({ home }: { home: HomePage }) {
-  const cmsNavigation = home.settings.navigation;
-  const navigation = cmsNavigation.some((link) => link.path === "/gallery")
-    ? cmsNavigation
-    : [...cmsNavigation, { label: "Gallery", path: "/gallery" }];
+  const navigation = publicNavigation(home.settings.navigation);
   return (
     <footer className="bg-[#082859] px-5 py-10 text-white sm:px-8 sm:py-12">
       <div className="mx-auto flex max-w-7xl flex-col gap-7 sm:flex-row sm:items-end sm:justify-between">
@@ -881,203 +921,123 @@ function StatisticsBar({
   );
 }
 
-function GalleryPreviewSection({ home }: { home: HomePage }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const sectionRef = useRef<HTMLElement>(null);
-  const [inView, setInView] = useState(false);
-  const section = home.sections.find(
-    (candidate) =>
-      candidate.sectionKey.toLowerCase() === "gallery" && candidate.isVisible,
-  );
-  const featuredItems = useMemo(() => {
-    if (!section) return [];
-    const itemsByCategory = new Map<string, ContentItem>();
-    const galleryItems = home.items.filter(
-      (item) =>
-        item.sectionId === section.id && item.itemType === "gallery-image",
-    );
-    const categoryOrder = getGalleryCategories(section.content, galleryItems);
-    const ordered = galleryItems
-      .filter(
-        (item) =>
-          item.isVisible &&
-          item.imageUrl &&
-          isRecord(item.content) &&
-          item.content.showOnHome === true,
-      )
-      .sort((a, b) => a.position - b.position);
-
-    for (const item of ordered) {
-      const content = isRecord(item.content) ? item.content : {};
-      const itemCategory = normalizeGalleryCategory(
-        stringValue(content, ["category"]),
-      );
-      const category = itemCategory
-        ? categoryOrder.find(
-            (candidate) =>
-              candidate.toLocaleLowerCase() === itemCategory.toLocaleLowerCase(),
-          )
-        : undefined;
-      if (category && !itemsByCategory.has(category)) {
-        itemsByCategory.set(category, item);
-      }
-    }
-
-    return categoryOrder.flatMap((category) => {
-      const item = itemsByCategory.get(category);
-      return item ? [{ item, category }] : [];
-    });
-  }, [home.items, section]);
-  const content = section?.content ?? {};
-  const eyebrow = stringValue(content, ["eyebrow"], "Life at Shastra");
-  const heading = section?.title || "A closer look at campus life";
-  const description =
-    section?.subtitle ||
-    "Explore the spaces, people, and moments that make a college community.";
-
-  useEffect(() => {
-    const sectionElement = sectionRef.current;
-    if (!sectionElement) return;
-    if (typeof IntersectionObserver === "undefined") {
-      setInView(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
-      { threshold: 0.15 },
-    );
-    observer.observe(sectionElement);
-    return () => observer.disconnect();
-  }, [featuredItems.length > 0, section?.id]);
-
-  useEffect(() => {
-    if (!inView || featuredItems.length < 2) return;
-
-    const interval = window.setInterval(() => {
-      if (document.visibilityState === "hidden") return;
-      const track = trackRef.current;
-      if (!track || track.scrollWidth <= track.clientWidth + 8) return;
-      const slide = track.querySelector<HTMLElement>("[data-gallery-slide]");
-      const gap = Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
-      const step =
-        (slide?.getBoundingClientRect().width || track.clientWidth / 3) + gap;
-      const maxScroll = track.scrollWidth - track.clientWidth;
-      const atEnd = track.scrollLeft >= maxScroll - 8;
-      const nextLeft = atEnd ? 0 : Math.min(track.scrollLeft + step, maxScroll);
-      track.scrollTo({
-        left: nextLeft,
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "auto"
-          : "smooth",
-      });
-    }, 4200);
-
-    return () => window.clearInterval(interval);
-  }, [featuredItems.length, inView]);
-
-  if (!section || featuredItems.length === 0) return null;
-
+function GalleryPreviewSection({ section }: { section: ContentSection }) {
+  const content = isRecord(section.content) ? section.content : {};
   return (
     <section
-      ref={sectionRef}
       className="site-grid border-y border-[#0b3472]/10 bg-[#fbfaf6] px-5 py-12 sm:px-8 sm:py-16"
       aria-labelledby="homepage-gallery-title"
       data-testid="section-home-gallery-preview"
     >
+      <div className="mx-auto flex max-w-7xl flex-col justify-between gap-7 sm:flex-row sm:items-center">
+        <div className="max-w-2xl">
+          <p className="eyebrow text-[#e3212b]">
+            {stringValue(content, ["eyebrow"], "CAMPUS GALLERY")}
+          </p>
+          <h2
+            id="homepage-gallery-title"
+            className="mt-3 font-display text-3xl font-extrabold leading-tight tracking-tight text-[#0b3472] sm:text-4xl"
+          >
+            {section.title}
+          </h2>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+            {section.subtitle}
+          </p>
+        </div>
+        <Link
+          href="/gallery"
+          className="focus-ring inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#0b3472] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#e3212b]"
+          data-testid="link-home-gallery-all"
+        >
+          {stringValue(content, ["ctaLabel"], "View Gallery")}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function FacultyPreviewSection({
+  section,
+  profiles,
+}: {
+  section: ContentSection;
+  profiles: ContentItem[];
+}) {
+  const content = isRecord(section.content) ? section.content : {};
+  return (
+    <section
+      className="site-grid bg-white px-5 py-12 sm:px-8 sm:py-16"
+      aria-labelledby="homepage-faculty-title"
+      data-testid="section-home-faculty-preview"
+    >
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
           <div className="max-w-2xl">
-            <p className="eyebrow text-[#e3212b]">{eyebrow}</p>
+            <p className="eyebrow text-[#e3212b]">
+              {stringValue(content, ["eyebrow"], "MEET OUR FACULTY")}
+            </p>
             <h2
-              id="homepage-gallery-title"
+              id="homepage-faculty-title"
               className="mt-3 font-display text-3xl font-extrabold leading-tight tracking-tight text-[#0b3472] sm:text-4xl"
             >
-              {heading}
+              {section.title}
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
-              {description}
+              {section.subtitle}
             </p>
           </div>
-          <div className="shrink-0">
-            <span className="text-xs font-semibold text-slate-500">
-              {featuredItems.length} featured{" "}
-              {featuredItems.length === 1 ? "image" : "images"}
-            </span>
-          </div>
+          <Link
+            href="/faculty"
+            className="focus-ring inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-[#0b3472]/20 px-6 py-3 text-sm font-bold text-[#0b3472] transition hover:border-[#e3212b] hover:text-[#e3212b]"
+            data-testid="link-home-faculty-all"
+          >
+            {stringValue(content, ["ctaLabel"], "Meet Our Faculty")}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
-
-        <div
-          ref={trackRef}
-          className="mt-8 grid auto-cols-[84%] grid-flow-col gap-4 overflow-x-auto overscroll-x-contain scroll-smooth snap-x snap-mandatory pb-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden motion-reduce:scroll-auto sm:auto-cols-[calc((100%_-_1rem)/2)] lg:auto-cols-[calc((100%_-_2rem)/3)]"
-          role="region"
-          aria-label="Featured gallery"
-          aria-roledescription="carousel"
-          aria-live="off"
-          data-testid="track-home-gallery-preview"
-        >
-          {featuredItems.map(({ item, category }, index) => {
-            const itemContent = isRecord(item.content) ? item.content : {};
-            const altText = stringValue(itemContent, ["altText"], item.title);
-            return (
-              <article
-                key={item.id}
-                className="min-w-0 snap-start"
-                role="group"
-                aria-roledescription="slide"
-                aria-label={`${index + 1} of ${featuredItems.length}: ${category}`}
-                data-gallery-slide
-                data-testid={`card-home-gallery-${item.id}`}
-              >
+        {profiles.length ? (
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {profiles.map((profile) => {
+              const profileContent = isRecord(profile.content)
+                ? profile.content
+                : {};
+              return (
                 <Link
-                  href="/gallery"
-                  className="group block h-full overflow-hidden rounded-[1.5rem] border border-[#0b3472]/10 bg-white shadow-[0_10px_26px_rgba(11,52,114,.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(11,52,114,.12)]"
-                  aria-label={`${category}: ${item.title}. Open the full gallery.`}
+                  key={profile.id}
+                  href="/faculty"
+                  className="group overflow-hidden rounded-2xl border border-[#0b3472]/10 bg-[#fbfaf6] transition hover:-translate-y-1 hover:shadow-lg"
                 >
                   <div className="aspect-[4/3] overflow-hidden bg-[#e8edf4]">
                     <img
-                      src={collegeLogo(item.imageUrl)}
-                      alt={altText}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                      src={collegeLogo(profile.imageUrl)}
+                      alt=""
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                       loading="lazy"
                     />
                   </div>
                   <div className="p-5">
-                    <p className="eyebrow text-[#e3212b]">{category}</p>
-                    <h3 className="mt-2 truncate font-display text-xl font-extrabold text-[#0b3472]">
-                      {item.title}
+                    <h3 className="font-display text-lg font-extrabold text-[#0b3472]">
+                      {profile.title}
                     </h3>
-                    {item.description ? (
-                      <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">
-                        {item.description}
-                      </p>
-                    ) : null}
+                    <p className="mt-1 text-sm font-semibold text-[#e3212b]">
+                      {stringValue(profileContent, ["professionalTitle"])}
+                    </p>
                   </div>
                 </Link>
-              </article>
-            );
-          })}
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-          <p className="text-xs text-slate-500">
-            One selected image from each featured category.
-          </p>
-          <Link
-            href="/gallery"
-            className="focus-ring inline-flex items-center gap-2 rounded-full px-1 py-2 text-sm font-bold text-[#0b3472] transition hover:text-[#e3212b]"
-            data-testid="link-home-gallery-all"
-          >
-            Explore the full gallery
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
     </section>
   );
 }
 
 function PageSections({ home }: { home: HomePage }) {
+  const facultyPage = useGetCmsPage("faculty", {
+    query: { queryKey: getGetCmsPageQueryKey("faculty") },
+  });
   const sections = useMemo(() => {
     const visible = home.sections.filter((section) => section.isVisible);
     const byKey = new Map<string, ContentSection>();
@@ -1121,6 +1081,31 @@ function PageSections({ home }: { home: HomePage }) {
         )
         .sort((a, b) => a.position - b.position)
     : [];
+  const galleryPreviewSection = home.sections.find(
+    (section) =>
+      section.sectionKey.toLowerCase() === "gallery-preview" &&
+      section.isVisible,
+  );
+  const facultyPreviewSection = home.sections.find(
+    (section) =>
+      section.sectionKey.toLowerCase() === "faculty-preview" &&
+      section.isVisible,
+  );
+  const facultyPageSection = facultyPage.data?.sections.find(
+    (section) => section.sectionKey.toLowerCase() === "faculty" && section.isVisible,
+  );
+  const facultyPreviewProfiles = facultyPageSection
+    ? (facultyPage.data?.items ?? [])
+        .filter(
+          (item) =>
+            item.sectionId === facultyPageSection.id &&
+            item.itemType === "faculty-profile" &&
+            item.isVisible &&
+            isRecord(item.content) &&
+            item.content.showOnHome === true,
+        )
+        .sort((a, b) => a.position - b.position)
+    : [];
 
   return (
     <main className="flex flex-col" data-testid="homepage-sections">
@@ -1134,13 +1119,19 @@ function PageSections({ home }: { home: HomePage }) {
         }
         return <StatisticsBar key={section.id} section={section} items={items} />;
       })}
-      {sections.some(
-        (section) => section.sectionKey.toLowerCase() === "statistics",
-      ) ? <GalleryPreviewSection home={home} /> : null}
+      {galleryPreviewSection ? (
+        <GalleryPreviewSection section={galleryPreviewSection} />
+      ) : null}
       {placementSection ? (
         <PlacementRecordsSection
           section={placementSection}
           items={placementItems}
+        />
+      ) : null}
+      {facultyPreviewSection ? (
+        <FacultyPreviewSection
+          section={facultyPreviewSection}
+          profiles={facultyPreviewProfiles}
         />
       ) : null}
     </main>

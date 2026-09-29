@@ -9,6 +9,7 @@
 export * from './adminEnquiries';
 export * from './adminEnquiry';
 export * from './adminHomeSummary';
+export * from './cmsPage';
 export * from './contentItem';
 export * from './contentItemInput';
 export * from './contentItemUpdate';

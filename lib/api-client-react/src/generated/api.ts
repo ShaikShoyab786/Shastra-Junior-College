@@ -23,6 +23,7 @@ import type {
   AdminEnquiries,
   AdminEnquiry,
   AdminHomeSummary,
+  CmsPage,
   ContentItem,
   ContentItemInput,
   ContentItemUpdate,
@@ -212,6 +213,83 @@ export function useGetHomePage<TData = Awaited<ReturnType<typeof getHomePage>>, 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetHomePageQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetCmsPageUrl = (pageSlug: 'faculty' | 'gallery',) => {
+
+
+
+
+  return `/api/pages/${pageSlug}`
+}
+
+/**
+ * @summary Get published Faculty or Gallery content
+ */
+export const getCmsPage = async (pageSlug: 'faculty' | 'gallery', options?: Parameters<typeof customFetch>[1]): Promise<CmsPage> => {
+
+  return customFetch<CmsPage>(getGetCmsPageUrl(pageSlug),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCmsPageQueryKey = (pageSlug: 'faculty' | 'gallery',) => {
+    return [
+    `/api/pages/${pageSlug}`
+    ] as const;
+    }
+
+
+export const getGetCmsPageQueryOptions = <TData = Awaited<ReturnType<typeof getCmsPage>>, TError = ErrorType<void>>(pageSlug: 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCmsPageQueryKey(pageSlug);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCmsPage>>> = ({ signal }) => getCmsPage(pageSlug, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: pageSlug !== null && pageSlug !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCmsPageQueryResult = NonNullable<Awaited<ReturnType<typeof getCmsPage>>>
+export type GetCmsPageQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get published Faculty or Gallery content
+ */
+
+export function useGetCmsPage<TData = Awaited<ReturnType<typeof getCmsPage>>, TError = ErrorType<void>>(
+ pageSlug: 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCmsPageQueryOptions(pageSlug,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -691,6 +769,83 @@ export function useGetAdminHome<TData = Awaited<ReturnType<typeof getAdminHome>>
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetAdminHomeQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminCmsPageUrl = (pageSlug: 'faculty' | 'gallery',) => {
+
+
+
+
+  return `/api/admin/pages/${pageSlug}`
+}
+
+/**
+ * @summary Get Faculty or Gallery content for authorized staff
+ */
+export const getAdminCmsPage = async (pageSlug: 'faculty' | 'gallery', options?: Parameters<typeof customFetch>[1]): Promise<CmsPage> => {
+
+  return customFetch<CmsPage>(getGetAdminCmsPageUrl(pageSlug),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminCmsPageQueryKey = (pageSlug: 'faculty' | 'gallery',) => {
+    return [
+    `/api/admin/pages/${pageSlug}`
+    ] as const;
+    }
+
+
+export const getGetAdminCmsPageQueryOptions = <TData = Awaited<ReturnType<typeof getAdminCmsPage>>, TError = ErrorType<void>>(pageSlug: 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminCmsPageQueryKey(pageSlug);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminCmsPage>>> = ({ signal }) => getAdminCmsPage(pageSlug, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: pageSlug !== null && pageSlug !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminCmsPageQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminCmsPage>>>
+export type GetAdminCmsPageQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get Faculty or Gallery content for authorized staff
+ */
+
+export function useGetAdminCmsPage<TData = Awaited<ReturnType<typeof getAdminCmsPage>>, TError = ErrorType<void>>(
+ pageSlug: 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminCmsPageQueryOptions(pageSlug,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

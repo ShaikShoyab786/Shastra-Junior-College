@@ -33,10 +33,12 @@ import {
   X,
 } from "lucide-react";
 import {
+  getGetAdminCmsPageQueryKey,
   getGetAdminEnquiriesQueryKey,
   getGetAdminHomeQueryKey,
   useDeleteEnquiry,
   useGetAdminEnquiries,
+  useGetAdminCmsPage,
   useGetAdminHome,
   useRequestUploadUrl,
   useRestoreEnquiry,
@@ -51,6 +53,7 @@ import type {
 import { Link } from "wouter";
 import AdminHomeEditor from "./admin-home-editor";
 import AdminGalleryEditor from "./admin-gallery-editor";
+import AdminFacultyEditor from "./admin-faculty-editor";
 import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
 
 type Flash = {
@@ -64,6 +67,8 @@ type WorkspaceView =
   | "programs"
   | "statistics"
   | "placement-records"
+  | "gallery-preview"
+  | "faculty-preview"
   | "identity"
   | "about"
   | "results"
@@ -73,8 +78,9 @@ type WorkspaceView =
 
 const pageItems: Array<{ key: WorkspaceView; label: string; note?: string }> = [
   { key: "about", label: "About", note: "Coming soon" },
+  { key: "faculty", label: "Faculty" },
+  { key: "gallery", label: "Gallery" },
   { key: "results", label: "Results", note: "Coming soon" },
-  { key: "faculty", label: "Faculty", note: "Coming soon" },
   { key: "courses", label: "Courses", note: "Coming soon" },
 ];
 
@@ -290,7 +296,8 @@ function Shell({
     activeView === "hero" ||
     activeView === "programs" ||
     activeView === "statistics" ||
-    activeView === "gallery" ||
+    activeView === "gallery-preview" ||
+    activeView === "faculty-preview" ||
     activeView === "placement-records";
   const activePage =
     activeView === "dashboard"
@@ -313,9 +320,12 @@ function Shell({
               ? "Home · Statistics"
               : activeView === "placement-records"
                 ? "Home · Placement Record"
-                : activeView === "gallery"
-                   ? "Home · Gallery Preview"
-                  : pageItems.find((item) => item.key === activeView)?.label || "Home";
+                  : activeView === "gallery-preview"
+                    ? "Home · Gallery Preview"
+                    : activeView === "faculty-preview"
+                      ? "Home · Faculty Preview"
+                      : pageItems.find((item) => item.key === activeView)?.label ||
+                        "Home";
 
   const go = (view: WorkspaceView) => {
     onNavigate(view);
@@ -390,8 +400,9 @@ function Shell({
                       <NavRow icon={FileText} label="Hero" nested active={activeView === "hero"} onClick={() => go("hero")} />
                       <NavRow icon={Link2} label="Pathways" nested active={activeView === "programs"} onClick={() => go("programs")} />
                       <NavRow icon={ClipboardList} label="Statistics" nested active={activeView === "statistics"} onClick={() => go("statistics")} />
-                      <NavRow icon={ImagePlus} label="Gallery Preview" nested active={activeView === "gallery"} onClick={() => go("gallery")} />
+                       <NavRow icon={ImagePlus} label="Gallery Preview" nested active={activeView === "gallery-preview"} onClick={() => go("gallery-preview")} />
                       <NavRow icon={ClipboardList} label="Placement Record" nested active={activeView === "placement-records"} onClick={() => go("placement-records")} />
+                       <NavRow icon={UserRound} label="Faculty Preview" nested active={activeView === "faculty-preview"} onClick={() => go("faculty-preview")} />
                     </div>
                   ) : null}
                 </div>
@@ -752,6 +763,9 @@ function AccessDenied({ userId, error }: { userId?: string; error: unknown }) {
 function AdminWorkspace() {
   const { user } = useUser();
   const admin = useGetAdminHome();
+  const galleryPage = useGetAdminCmsPage("gallery", {
+    query: { queryKey: getGetAdminCmsPageQueryKey("gallery") },
+  });
   const enquiries = useGetAdminEnquiries();
   const [activeView, setActiveView] = useState<WorkspaceView>("dashboard");
   const [flash, setFlash] = useState<Flash>(null);
@@ -795,14 +809,20 @@ function AdminWorkspace() {
   } else if (
     activeView === "hero" ||
     activeView === "programs" ||
-    activeView === "statistics"
+    activeView === "statistics" ||
+    activeView === "faculty-preview" ||
+    activeView === "gallery-preview"
   ) {
     const sectionName =
       activeView === "programs"
         ? "Pathways"
         : activeView === "statistics"
           ? "Statistics"
-          : "Hero";
+          : activeView === "faculty-preview"
+            ? "Faculty Preview"
+            : activeView === "gallery-preview"
+              ? "Gallery Preview"
+              : "Hero";
     body = (
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
         <PageIntro
@@ -814,6 +834,7 @@ function AdminWorkspace() {
           home={home}
           onFlash={showFlash}
           sectionKey={activeView}
+          onNavigate={setActiveView}
         />
       </div>
     );
@@ -821,11 +842,33 @@ function AdminWorkspace() {
     body = (
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
         <PageIntro
-          eyebrow="Pages / Home / Gallery Preview"
-          title="Manage the gallery and Home preview."
-          description="Manage the public gallery collection and choose which images appear in the Home page preview."
+          eyebrow="Pages / Gallery"
+          title="Manage the campus gallery."
+          description="Add and organize published campus photos, captions, and categories."
         />
-        <AdminGalleryEditor home={home} onFlash={showFlash} />
+        {galleryPage.isLoading ? (
+          <div className="mt-6 h-72 animate-pulse rounded-3xl bg-white" />
+        ) : galleryPage.isError || !galleryPage.data ? (
+          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-5">
+            <p className="font-bold text-red-800">Gallery editor could not load.</p>
+            <button
+              type="button"
+              onClick={() => void galleryPage.refetch()}
+              className="mt-3 rounded-lg bg-[#0B3472] px-3 py-2 text-sm font-bold text-white"
+              data-testid="button-retry-admin-gallery"
+            >
+              Try again
+            </button>
+          </div>
+        ) : (
+          <AdminGalleryEditor page={galleryPage.data} onFlash={showFlash} />
+        )}
+      </div>
+    );
+  } else if (activeView === "faculty") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <AdminFacultyEditor />
       </div>
     );
   } else if (activeView === "placement-records") {
