@@ -1,0 +1,65 @@
+Implement the Faculty and Gallery page updates below. Keep the work scoped to these pages and their Admin settings; do not redesign unrelated pages.
+
+PAGES AND NAVIGATION
+- Remove Campus Life from the public site and navigation. Replace its position with Faculty.
+- In Admin → Pages, add Faculty as a manageable page immediately beneath About.
+- Add a separate Gallery page immediately beneath Faculty in the page/navigation order.
+- Keep the existing About, Results, Courses, Home, and Staff Login behavior intact.
+- Remove any Campus Life menu links or routes. If its existing content must be retained, archive it rather than permanently deleting it.
+
+FACULTY PAGE
+- Create a polished Faculty page using Shastra Junior College’s navy, red, and light-neutral theme. Use the attached reference only for the idea of faculty cards opening a detailed profile—not for its colors or styling.
+- Show a responsive grid of faculty cards with a portrait, name, professional title/subject, and a short description.
+- Clicking a card or its profile button should open an attractive, accessible profile modal/drawer with a larger photo, name, title, qualifications, subjects taught, experience, full biography, and social links.
+- Include close button, Escape-key support, sensible focus behavior, and a layout that works on mobile.
+- Seed four complete, editable demo profiles with distinct demo portraits and natural names—not generic “Faculty 1” placeholders. For example:
+  - Dr. Ananya Rao — Mathematics
+  - Mr. Kiran Reddy — Physics
+  - Ms. Meera Nair — Chemistry
+  - Mr. Arjun Sharma — Biology
+- Add plausible editable qualifications, experience, and biographies for these demo profiles.
+- Leave social-link fields empty initially. Admin can add them later; hide social icons on the public profile when no link is set.
+- Do not show public “demo,” “sample,” or verification-warning labels.
+
+ADMIN MANAGEMENT
+- Make Faculty a parent item under Admin → Pages and provide full management controls: add, edit, delete, reorder, publish/unpublish, portrait upload, and editing for every profile field and social URL.
+- Persist all profiles and changes using the existing backend/data system. Do not hardcode profile data into the page component.
+- Seed the four profiles once, without duplicating them or overwriting admin edits on later app starts.
+- Include confirmation before deleting a profile.
+
+SEPARATE GALLERY PAGE
+- Create a standalone Gallery page directly beneath Faculty in the page/navigation order.
+- Keep Gallery content on that page, with Admin controls to add, edit, delete, reorder, publish/unpublish, and manage image captions or categories.
+- Remove the gallery image grid from the Home page’s Gallery Preview. Replace it with a clean, compact section containing a “View Gallery” button that navigates to the new Gallery page. Do not show thumbnails or duplicate gallery content on Home.
+
+Finish by checking public navigation, page order, Faculty card-to-profile interaction, social links, Admin persistence, and the Home “View Gallery” destination at desktop and mobile widths.
+
+ADDITIONAL UPDATE: HOME FACULTY PREVIEW AND GALLERY PREVIEW SETTINGS
+
+Apply these additions to the Faculty/Gallery implementation. Preserve the existing Shastra theme and previously requested page behavior.
+
+HOME PAGE ORDER
+- Place the Faculty Preview section immediately beneath Global Placement Record.
+- Keep the existing Gallery Preview in its current position; do not move or duplicate it.
+
+FACULTY HOME PREVIEW
+- In each faculty profile’s Admin settings, add a persistent “Show on Home Preview” checkbox.
+- Only published faculty profiles with this box checked should appear in the Home Faculty Preview. Checking or unchecking a profile must update the Home page without creating a separate copy of that profile.
+- Seed the four demo faculty profiles with this option enabled so the preview is populated initially.
+- Show their existing faculty photos and profile information in a polished, responsive card layout that matches the Shastra theme. Do not add a separate image upload or duplicate faculty editor under Home.
+- Include a clear button such as “Meet Our Faculty” that opens the Faculty page.
+
+HOME PREVIEW SETTINGS
+- Under Admin → Pages → Home → Faculty Preview, allow editing only the eyebrow text, heading, supporting description, and CTA label.
+- Add a “Manage Faculty” shortcut that opens Admin → Pages → Faculty. Profile details, photos, social links, and the “Show on Home Preview” checkbox must be managed there—not duplicated in Home settings.
+- Use polished default copy rather than blank fields or generic placeholders.
+
+GALLERY PREVIEW SETTINGS
+- Apply the same separation of responsibilities to Home → Gallery Preview: allow editing its eyebrow, heading, supporting description, and CTA label.
+- Keep gallery images and gallery management on Admin → Pages → Gallery, with a “Manage Gallery” shortcut from the Home preview settings.
+- Preserve the earlier requirement that the Home Gallery Preview contains no gallery image grid. It should present the section copy and a button that opens the separate Gallery page.
+
+LINKS AND VALIDATION
+- The Home faculty CTA must navigate to the Faculty page; the gallery CTA must navigate to the Gallery page.
+- Confirm preview changes, faculty checkbox changes, and page content persist after refresh.
+- Ensure hidden or unpublished faculty never appear in the Home Preview, while remaining manageable in Admin.
