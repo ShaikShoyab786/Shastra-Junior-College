@@ -989,15 +989,6 @@ function GalleryPreviewSection({ home }: { home: HomePage }) {
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
               {description}
             </p>
-            {featuredItems.some((item) => isDemo(item.content)) ? (
-              <p
-                className="mt-3 text-xs leading-5 text-slate-500"
-                role="note"
-                data-testid="notice-home-gallery-sample-images"
-              >
-                Illustrative sample photos. Replace them with approved campus images from Pages → Gallery.
-              </p>
-            ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <span className="mr-2 hidden text-xs font-semibold text-slate-500 sm:inline">

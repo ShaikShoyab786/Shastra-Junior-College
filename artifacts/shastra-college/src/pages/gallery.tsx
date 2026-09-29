@@ -141,11 +141,6 @@ function GalleryContent({ home }: { home: HomePage }) {
           <div className="mt-6 flex flex-wrap gap-2" aria-label="Filter gallery by category" data-testid="gallery-filters">
             {categories.map((category) => <button key={category} type="button" onClick={() => setActiveCategory(category)} className={`focus-ring rounded-full border px-4 py-2.5 text-sm font-bold transition ${activeCategory === category ? "border-[#0b3472] bg-[#0b3472] text-white" : "border-[#0b3472]/15 bg-white text-[#0b3472] hover:border-[#e3212b] hover:text-[#e3212b]"}`} aria-pressed={activeCategory === category} data-testid={`button-gallery-filter-${category.toLowerCase()}`}>{category}</button>)}
           </div>
-          {items.some((item) => record(item.content).isDemo === true) ? (
-            <p className="mt-5 rounded-xl border border-[#e3212b]/15 bg-[#e3212b]/[.04] px-4 py-3 text-xs leading-5 text-slate-600" role="note" data-testid="notice-gallery-sample-images">
-              These are illustrative sample photos. Replace them with approved Shastra campus images from Pages → Home → Gallery.
-            </p>
-          ) : null}
           {filtered.length ? <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-testid="grid-gallery">{filtered.map((item) => <GalleryCard key={item.id} item={item} onOpen={setSelected} />)}</div> : <div className="mt-8 rounded-[1.5rem] border border-dashed border-[#0b3472]/20 bg-white px-6 py-16 text-center" data-testid="empty-gallery-filter"><ImageIcon className="mx-auto h-10 w-10 text-[#0b3472]/25" /><h3 className="mt-4 font-display text-2xl font-extrabold text-[#0b3472]">{items.length ? "No images in this category yet." : "The collection is being assembled."}</h3><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{items.length ? "Choose another category to keep exploring campus." : "The college team is preparing a closer look at campus life."}</p></div>}
         </div>
       </main>
