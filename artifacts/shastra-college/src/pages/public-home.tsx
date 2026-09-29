@@ -117,9 +117,12 @@ function Logo({ home }: { home?: HomePage }) {
   );
 }
 
-function Header({ home }: { home?: HomePage }) {
+export function Header({ home }: { home?: HomePage }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const navigation = home?.settings.navigation || [];
+  const cmsNavigation = home?.settings.navigation || [];
+  const navigation = cmsNavigation.some((link) => link.path === "/gallery")
+    ? cmsNavigation
+    : [...cmsNavigation, { label: "Gallery", path: "/gallery" }];
 
   return (
     <header
@@ -183,8 +186,11 @@ function Header({ home }: { home?: HomePage }) {
   );
 }
 
-function Footer({ home }: { home: HomePage }) {
-  const navigation = home.settings.navigation;
+export function Footer({ home }: { home: HomePage }) {
+  const cmsNavigation = home.settings.navigation;
+  const navigation = cmsNavigation.some((link) => link.path === "/gallery")
+    ? cmsNavigation
+    : [...cmsNavigation, { label: "Gallery", path: "/gallery" }];
   return (
     <footer className="bg-[#082859] px-5 py-10 text-white sm:px-8 sm:py-12">
       <div className="mx-auto flex max-w-7xl flex-col gap-7 sm:flex-row sm:items-end sm:justify-between">

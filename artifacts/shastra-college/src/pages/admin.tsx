@@ -50,6 +50,7 @@ import type {
 } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import AdminHomeEditor from "./admin-home-editor";
+import AdminGalleryEditor from "./admin-gallery-editor";
 
 type Flash = {
   tone: "success" | "error";
@@ -73,7 +74,6 @@ const pageItems: Array<{ key: WorkspaceView; label: string; note?: string }> = [
   { key: "results", label: "Results", note: "Coming soon" },
   { key: "faculty", label: "Faculty", note: "Coming soon" },
   { key: "courses", label: "Courses", note: "Coming soon" },
-  { key: "gallery", label: "Gallery", note: "Coming soon" },
 ];
 
 function errorMessage(error: unknown) {
@@ -287,7 +287,8 @@ function Shell({
   const homeSectionActive =
     activeView === "hero" ||
     activeView === "programs" ||
-    activeView === "statistics";
+    activeView === "statistics" ||
+    activeView === "gallery";
   const activePage =
     activeView === "dashboard"
       ? "Dashboard"
@@ -307,6 +308,8 @@ function Shell({
             ? "Home · Pathways"
             : activeView === "statistics"
               ? "Home · Statistics"
+              : activeView === "gallery"
+                ? "Home · Gallery"
               : pageItems.find((item) => item.key === activeView)?.label || "Home";
 
   const go = (view: WorkspaceView) => {
@@ -382,6 +385,7 @@ function Shell({
                       <NavRow icon={FileText} label="Hero" nested active={activeView === "hero"} onClick={() => go("hero")} />
                       <NavRow icon={Link2} label="Pathways" nested active={activeView === "programs"} onClick={() => go("programs")} />
                       <NavRow icon={ClipboardList} label="Statistics" nested active={activeView === "statistics"} onClick={() => go("statistics")} />
+                      <NavRow icon={ImagePlus} label="Gallery" nested active={activeView === "gallery"} onClick={() => go("gallery")} />
                     </div>
                   ) : null}
                 </div>
@@ -805,6 +809,17 @@ function AdminWorkspace() {
           onFlash={showFlash}
           sectionKey={activeView}
         />
+      </div>
+    );
+  } else if (activeView === "gallery") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / Home / Gallery"
+          title="Show the college in its element."
+          description="Publish an honest, well-captioned view of the learning spaces and moments families can expect at Shastra."
+        />
+        <AdminGalleryEditor home={home} onFlash={showFlash} />
       </div>
     );
   } else {

@@ -1,11 +1,16 @@
-import { eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import { Readable } from "node:stream";
 import {
   RequestUploadUrlBody,
   RequestUploadUrlResponse,
 } from "@workspace/api-zod";
-import { db, siteSettingsTable } from "@workspace/db";
+import {
+  contentItemsTable,
+  contentSectionsTable,
+  db,
+  siteSettingsTable,
+} from "@workspace/db";
 import { requireAdmin } from "../middlewares/requireAdmin";
 import {
   ObjectNotFoundError,
@@ -14,8 +19,8 @@ import {
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
-const allowedLogoTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
-const maxLogoBytes = 2 * 1024 * 1024;
+const allowedImageTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
+const maxImageBytes = 2 * 1024 * 1024;
 
 function streamResponse(
   response: Response,
@@ -45,11 +50,11 @@ router.post(
     const { name, size, contentType } = parsed.data;
     if (
       size < 1 ||
-      size > maxLogoBytes ||
-      !allowedLogoTypes.has(contentType)
+      size > maxImageBytes ||
+      !allowedImageTypes.has(contentType)
     ) {
       res.status(400).json({
-        error: "Choose a PNG, JPEG, or WebP logo no larger than 2 MB.",
+        error: "Choose a PNG, JPEG, or WebP image no larger than 2 MB.",
       });
       return;
     }
@@ -65,8 +70,8 @@ router.post(
         }),
       );
     } catch (error) {
-      req.log.error({ err: error }, "Could not generate logo upload URL.");
-      res.status(500).json({ error: "Logo upload could not be started." });
+      req.log.error({ err: error }, "Could not generate image upload URL.");
+      res.status(500).json({ error: "Image upload could not be started." });
     }
   },
 );
@@ -106,10 +111,32 @@ router.get(
         .from(siteSettingsTable)
         .where(eq(siteSettingsTable.id, "primary"))
         .limit(1);
-      if (
+      const logoDoesNotMatch =
         settings?.logoUrl !== `/objects/${objectPath}` &&
-        settings?.logoUrl !== `/api/storage/objects/${objectPath}`
-      ) {
+        settings?.logoUrl !== `/api/storage/objects/${objectPath}`;
+      const [galleryImage] = await db
+        .select({ id: contentItemsTable.id })
+        .from(contentItemsTable)
+        .innerJoin(
+          contentSectionsTable,
+          eq(contentItemsTable.sectionId, contentSectionsTable.id),
+        )
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "home"),
+            eq(contentSectionsTable.sectionKey, "gallery"),
+            or(
+              eq(contentItemsTable.imageUrl, `/objects/${objectPath}`),
+              eq(
+                contentItemsTable.imageUrl,
+                `/api/storage/objects/${objectPath}`,
+              ),
+            ),
+          ),
+        )
+        .limit(1);
+
+      if (logoDoesNotMatch && !galleryImage) {
         res.status(404).json({ error: "Object not found." });
         return;
       }
@@ -123,8 +150,8 @@ router.get(
         res.status(404).json({ error: "Object not found." });
         return;
       }
-      req.log.error({ err: error }, "Could not serve the college logo.");
-      res.status(500).json({ error: "Logo could not be served." });
+      req.log.error({ err: error }, "Could not serve a college media object.");
+      res.status(500).json({ error: "Image could not be served." });
     }
   },
 );

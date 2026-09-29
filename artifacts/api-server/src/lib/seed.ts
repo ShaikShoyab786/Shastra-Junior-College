@@ -125,6 +125,18 @@ const initialSections: SeedSection[] = [
     position: 9,
   },
   {
+    sectionKey: "gallery",
+    title: "A closer look at campus life",
+    subtitle:
+      "Explore the spaces, people, and moments that make a college community.",
+    content: {
+      eyebrow: "Life at Shastra",
+      isDemo: true,
+    },
+    isVisible: true,
+    position: 10,
+  },
+  {
     sectionKey: "features",
     title: "Why choose Shastra?",
     subtitle: "Replace these demo themes with details approved by the college.",
@@ -174,6 +186,84 @@ const initialSections: SeedSection[] = [
   },
 ];
 
+function initialGalleryItems(sectionId: string) {
+  const sampleImages = [
+    {
+      category: "Campus",
+      title: "Room to learn and grow",
+      description: "An inviting campus setting with space to focus and connect.",
+      imageUrl:
+        "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1400&q=84",
+      altText: "A university campus building framed by green trees",
+    },
+    {
+      category: "Library",
+      title: "A quiet place for big ideas",
+      description: "A welcoming reading space for research, revision, and discovery.",
+      imageUrl:
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=1400&q=84",
+      altText: "A bright library reading room with long tables and bookshelves",
+    },
+    {
+      category: "Classrooms",
+      title: "Learning in every lesson",
+      description: "A focused classroom environment for shared learning.",
+      imageUrl:
+        "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1400&q=84",
+      altText: "A teacher and students in a bright classroom",
+    },
+    {
+      category: "Placements",
+      title: "Preparing for what comes next",
+      description: "Students collaborating as they build skills for future opportunities.",
+      imageUrl:
+        "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1400&q=84",
+      altText: "A group of young professionals working together around a table",
+    },
+    {
+      category: "Buildings",
+      title: "Spaces made for possibility",
+      description: "Contemporary architecture designed around a learning community.",
+      imageUrl:
+        "https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=1400&q=84",
+      altText: "A modern educational building with clean architectural lines",
+    },
+    {
+      category: "Events",
+      title: "Shared moments, lasting memories",
+      description: "A celebratory gathering that brings students together.",
+      imageUrl:
+        "https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1400&q=84",
+      altText: "Graduates celebrating together at a university event",
+    },
+    {
+      category: "Campus",
+      title: "Growing together",
+      description: "A glimpse of the friendships and shared experiences of student life.",
+      imageUrl:
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1400&q=84",
+      altText: "Students sharing ideas and studying together",
+    },
+  ];
+
+  return sampleImages.map((item, position) => ({
+    sectionId,
+    itemType: "gallery-image",
+    title: item.title,
+    description: item.description,
+    imageUrl: item.imageUrl,
+    linkPath: null,
+    label: null,
+    content: {
+      category: item.category,
+      altText: item.altText,
+      isDemo: true,
+    },
+    isVisible: true,
+    position,
+  }));
+}
+
 export async function seedInitialHomeContent(): Promise<void> {
   await db.transaction(async (tx) => {
     const [insertedSettings] = await tx
@@ -193,6 +283,29 @@ export async function seedInitialHomeContent(): Promise<void> {
       .returning({ id: siteSettingsTable.id });
 
     if (!insertedSettings) {
+      const [gallerySection] = await tx
+        .select({ id: contentSectionsTable.id })
+        .from(contentSectionsTable)
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "home"),
+            eq(contentSectionsTable.sectionKey, "gallery"),
+          ),
+        )
+        .limit(1);
+
+      if (!gallerySection) {
+        const [createdGallerySection] = await tx
+          .insert(contentSectionsTable)
+          .values({ ...initialSections.find((section) => section.sectionKey === "gallery")!, pageSlug: "home" })
+          .returning({ id: contentSectionsTable.id });
+
+        if (createdGallerySection) {
+          await tx
+            .insert(contentItemsTable)
+            .values(initialGalleryItems(createdGallerySection.id));
+        }
+      }
       return;
     }
 
@@ -217,12 +330,14 @@ export async function seedInitialHomeContent(): Promise<void> {
     const featureSectionId = sectionIds.get("features");
     const campusSectionId = sectionIds.get("campus-life");
     const statisticsSectionId = sectionIds.get("statistics");
+    const gallerySectionId = sectionIds.get("gallery");
 
     if (
       !programSectionId ||
       !featureSectionId ||
       !campusSectionId ||
-      !statisticsSectionId
+      !statisticsSectionId ||
+      !gallerySectionId
     ) {
       throw new Error("Default homepage sections could not be initialized.");
     }
@@ -363,6 +478,7 @@ export async function seedInitialHomeContent(): Promise<void> {
         isVisible: true,
         position: 2,
       },
+      ...initialGalleryItems(gallerySectionId),
     ]);
 
     logger.info("Seeded homepage demo content");
