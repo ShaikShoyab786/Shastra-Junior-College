@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowDown,
@@ -21,11 +21,13 @@ import {
   useUpdateContentSection,
 } from "@workspace/api-client-react";
 import type { ContentItem, ContentItemInput, ContentSection, HomePage } from "@workspace/api-client-react";
+import {
+  getGalleryCategories,
+  normalizeGalleryCategory,
+} from "../lib/gallery-categories";
 
 type Flash = { tone: "success" | "error"; message: string } | null;
 type CmsRecord = Record<string, unknown>;
-const categories = ["Campus", "Library", "Classrooms", "Placements", "Buildings", "Events"] as const;
-type GalleryCategory = (typeof categories)[number];
 
 function record(value: unknown): CmsRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as CmsRecord) : {};
@@ -56,17 +58,24 @@ function Input({ label, value, onChange, placeholder, multiline = false, require
   return <label className="block text-sm font-bold text-slate-700">{label}{multiline ? <textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} required={required} rows={3} className={className} data-testid={testId} /> : <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} required={required} className={className} data-testid={testId} />}</label>;
 }
 
-function SectionEditor({ section, onFlash }: { section: ContentSection; onFlash: (flash: Flash) => void }) {
+function SectionEditor({ section, items, onFlash }: { section: ContentSection; items: ContentItem[]; onFlash: (flash: Flash) => void }) {
   const client = useQueryClient();
   const update = useUpdateContentSection();
   const [eyebrow, setEyebrow] = useState(text(record(section.content).eyebrow, "Life at Shastra"));
   const [title, setTitle] = useState(section.title);
   const [subtitle, setSubtitle] = useState(section.subtitle || "");
+  const [categoryDraft, setCategoryDraft] = useState("");
+  const categories = useMemo(
+    () => getGalleryCategories(section.content, items),
+    [items, section.content],
+  );
+
   useEffect(() => {
     setEyebrow(text(record(section.content).eyebrow, "Life at Shastra"));
     setTitle(section.title);
     setSubtitle(section.subtitle || "");
   }, [section.id, section.content, section.title, section.subtitle]);
+
   const save = (event: FormEvent) => {
     event.preventDefault();
     if (!title.trim()) { onFlash({ tone: "error", message: "A gallery heading is required." }); return; }
@@ -79,15 +88,96 @@ function SectionEditor({ section, onFlash }: { section: ContentSection; onFlash:
       onError: (error) => onFlash({ tone: "error", message: errorMessage(error) }),
     });
   };
-  return <form onSubmit={save} className="mt-6 grid gap-4 rounded-2xl bg-[#f5f8fc] p-4 sm:grid-cols-[.8fr_1.2fr] sm:p-5">
-    <Input label="Eyebrow" value={eyebrow} onChange={setEyebrow} placeholder="Life at Shastra" testId="input-gallery-section-eyebrow" />
-    <Input label="Gallery heading" value={title} onChange={setTitle} required testId="input-gallery-section-title" />
-    <Input label="Gallery description" value={subtitle} onChange={setSubtitle} multiline testId="input-gallery-section-subtitle" />
-    <div className="sm:col-span-2 flex justify-end"><button type="submit" disabled={update.isPending} className="inline-flex items-center gap-2 rounded-xl bg-[#0b3472] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#082859] disabled:opacity-50" data-testid="button-save-gallery-section"><Save className="h-4 w-4" />{update.isPending ? "Saving…" : "Save introduction"}</button></div>
-  </form>;
+  const addCategory = (event: FormEvent) => {
+    event.preventDefault();
+    const newCategory = normalizeGalleryCategory(categoryDraft);
+    if (!newCategory) return;
+    if (newCategory.toLocaleLowerCase() === "all") {
+      onFlash({ tone: "error", message: "“All” is reserved for the combined gallery filter." });
+      return;
+    }
+    if (categories.some((category) => category.toLocaleLowerCase() === newCategory.toLocaleLowerCase())) {
+      onFlash({ tone: "error", message: "That gallery category already exists." });
+      return;
+    }
+
+    update.mutate(
+      {
+        id: section.id,
+        data: {
+          title: title.trim() || section.title,
+          subtitle: subtitle.trim() || null,
+          content: {
+            ...record(section.content),
+            eyebrow: eyebrow.trim() || "Life at Shastra",
+            galleryCategories: [...categories, newCategory],
+          },
+        },
+      },
+      {
+        onSuccess: () => {
+          setCategoryDraft("");
+          invalidateHome(client);
+          onFlash({
+            tone: "success",
+            message: `${newCategory} was added. It is now available for gallery uploads.`,
+          });
+        },
+        onError: (error) => onFlash({ tone: "error", message: errorMessage(error) }),
+      },
+    );
+  };
+
+  return (
+    <div className="mt-6 space-y-4">
+      <form onSubmit={save} className="grid gap-4 rounded-2xl bg-[#f5f8fc] p-4 sm:grid-cols-[.8fr_1.2fr] sm:p-5">
+        <Input label="Eyebrow" value={eyebrow} onChange={setEyebrow} placeholder="Life at Shastra" testId="input-gallery-section-eyebrow" />
+        <Input label="Gallery heading" value={title} onChange={setTitle} required testId="input-gallery-section-title" />
+        <Input label="Gallery description" value={subtitle} onChange={setSubtitle} multiline testId="input-gallery-section-subtitle" />
+        <div className="sm:col-span-2 flex justify-end">
+          <button type="submit" disabled={update.isPending} className="inline-flex items-center gap-2 rounded-xl bg-[#0b3472] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#082859] disabled:opacity-50" data-testid="button-save-gallery-section">
+            <Save className="h-4 w-4" />{update.isPending ? "Saving…" : "Save introduction"}
+          </button>
+        </div>
+      </form>
+
+      <form onSubmit={addCategory} className="rounded-2xl border border-[#0b3472]/10 bg-white p-4 sm:p-5" data-testid="gallery-category-manager">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h3 className="font-display text-lg font-extrabold text-[#0b3472]">Gallery categories</h3>
+            <p className="mt-1 text-sm leading-5 text-slate-500">
+              Add categories such as Alumni or Testimonials. They will appear in the image form and public gallery filters.
+            </p>
+          </div>
+          <span className="text-xs font-semibold text-slate-400">{categories.length} categories</span>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {categories.map((category) => {
+            const count = items.filter(
+              (item) => normalizeGalleryCategory(record(item.content).category)?.toLocaleLowerCase() === category.toLocaleLowerCase(),
+            ).length;
+            return (
+              <span key={category} className="inline-flex items-center gap-2 rounded-full border border-[#0b3472]/10 bg-[#f5f8fc] px-3 py-1.5 text-xs font-bold text-[#0b3472]">
+                {category}
+                <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px] text-slate-500">{count}</span>
+              </span>
+            );
+          })}
+        </div>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="flex-1">
+            <Input label="New category" value={categoryDraft} onChange={setCategoryDraft} placeholder="e.g. Alumni or Testimonials" testId="input-new-gallery-category" />
+          </div>
+          <button type="submit" disabled={update.isPending || !categoryDraft.trim()} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[#0b3472]/15 px-4 py-2.5 text-sm font-bold text-[#0b3472] transition hover:bg-[#0b3472]/5 disabled:opacity-50" data-testid="button-add-gallery-category">
+            <Plus className="h-4 w-4" />{update.isPending ? "Saving…" : "Add category"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
 }
 
-function GalleryItemEditor({ sectionId, initial, position, onFlash, onClose }: { sectionId: string; initial?: ContentItem; position: number; onFlash: (flash: Flash) => void; onClose: () => void }) {
+function GalleryItemEditor({ sectionId, categories, initial, position, onFlash, onClose }: { sectionId: string; categories: string[]; initial?: ContentItem; position: number; onFlash: (flash: Flash) => void; onClose: () => void }) {
   const client = useQueryClient();
   const create = useCreateContentItem();
   const update = useUpdateContentItem();
@@ -95,7 +185,7 @@ function GalleryItemEditor({ sectionId, initial, position, onFlash, onClose }: {
   const initialContent = record(initial?.content);
   const [title, setTitle] = useState(initial?.title || "");
   const [description, setDescription] = useState(initial?.description || "");
-  const [category, setCategory] = useState<GalleryCategory>(categories.includes(text(initialContent.category) as GalleryCategory) ? text(initialContent.category) as GalleryCategory : "Campus");
+  const [category, setCategory] = useState(text(initialContent.category, categories[0] || "Campus"));
   const [altText, setAltText] = useState(text(initialContent.altText, initial?.title || ""));
   const [imageUrl, setImageUrl] = useState(initial?.imageUrl || "");
   const [isDemo, setIsDemo] = useState(initialContent.isDemo === true);
@@ -112,7 +202,7 @@ function GalleryItemEditor({ sectionId, initial, position, onFlash, onClose }: {
     const content = record(initial?.content);
     setTitle(initial?.title || "");
     setDescription(initial?.description || "");
-    setCategory(categories.includes(text(content.category) as GalleryCategory) ? text(content.category) as GalleryCategory : "Campus");
+    setCategory(text(content.category, categories[0] || "Campus"));
     setAltText(text(content.altText, initial?.title || ""));
     setImageUrl(initial?.imageUrl || "");
     setIsDemo(content.isDemo === true);
@@ -176,7 +266,7 @@ function GalleryItemEditor({ sectionId, initial, position, onFlash, onClose }: {
   return <form onSubmit={save} className="mt-4 rounded-2xl border border-[#0b3472]/15 bg-[#f5f8fc] p-4 sm:p-5" data-testid={`form-gallery-item-${initial?.id || "new"}`}>
     <div className="grid gap-4 md:grid-cols-2">
       <Input label="Image title" value={title} onChange={setTitle} required placeholder="e.g. The library reading room" testId={`input-gallery-title-${initial?.id || "new"}`} />
-      <label className="block text-sm font-bold text-slate-700">Category<select value={category} onChange={(event) => setCategory(event.target.value as GalleryCategory)} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800" data-testid={`select-gallery-category-${initial?.id || "new"}`}>{categories.map((option) => <option value={option} key={option}>{option}</option>)}</select></label>
+      <label className="block text-sm font-bold text-slate-700">Category<select value={category} onChange={(event) => setCategory(event.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800" data-testid={`select-gallery-category-${initial?.id || "new"}`}>{categories.map((option) => <option value={option} key={option}>{option}</option>)}</select></label>
       <Input label="Description" value={description} onChange={setDescription} multiline placeholder="A short, specific caption for prospective families." testId={`textarea-gallery-description-${initial?.id || "new"}`} />
       <Input label="Alt text" value={altText} onChange={setAltText} required placeholder="Describe what is visible in the image" testId={`input-gallery-alt-text-${initial?.id || "new"}`} />
     </div>
@@ -200,7 +290,26 @@ function GalleryItems({ section, items, onFlash }: { section: ContentSection; it
   const remove = useDeleteContentItem();
   const [editing, setEditing] = useState<string | "new" | null>(null);
   const orderedItems = useMemo(() => [...items].sort((a, b) => a.position - b.position), [items]);
+  const categories = useMemo(
+    () => getGalleryCategories(section.content, orderedItems),
+    [orderedItems, section.content],
+  );
+  const newItemFormRef = useRef<HTMLDivElement>(null);
   const nextPosition = orderedItems.length ? Math.max(...orderedItems.map((item) => item.position)) + 1 : 0;
+
+  useEffect(() => {
+    if (editing !== "new") return;
+    const frame = window.requestAnimationFrame(() => {
+      newItemFormRef.current?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth",
+        block: "center",
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [editing]);
+
   const move = async (item: ContentItem, direction: -1 | 1) => {
     const index = orderedItems.findIndex((candidate) => candidate.id === item.id);
     const target = orderedItems[index + direction];
@@ -267,10 +376,48 @@ function GalleryItems({ section, items, onFlash }: { section: ContentSection; it
             Select one image in each category to feature it on the homepage. Hidden images stay out of the public gallery and preview.
           </p>
         </div>
-        <button type="button" onClick={() => setEditing("new")} className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-[#0b3472]/15 bg-white px-3.5 py-2.5 text-sm font-bold text-[#0b3472] hover:bg-[#0b3472]/5" data-testid="button-add-gallery-image">
-          <Plus className="h-4 w-4" />Add image
+        <button
+          type="button"
+          onClick={() => setEditing((current) => current === "new" ? null : "new")}
+          aria-expanded={editing === "new"}
+          aria-controls="gallery-new-image-form"
+          className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-[#0b3472]/15 bg-white px-3.5 py-2.5 text-sm font-bold text-[#0b3472] hover:bg-[#0b3472]/5"
+          data-testid="button-add-gallery-image"
+        >
+          <Plus className="h-4 w-4" />{editing === "new" ? "Close form" : "Add image"}
         </button>
       </div>
+      {editing === "new" ? (
+        <section
+          ref={newItemFormRef}
+          id="gallery-new-image-form"
+          className="mb-5 scroll-mt-24 rounded-2xl border border-[#0b3472]/15 bg-[#f5f8fc] p-4 sm:p-5"
+          aria-labelledby="gallery-new-image-title"
+          data-testid="panel-new-gallery-image"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h4 id="gallery-new-image-title" className="font-display text-lg font-extrabold text-[#0b3472]">
+                Add a gallery image
+              </h4>
+              <p className="mt-1 text-sm text-slate-500">
+                Choose a category, upload the image, then save it to the collection.
+              </p>
+            </div>
+            <button type="button" onClick={() => setEditing(null)} className="rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-white">
+              Close
+            </button>
+          </div>
+          <GalleryItemEditor
+            key="gallery-new"
+            sectionId={section.id}
+            categories={categories}
+            position={nextPosition}
+            onFlash={onFlash}
+            onClose={() => setEditing(null)}
+          />
+        </section>
+      ) : null}
       {orderedItems.length === 0 && editing !== "new" ? (
         <div className="rounded-2xl border border-dashed border-slate-300 px-5 py-12 text-center text-sm text-slate-500" data-testid="empty-admin-gallery">
           No gallery images yet. Add the first view of campus life.
@@ -321,13 +468,12 @@ function GalleryItems({ section, items, onFlash }: { section: ContentSection; it
                     </button>
                   </div>
                 </div>
-                {editing === item.id ? <GalleryItemEditor key={item.id} sectionId={section.id} initial={item} position={item.position} onFlash={onFlash} onClose={() => setEditing(null)} /> : null}
+                {editing === item.id ? <GalleryItemEditor key={item.id} sectionId={section.id} categories={categories} initial={item} position={item.position} onFlash={onFlash} onClose={() => setEditing(null)} /> : null}
               </div>
             );
           })}
         </div>
       )}
-      {editing === "new" ? <GalleryItemEditor key="gallery-new" sectionId={section.id} position={nextPosition} onFlash={onFlash} onClose={() => setEditing(null)} /> : null}
     </div>
   );
 }
@@ -341,7 +487,7 @@ export default function AdminGalleryEditor({ home, onFlash }: { home: HomePage; 
   return <div className="space-y-6" data-testid="admin-gallery-editor">
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="eyebrow text-[#e3212b]">04 · Gallery</p><h2 className="mt-2 font-display text-2xl font-extrabold text-[#0b3472]">Public gallery</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Keep the collection current with carefully captioned views of the college. Only visible gallery images appear on the public page.</p></div><button type="button" onClick={() => updateSection.mutate({ id: section.id, data: { isVisible: !section.isVisible } }, { onSuccess: () => { invalidateHome(client); onFlash({ tone: "success", message: section.isVisible ? "Gallery hidden from the public site." : "Gallery shown on the public site." }); }, onError: (failure) => onFlash({ tone: "error", message: errorMessage(failure) }) })} disabled={updateSection.isPending} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-[#0b3472] hover:bg-slate-50 disabled:opacity-50" data-testid="button-toggle-gallery-section">{section.isVisible ? <><EyeOff className="h-4 w-4" />Hide gallery</> : <><Eye className="h-4 w-4" />Show gallery</>}</button></div>
-      <SectionEditor section={section} onFlash={onFlash} />
+      <SectionEditor section={section} items={items} onFlash={onFlash} />
       <GalleryItems section={section} items={items} onFlash={onFlash} />
     </section>
   </div>;

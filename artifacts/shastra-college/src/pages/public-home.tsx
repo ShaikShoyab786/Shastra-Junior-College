@@ -2,12 +2,8 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import {
   ArrowRight,
   Check,
-  ChevronLeft,
   ChevronDown,
-  ChevronRight,
   Menu,
-  Pause,
-  Play,
   RefreshCw,
   Send,
   X,
@@ -25,6 +21,10 @@ import type {
   ContentSection,
   HomePage,
 } from "@workspace/api-client-react";
+import {
+  getGalleryCategories,
+  normalizeGalleryCategory,
+} from "../lib/gallery-categories";
 
 const logoPath = "/shastra-college-logo.png";
 
@@ -167,7 +167,7 @@ export function Header({ home }: { home?: HomePage }) {
             ))
           )}
           <Link
-            href="/sign-in"
+            href="/admin"
             onClick={() => setMobileOpen(false)}
             className="focus-ring rounded-full border border-[#0b3472]/20 px-4 py-2 text-sm font-bold text-[#0b3472] transition-colors hover:border-[#e3212b] hover:text-[#e3212b] sm:px-5 sm:py-2.5"
             data-testid="link-nav-staff-login"
@@ -880,19 +880,10 @@ function StatisticsBar({
   );
 }
 
-const galleryPreviewCategories = [
-  "Campus",
-  "Library",
-  "Classrooms",
-  "Placements",
-  "Buildings",
-  "Events",
-] as const;
-
 function GalleryPreviewSection({ home }: { home: HomePage }) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [paused, setPaused] = useState(false);
-  const [interacting, setInteracting] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const [inView, setInView] = useState(false);
   const section = home.sections.find(
     (candidate) =>
       candidate.sectionKey.toLowerCase() === "gallery" && candidate.isVisible,
@@ -900,11 +891,14 @@ function GalleryPreviewSection({ home }: { home: HomePage }) {
   const featuredItems = useMemo(() => {
     if (!section) return [];
     const itemsByCategory = new Map<string, ContentItem>();
-    const ordered = home.items
+    const galleryItems = home.items.filter(
+      (item) =>
+        item.sectionId === section.id && item.itemType === "gallery-image",
+    );
+    const categoryOrder = getGalleryCategories(section.content, galleryItems);
+    const ordered = galleryItems
       .filter(
         (item) =>
-          item.sectionId === section.id &&
-          item.itemType === "gallery-image" &&
           item.isVisible &&
           item.imageUrl &&
           isRecord(item.content) &&
@@ -914,18 +908,24 @@ function GalleryPreviewSection({ home }: { home: HomePage }) {
 
     for (const item of ordered) {
       const content = isRecord(item.content) ? item.content : {};
-      const category = stringValue(content, ["category"]);
-      if (
-        galleryPreviewCategories.includes(category as (typeof galleryPreviewCategories)[number]) &&
-        !itemsByCategory.has(category)
-      ) {
+      const itemCategory = normalizeGalleryCategory(
+        stringValue(content, ["category"]),
+      );
+      const category = itemCategory
+        ? categoryOrder.find(
+            (candidate) =>
+              candidate.toLocaleLowerCase() === itemCategory.toLocaleLowerCase(),
+          )
+        : undefined;
+      if (category && !itemsByCategory.has(category)) {
         itemsByCategory.set(category, item);
       }
     }
 
-    return galleryPreviewCategories
-      .map((category) => itemsByCategory.get(category))
-      .filter((item): item is ContentItem => Boolean(item));
+    return categoryOrder.flatMap((category) => {
+      const item = itemsByCategory.get(category);
+      return item ? [{ item, category }] : [];
+    });
   }, [home.items, section]);
   const content = section?.content ?? {};
   const eyebrow = stringValue(content, ["eyebrow"], "Life at Shastra");
@@ -935,46 +935,54 @@ function GalleryPreviewSection({ home }: { home: HomePage }) {
     "Explore the spaces, people, and moments that make a college community.";
 
   useEffect(() => {
-    if (paused || interacting || featuredItems.length < 2) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const sectionElement = sectionRef.current;
+    if (!sectionElement) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.15 },
+    );
+    observer.observe(sectionElement);
+    return () => observer.disconnect();
+  }, [featuredItems.length > 0, section?.id]);
+
+  useEffect(() => {
+    if (!inView || featuredItems.length < 2) return;
 
     const interval = window.setInterval(() => {
+      if (document.visibilityState === "hidden") return;
       const track = trackRef.current;
       if (!track || track.scrollWidth <= track.clientWidth + 8) return;
-      const atEnd =
-        track.scrollLeft + track.clientWidth >= track.scrollWidth - 8;
+      const slide = track.querySelector<HTMLElement>("[data-gallery-slide]");
+      const gap = Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
+      const step =
+        (slide?.getBoundingClientRect().width || track.clientWidth / 3) + gap;
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      const atEnd = track.scrollLeft >= maxScroll - 8;
+      const nextLeft = atEnd ? 0 : Math.min(track.scrollLeft + step, maxScroll);
       track.scrollTo({
-        left: atEnd ? 0 : track.scrollLeft + track.clientWidth,
-        behavior: "smooth",
+        left: nextLeft,
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth",
       });
-    }, 6200);
+    }, 4200);
 
     return () => window.clearInterval(interval);
-  }, [featuredItems.length, interacting, paused]);
+  }, [featuredItems.length, inView]);
 
   if (!section || featuredItems.length === 0) return null;
 
-  const scrollByViewport = (direction: -1 | 1) => {
-    const track = trackRef.current;
-    if (!track) return;
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    track.scrollBy({
-      left: track.clientWidth * direction,
-      behavior: reducedMotion ? "auto" : "smooth",
-    });
-  };
-
   return (
     <section
+      ref={sectionRef}
       className="site-grid border-y border-[#0b3472]/10 bg-[#fbfaf6] px-5 py-12 sm:px-8 sm:py-16"
       aria-labelledby="homepage-gallery-title"
       data-testid="section-home-gallery-preview"
-      onMouseEnter={() => setInteracting(true)}
-      onMouseLeave={() => setInteracting(false)}
-      onFocusCapture={() => setInteracting(true)}
-      onBlurCapture={() => setInteracting(false)}
     >
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
@@ -990,54 +998,25 @@ function GalleryPreviewSection({ home }: { home: HomePage }) {
               {description}
             </p>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <span className="mr-2 hidden text-xs font-semibold text-slate-500 sm:inline">
+          <div className="shrink-0">
+            <span className="text-xs font-semibold text-slate-500">
               {featuredItems.length} featured{" "}
               {featuredItems.length === 1 ? "image" : "images"}
             </span>
-            <button
-              type="button"
-              onClick={() => scrollByViewport(-1)}
-              className="focus-ring rounded-full border border-[#0b3472]/15 bg-white p-2.5 text-[#0b3472] transition hover:border-[#e3212b] hover:text-[#e3212b]"
-              aria-label="Previous featured images"
-              data-testid="button-home-gallery-previous"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaused((value) => !value)}
-              className="focus-ring inline-flex items-center gap-2 rounded-full border border-[#0b3472]/15 bg-white px-3.5 py-2.5 text-xs font-bold text-[#0b3472] transition hover:border-[#e3212b] hover:text-[#e3212b]"
-              aria-pressed={paused}
-              aria-label={paused ? "Resume gallery auto-scroll" : "Pause gallery auto-scroll"}
-              data-testid="button-home-gallery-pause"
-            >
-              {paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
-              {paused ? "Play" : "Pause"}
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollByViewport(1)}
-              className="focus-ring rounded-full border border-[#0b3472]/15 bg-white p-2.5 text-[#0b3472] transition hover:border-[#e3212b] hover:text-[#e3212b]"
-              aria-label="Next featured images"
-              data-testid="button-home-gallery-next"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
           </div>
         </div>
 
         <div
           ref={trackRef}
-          className="mt-8 grid auto-cols-[84%] grid-flow-col gap-4 overflow-x-auto overscroll-x-contain scroll-smooth snap-x snap-mandatory pb-3 motion-reduce:scroll-auto sm:auto-cols-[calc((100%_-_1rem)/2)] lg:auto-cols-[calc((100%_-_2rem)/3)]"
+          className="mt-8 grid auto-cols-[84%] grid-flow-col gap-4 overflow-x-auto overscroll-x-contain scroll-smooth snap-x snap-mandatory pb-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden motion-reduce:scroll-auto sm:auto-cols-[calc((100%_-_1rem)/2)] lg:auto-cols-[calc((100%_-_2rem)/3)]"
           role="region"
-          aria-label="Featured campus gallery"
+          aria-label="Featured gallery"
           aria-roledescription="carousel"
+          aria-live="off"
           data-testid="track-home-gallery-preview"
         >
-          {featuredItems.map((item, index) => {
+          {featuredItems.map(({ item, category }, index) => {
             const itemContent = isRecord(item.content) ? item.content : {};
-            const category = stringValue(itemContent, ["category"], "Campus");
             const altText = stringValue(itemContent, ["altText"], item.title);
             return (
               <article
@@ -1046,6 +1025,7 @@ function GalleryPreviewSection({ home }: { home: HomePage }) {
                 role="group"
                 aria-roledescription="slide"
                 aria-label={`${index + 1} of ${featuredItems.length}: ${category}`}
+                data-gallery-slide
                 data-testid={`card-home-gallery-${item.id}`}
               >
                 <Link

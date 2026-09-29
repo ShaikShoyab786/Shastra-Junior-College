@@ -281,9 +281,9 @@ function Shell({
   const { signOut } = useClerk();
   const { user } = useUser();
   const [mobileNav, setMobileNav] = useState(false);
-  const [homeOpen, setHomeOpen] = useState(true);
-  const [settingsOpen, setSettingsOpen] = useState(true);
-  const [pagesOpen, setPagesOpen] = useState(true);
+  const [homeOpen, setHomeOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [pagesOpen, setPagesOpen] = useState(false);
   const homeSectionActive =
     activeView === "hero" ||
     activeView === "programs" ||
