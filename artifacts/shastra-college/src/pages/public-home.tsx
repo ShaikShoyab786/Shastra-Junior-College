@@ -670,7 +670,7 @@ function PathwaysSection({
                 <a
                   href="/"
                   aria-label={`Return home to explore ${item.title}`}
-                  className="focus-ring pathway-chip group inline-flex min-h-10 items-center gap-2.5 rounded-full border border-[#0b3472]/20 bg-white px-4 py-2 text-sm font-bold text-[#0b3472] shadow-[0_2px_8px_rgba(11,52,114,.05)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#0b3472] hover:bg-[#0b3472] hover:text-white hover:shadow-[0_8px_18px_rgba(11,52,114,.14)] active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:transform-none"
+                  className="focus-ring pathway-chip group inline-flex min-h-10 items-center gap-2.5 rounded-full border border-[#0b3472]/20 bg-white px-4 py-2 text-sm font-bold text-[#0b3472] shadow-[0_2px_8px_rgba(11,52,114,.05)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#0b3472] hover:bg-[#eaf1fb] hover:shadow-[0_8px_18px_rgba(11,52,114,.14)] active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:transform-none"
                   data-testid={`link-pathway-${item.id}`}
                 >
                   <span
