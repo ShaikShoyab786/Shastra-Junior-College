@@ -195,6 +195,7 @@ function initialGalleryItems(sectionId: string) {
       imageUrl:
         "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1400&q=84",
       altText: "A university campus building framed by green trees",
+      showOnHome: true,
     },
     {
       category: "Library",
@@ -203,6 +204,7 @@ function initialGalleryItems(sectionId: string) {
       imageUrl:
         "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=1400&q=84",
       altText: "A bright library reading room with long tables and bookshelves",
+      showOnHome: true,
     },
     {
       category: "Classrooms",
@@ -211,6 +213,7 @@ function initialGalleryItems(sectionId: string) {
       imageUrl:
         "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1400&q=84",
       altText: "A teacher and students in a bright classroom",
+      showOnHome: true,
     },
     {
       category: "Placements",
@@ -219,6 +222,7 @@ function initialGalleryItems(sectionId: string) {
       imageUrl:
         "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1400&q=84",
       altText: "A group of young professionals working together around a table",
+      showOnHome: true,
     },
     {
       category: "Buildings",
@@ -227,6 +231,7 @@ function initialGalleryItems(sectionId: string) {
       imageUrl:
         "https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=1400&q=84",
       altText: "A modern educational building with clean architectural lines",
+      showOnHome: true,
     },
     {
       category: "Events",
@@ -235,6 +240,7 @@ function initialGalleryItems(sectionId: string) {
       imageUrl:
         "https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1400&q=84",
       altText: "Graduates celebrating together at a university event",
+      showOnHome: true,
     },
     {
       category: "Campus",
@@ -243,6 +249,7 @@ function initialGalleryItems(sectionId: string) {
       imageUrl:
         "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1400&q=84",
       altText: "Students sharing ideas and studying together",
+      showOnHome: false,
     },
   ];
 
@@ -258,6 +265,7 @@ function initialGalleryItems(sectionId: string) {
       category: item.category,
       altText: item.altText,
       isDemo: true,
+      showOnHome: item.showOnHome,
     },
     isVisible: true,
     position,
@@ -760,6 +768,67 @@ export async function seedInitialHomeContent(): Promise<void> {
             ...(isSeededDescription ? { description: null } : {}),
             ...(isSeededLink ? { linkPath: "/" } : {}),
             ...(isSeededDemoFlag ? { content: {} } : {}),
+            updatedAt: new Date(),
+          })
+          .where(eq(contentItemsTable.id, item.id));
+      }
+    }
+  });
+
+  // Existing gallery entries predate homepage featuring. Pick one image per
+  // category once, then preserve each admin's later checkbox choices.
+  await db.transaction(async (tx) => {
+    const [gallerySection] = await tx
+      .select({ id: contentSectionsTable.id })
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "home"),
+          eq(contentSectionsTable.sectionKey, "gallery"),
+        ),
+      )
+      .limit(1);
+
+    if (!gallerySection) return;
+
+    const galleryItems = await tx
+      .select()
+      .from(contentItemsTable)
+      .where(
+        and(
+          eq(contentItemsTable.sectionId, gallerySection.id),
+          eq(contentItemsTable.itemType, "gallery-image"),
+        ),
+      );
+    const byCategory = new Map<string, typeof galleryItems>();
+
+    for (const item of galleryItems) {
+      const content = isCmsRecord(item.content) ? item.content : {};
+      const category =
+        typeof content.category === "string" ? content.category : "";
+      if (!category) continue;
+      const items = byCategory.get(category) ?? [];
+      items.push(item);
+      byCategory.set(category, items);
+    }
+
+    for (const items of byCategory.values()) {
+      if (
+        items.some((item) => {
+          const content = isCmsRecord(item.content) ? item.content : {};
+          return typeof content.showOnHome === "boolean";
+        })
+      ) {
+        continue;
+      }
+
+      const firstItem = [...items].sort((a, b) => a.position - b.position)[0];
+      for (const item of items) {
+        const content = isCmsRecord(item.content) ? item.content : {};
+        await tx
+          .update(contentItemsTable)
+          .set({
+            content: { ...content, showOnHome: item.id === firstItem?.id },
             updatedAt: new Date(),
           })
           .where(eq(contentItemsTable.id, item.id));

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import {
   getGetAdminHomeQueryKey,
+  getGetHomePageQueryKey,
   useCreateContentItem,
   useDeleteContentItem,
   useRequestUploadUrl,
@@ -47,6 +48,7 @@ function assetUrl(path: string | null) {
 
 function invalidateHome(client: ReturnType<typeof useQueryClient>) {
   void client.invalidateQueries({ queryKey: getGetAdminHomeQueryKey() });
+  void client.invalidateQueries({ queryKey: getGetHomePageQueryKey() });
 }
 
 function Input({ label, value, onChange, placeholder, multiline = false, required = false, testId }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; multiline?: boolean; required?: boolean; testId: string }) {
@@ -57,18 +59,28 @@ function Input({ label, value, onChange, placeholder, multiline = false, require
 function SectionEditor({ section, onFlash }: { section: ContentSection; onFlash: (flash: Flash) => void }) {
   const client = useQueryClient();
   const update = useUpdateContentSection();
+  const [eyebrow, setEyebrow] = useState(text(record(section.content).eyebrow, "Life at Shastra"));
   const [title, setTitle] = useState(section.title);
   const [subtitle, setSubtitle] = useState(section.subtitle || "");
-  useEffect(() => { setTitle(section.title); setSubtitle(section.subtitle || ""); }, [section.id, section.title, section.subtitle]);
+  useEffect(() => {
+    setEyebrow(text(record(section.content).eyebrow, "Life at Shastra"));
+    setTitle(section.title);
+    setSubtitle(section.subtitle || "");
+  }, [section.id, section.content, section.title, section.subtitle]);
   const save = (event: FormEvent) => {
     event.preventDefault();
     if (!title.trim()) { onFlash({ tone: "error", message: "A gallery heading is required." }); return; }
-    update.mutate({ id: section.id, data: { title: title.trim(), subtitle: subtitle.trim() || null } }, {
+    update.mutate({ id: section.id, data: {
+      title: title.trim(),
+      subtitle: subtitle.trim() || null,
+      content: { ...record(section.content), eyebrow: eyebrow.trim() || "Life at Shastra" },
+    } }, {
       onSuccess: () => { invalidateHome(client); onFlash({ tone: "success", message: "Gallery introduction saved." }); },
       onError: (error) => onFlash({ tone: "error", message: errorMessage(error) }),
     });
   };
   return <form onSubmit={save} className="mt-6 grid gap-4 rounded-2xl bg-[#f5f8fc] p-4 sm:grid-cols-[.8fr_1.2fr] sm:p-5">
+    <Input label="Eyebrow" value={eyebrow} onChange={setEyebrow} placeholder="Life at Shastra" testId="input-gallery-section-eyebrow" />
     <Input label="Gallery heading" value={title} onChange={setTitle} required testId="input-gallery-section-title" />
     <Input label="Gallery description" value={subtitle} onChange={setSubtitle} multiline testId="input-gallery-section-subtitle" />
     <div className="sm:col-span-2 flex justify-end"><button type="submit" disabled={update.isPending} className="inline-flex items-center gap-2 rounded-xl bg-[#0b3472] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#082859] disabled:opacity-50" data-testid="button-save-gallery-section"><Save className="h-4 w-4" />{update.isPending ? "Saving…" : "Save introduction"}</button></div>
@@ -142,7 +154,13 @@ function GalleryItemEditor({ sectionId, initial, position, onFlash, onClose }: {
       imageUrl,
       linkPath: null,
       label: null,
-      content: { ...initialContent, category, altText: altText.trim(), isDemo },
+      content: {
+        ...initialContent,
+        category,
+        altText: altText.trim(),
+        isDemo,
+        showOnHome: initialContent.showOnHome === true,
+      },
       isVisible: initial?.isVisible ?? true,
       position: initial?.position ?? position,
     };
@@ -193,15 +211,125 @@ function GalleryItems({ section, items, onFlash }: { section: ContentSection; it
     } catch (failure) { onFlash({ tone: "error", message: errorMessage(failure) }); }
   };
   const toggle = (item: ContentItem) => update.mutate({ id: item.id, data: { isVisible: !item.isVisible } }, { onSuccess: () => { invalidateHome(client); onFlash({ tone: "success", message: item.isVisible ? "Image hidden from the public gallery." : "Image shown in the public gallery." }); }, onError: (failure) => onFlash({ tone: "error", message: errorMessage(failure) }) });
+  const toggleHomePreview = async (item: ContentItem) => {
+    const itemContent = record(item.content);
+    const category = text(itemContent.category, "Campus");
+    const showOnHome = itemContent.showOnHome !== true;
+
+    try {
+      if (showOnHome) {
+        const previousFeatured = orderedItems.find((candidate) => {
+          const candidateContent = record(candidate.content);
+          return (
+            candidate.id !== item.id &&
+            candidateContent.showOnHome === true &&
+            text(candidateContent.category, "Campus") === category
+          );
+        });
+
+        if (previousFeatured) {
+          await update.mutateAsync({
+            id: previousFeatured.id,
+            data: {
+              content: { ...record(previousFeatured.content), showOnHome: false },
+            },
+          });
+        }
+      }
+
+      await update.mutateAsync({
+        id: item.id,
+        data: { content: { ...itemContent, showOnHome } },
+      });
+      invalidateHome(client);
+      onFlash({
+        tone: "success",
+        message: showOnHome
+          ? `${category} image selected for the homepage preview.`
+          : `${category} image removed from the homepage preview.`,
+      });
+    } catch (failure) {
+      invalidateHome(client);
+      onFlash({ tone: "error", message: errorMessage(failure) });
+    }
+  };
   const deleteItem = (item: ContentItem) => {
     if (!window.confirm(`Delete “${item.title}” from the gallery?`)) return;
     remove.mutate({ id: item.id }, { onSuccess: () => { invalidateHome(client); onFlash({ tone: "success", message: "Gallery image deleted." }); }, onError: (failure) => onFlash({ tone: "error", message: errorMessage(failure) }) });
   };
-  return <div className="mt-8">
-    <div className="mb-4 flex items-end justify-between gap-3"><div><p className="eyebrow text-[#e3212b]">Gallery collection</p><h3 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Campus stories</h3><p className="mt-1 text-sm text-slate-500">Images are sorted by display order. Hidden entries stay available for later publishing.</p></div><button type="button" onClick={() => setEditing("new")} className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-[#0b3472]/15 bg-white px-3.5 py-2.5 text-sm font-bold text-[#0b3472] hover:bg-[#0b3472]/5" data-testid="button-add-gallery-image"><Plus className="h-4 w-4" />Add image</button></div>
-    {orderedItems.length === 0 && editing !== "new" ? <div className="rounded-2xl border border-dashed border-slate-300 px-5 py-12 text-center text-sm text-slate-500" data-testid="empty-admin-gallery">No gallery images yet. Add the first view of campus life.</div> : <div className="space-y-3">{orderedItems.map((item, index) => <div key={item.id} className={`rounded-2xl border border-slate-200 bg-white p-4 ${item.isVisible ? "" : "bg-slate-50"}`} data-testid={`row-gallery-${item.id}`}><div className="flex flex-wrap items-center gap-3"><div className="h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-slate-100">{item.imageUrl ? <img src={assetUrl(item.imageUrl)} alt="" className="h-full w-full object-cover" /> : null}</div><div className="min-w-0 flex-1"><p className="truncate font-bold text-[#0b3472]">{item.title}</p><p className="mt-1 text-xs text-slate-500">{text(record(item.content).category, "Campus")} · {item.isVisible ? "Shown publicly" : "Hidden"}</p></div><div className="flex items-center gap-1"><button type="button" onClick={() => toggle(item)} disabled={update.isPending} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30" aria-label={`${item.isVisible ? "Hide" : "Show"} ${item.title}`} data-testid={`button-toggle-gallery-${item.id}`}>{item.isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button><button type="button" onClick={() => void move(item, -1)} disabled={index === 0 || update.isPending} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30" aria-label={`Move ${item.title} up`} data-testid={`button-move-gallery-up-${item.id}`}><ArrowUp className="h-4 w-4" /></button><button type="button" onClick={() => void move(item, 1)} disabled={index === orderedItems.length - 1 || update.isPending} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30" aria-label={`Move ${item.title} down`} data-testid={`button-move-gallery-down-${item.id}`}><ArrowDown className="h-4 w-4" /></button><button type="button" onClick={() => setEditing(editing === item.id ? null : item.id)} className="rounded-lg px-3 py-2 text-xs font-bold text-[#0b3472] hover:bg-[#0b3472]/5" data-testid={`button-edit-gallery-${item.id}`}>{editing === item.id ? "Close" : "Edit"}</button><button type="button" onClick={() => deleteItem(item)} disabled={remove.isPending} className="rounded-lg p-2 text-red-700 hover:bg-red-50 disabled:opacity-50" aria-label={`Delete ${item.title}`} data-testid={`button-delete-gallery-${item.id}`}><Trash2 className="h-4 w-4" /></button></div></div>{editing === item.id ? <GalleryItemEditor key={item.id} sectionId={section.id} initial={item} position={item.position} onFlash={onFlash} onClose={() => setEditing(null)} /> : null}</div>)}</div>}
-    {editing === "new" ? <GalleryItemEditor key="gallery-new" sectionId={section.id} position={nextPosition} onFlash={onFlash} onClose={() => setEditing(null)} /> : null}
-  </div>;
+  return (
+    <div className="mt-8">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="eyebrow text-[#e3212b]">Gallery collection</p>
+          <h3 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Campus stories</h3>
+          <p className="mt-1 max-w-xl text-sm leading-5 text-slate-500">
+            Select one image in each category to feature it on the homepage. Hidden images stay out of the public gallery and preview.
+          </p>
+        </div>
+        <button type="button" onClick={() => setEditing("new")} className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-[#0b3472]/15 bg-white px-3.5 py-2.5 text-sm font-bold text-[#0b3472] hover:bg-[#0b3472]/5" data-testid="button-add-gallery-image">
+          <Plus className="h-4 w-4" />Add image
+        </button>
+      </div>
+      {orderedItems.length === 0 && editing !== "new" ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 px-5 py-12 text-center text-sm text-slate-500" data-testid="empty-admin-gallery">
+          No gallery images yet. Add the first view of campus life.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {orderedItems.map((item, index) => {
+            const itemContent = record(item.content);
+            return (
+              <div key={item.id} className={`rounded-2xl border border-slate-200 bg-white p-4 ${item.isVisible ? "" : "bg-slate-50"}`} data-testid={`row-gallery-${item.id}`}>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                    {item.imageUrl ? <img src={assetUrl(item.imageUrl)} alt="" className="h-full w-full object-cover" /> : null}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-bold text-[#0b3472]">{item.title}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {text(itemContent.category, "Campus")} · {item.isVisible ? "Shown publicly" : "Hidden"}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1">
+                    <label className="inline-flex items-center gap-2 rounded-lg px-2 py-2 text-xs font-semibold text-[#0b3472] hover:bg-[#0b3472]/5">
+                      <input
+                        type="checkbox"
+                        checked={itemContent.showOnHome === true}
+                        onChange={() => void toggleHomePreview(item)}
+                        disabled={update.isPending}
+                        aria-label={`Show ${item.title} in the homepage gallery preview`}
+                        className="h-4 w-4 accent-[#0b3472]"
+                        data-testid={`checkbox-home-gallery-${item.id}`}
+                      />
+                      <span>Home preview</span>
+                    </label>
+                    <button type="button" onClick={() => toggle(item)} disabled={update.isPending} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30" aria-label={`${item.isVisible ? "Hide" : "Show"} ${item.title}`} data-testid={`button-toggle-gallery-${item.id}`}>
+                      {item.isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                    <button type="button" onClick={() => void move(item, -1)} disabled={index === 0 || update.isPending} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30" aria-label={`Move ${item.title} up`} data-testid={`button-move-gallery-up-${item.id}`}>
+                      <ArrowUp className="h-4 w-4" />
+                    </button>
+                    <button type="button" onClick={() => void move(item, 1)} disabled={index === orderedItems.length - 1 || update.isPending} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30" aria-label={`Move ${item.title} down`} data-testid={`button-move-gallery-down-${item.id}`}>
+                      <ArrowDown className="h-4 w-4" />
+                    </button>
+                    <button type="button" onClick={() => setEditing(editing === item.id ? null : item.id)} className="rounded-lg px-3 py-2 text-xs font-bold text-[#0b3472] hover:bg-[#0b3472]/5" data-testid={`button-edit-gallery-${item.id}`}>
+                      {editing === item.id ? "Close" : "Edit"}
+                    </button>
+                    <button type="button" onClick={() => deleteItem(item)} disabled={remove.isPending} className="rounded-lg p-2 text-red-700 hover:bg-red-50 disabled:opacity-50" aria-label={`Delete ${item.title}`} data-testid={`button-delete-gallery-${item.id}`}>
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                {editing === item.id ? <GalleryItemEditor key={item.id} sectionId={section.id} initial={item} position={item.position} onFlash={onFlash} onClose={() => setEditing(null)} /> : null}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {editing === "new" ? <GalleryItemEditor key="gallery-new" sectionId={section.id} position={nextPosition} onFlash={onFlash} onClose={() => setEditing(null)} /> : null}
+    </div>
+  );
 }
 
 export default function AdminGalleryEditor({ home, onFlash }: { home: HomePage; onFlash: (flash: Flash) => void }) {

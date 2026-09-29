@@ -287,8 +287,7 @@ function Shell({
   const homeSectionActive =
     activeView === "hero" ||
     activeView === "programs" ||
-    activeView === "statistics" ||
-    activeView === "gallery";
+    activeView === "statistics";
   const activePage =
     activeView === "dashboard"
       ? "Dashboard"
@@ -309,7 +308,7 @@ function Shell({
             : activeView === "statistics"
               ? "Home · Statistics"
               : activeView === "gallery"
-                ? "Home · Gallery"
+                ? "Gallery"
               : pageItems.find((item) => item.key === activeView)?.label || "Home";
 
   const go = (view: WorkspaceView) => {
@@ -385,10 +384,10 @@ function Shell({
                       <NavRow icon={FileText} label="Hero" nested active={activeView === "hero"} onClick={() => go("hero")} />
                       <NavRow icon={Link2} label="Pathways" nested active={activeView === "programs"} onClick={() => go("programs")} />
                       <NavRow icon={ClipboardList} label="Statistics" nested active={activeView === "statistics"} onClick={() => go("statistics")} />
-                      <NavRow icon={ImagePlus} label="Gallery" nested active={activeView === "gallery"} onClick={() => go("gallery")} />
                     </div>
                   ) : null}
                 </div>
+                <NavRow icon={ImagePlus} label="Gallery" nested active={activeView === "gallery"} onClick={() => go("gallery")} />
                 {pageItems.map((item) => (
                   <NavRow key={item.key} icon={FolderOpen} label={item.label} nested active={activeView === item.key} onClick={() => go(item.key)} badge={item.note ? "Soon" : undefined} />
                 ))}
@@ -815,8 +814,8 @@ function AdminWorkspace() {
     body = (
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
         <PageIntro
-          eyebrow="Pages / Home / Gallery"
-          title="Show the college in its element."
+          eyebrow="Pages / Gallery"
+          title="Manage the campus gallery."
           description="Publish an honest, well-captioned view of the learning spaces and moments families can expect at Shastra."
         />
         <AdminGalleryEditor home={home} onFlash={showFlash} />

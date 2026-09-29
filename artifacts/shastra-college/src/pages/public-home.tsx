@@ -2,8 +2,12 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import {
   ArrowRight,
   Check,
+  ChevronLeft,
   ChevronDown,
+  ChevronRight,
   Menu,
+  Pause,
+  Play,
   RefreshCw,
   Send,
   X,
@@ -876,6 +880,231 @@ function StatisticsBar({
   );
 }
 
+const galleryPreviewCategories = [
+  "Campus",
+  "Library",
+  "Classrooms",
+  "Placements",
+  "Buildings",
+  "Events",
+] as const;
+
+function GalleryPreviewSection({ home }: { home: HomePage }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [paused, setPaused] = useState(false);
+  const [interacting, setInteracting] = useState(false);
+  const section = home.sections.find(
+    (candidate) =>
+      candidate.sectionKey.toLowerCase() === "gallery" && candidate.isVisible,
+  );
+  const featuredItems = useMemo(() => {
+    if (!section) return [];
+    const itemsByCategory = new Map<string, ContentItem>();
+    const ordered = home.items
+      .filter(
+        (item) =>
+          item.sectionId === section.id &&
+          item.itemType === "gallery-image" &&
+          item.isVisible &&
+          item.imageUrl &&
+          isRecord(item.content) &&
+          item.content.showOnHome === true,
+      )
+      .sort((a, b) => a.position - b.position);
+
+    for (const item of ordered) {
+      const content = isRecord(item.content) ? item.content : {};
+      const category = stringValue(content, ["category"]);
+      if (
+        galleryPreviewCategories.includes(category as (typeof galleryPreviewCategories)[number]) &&
+        !itemsByCategory.has(category)
+      ) {
+        itemsByCategory.set(category, item);
+      }
+    }
+
+    return galleryPreviewCategories
+      .map((category) => itemsByCategory.get(category))
+      .filter((item): item is ContentItem => Boolean(item));
+  }, [home.items, section]);
+  const content = section?.content ?? {};
+  const eyebrow = stringValue(content, ["eyebrow"], "Life at Shastra");
+  const heading = section?.title || "A closer look at campus life";
+  const description =
+    section?.subtitle ||
+    "Explore the spaces, people, and moments that make a college community.";
+
+  useEffect(() => {
+    if (paused || interacting || featuredItems.length < 2) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const interval = window.setInterval(() => {
+      const track = trackRef.current;
+      if (!track || track.scrollWidth <= track.clientWidth + 8) return;
+      const atEnd =
+        track.scrollLeft + track.clientWidth >= track.scrollWidth - 8;
+      track.scrollTo({
+        left: atEnd ? 0 : track.scrollLeft + track.clientWidth,
+        behavior: "smooth",
+      });
+    }, 6200);
+
+    return () => window.clearInterval(interval);
+  }, [featuredItems.length, interacting, paused]);
+
+  if (!section || featuredItems.length === 0) return null;
+
+  const scrollByViewport = (direction: -1 | 1) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    track.scrollBy({
+      left: track.clientWidth * direction,
+      behavior: reducedMotion ? "auto" : "smooth",
+    });
+  };
+
+  return (
+    <section
+      className="site-grid border-y border-[#0b3472]/10 bg-[#fbfaf6] px-5 py-12 sm:px-8 sm:py-16"
+      aria-labelledby="homepage-gallery-title"
+      data-testid="section-home-gallery-preview"
+      onMouseEnter={() => setInteracting(true)}
+      onMouseLeave={() => setInteracting(false)}
+      onFocusCapture={() => setInteracting(true)}
+      onBlurCapture={() => setInteracting(false)}
+    >
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+          <div className="max-w-2xl">
+            <p className="eyebrow text-[#e3212b]">{eyebrow}</p>
+            <h2
+              id="homepage-gallery-title"
+              className="mt-3 font-display text-3xl font-extrabold leading-tight tracking-tight text-[#0b3472] sm:text-4xl"
+            >
+              {heading}
+            </h2>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+              {description}
+            </p>
+            {featuredItems.some((item) => isDemo(item.content)) ? (
+              <p
+                className="mt-3 text-xs leading-5 text-slate-500"
+                role="note"
+                data-testid="notice-home-gallery-sample-images"
+              >
+                Illustrative sample photos. Replace them with approved campus images from Pages → Gallery.
+              </p>
+            ) : null}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="mr-2 hidden text-xs font-semibold text-slate-500 sm:inline">
+              {featuredItems.length} featured{" "}
+              {featuredItems.length === 1 ? "image" : "images"}
+            </span>
+            <button
+              type="button"
+              onClick={() => scrollByViewport(-1)}
+              className="focus-ring rounded-full border border-[#0b3472]/15 bg-white p-2.5 text-[#0b3472] transition hover:border-[#e3212b] hover:text-[#e3212b]"
+              aria-label="Previous featured images"
+              data-testid="button-home-gallery-previous"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setPaused((value) => !value)}
+              className="focus-ring inline-flex items-center gap-2 rounded-full border border-[#0b3472]/15 bg-white px-3.5 py-2.5 text-xs font-bold text-[#0b3472] transition hover:border-[#e3212b] hover:text-[#e3212b]"
+              aria-pressed={paused}
+              aria-label={paused ? "Resume gallery auto-scroll" : "Pause gallery auto-scroll"}
+              data-testid="button-home-gallery-pause"
+            >
+              {paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
+              {paused ? "Play" : "Pause"}
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollByViewport(1)}
+              className="focus-ring rounded-full border border-[#0b3472]/15 bg-white p-2.5 text-[#0b3472] transition hover:border-[#e3212b] hover:text-[#e3212b]"
+              aria-label="Next featured images"
+              data-testid="button-home-gallery-next"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        <div
+          ref={trackRef}
+          className="mt-8 grid auto-cols-[84%] grid-flow-col gap-4 overflow-x-auto overscroll-x-contain scroll-smooth snap-x snap-mandatory pb-3 motion-reduce:scroll-auto sm:auto-cols-[calc((100%_-_1rem)/2)] lg:auto-cols-[calc((100%_-_2rem)/3)]"
+          role="region"
+          aria-label="Featured campus gallery"
+          aria-roledescription="carousel"
+          data-testid="track-home-gallery-preview"
+        >
+          {featuredItems.map((item, index) => {
+            const itemContent = isRecord(item.content) ? item.content : {};
+            const category = stringValue(itemContent, ["category"], "Campus");
+            const altText = stringValue(itemContent, ["altText"], item.title);
+            return (
+              <article
+                key={item.id}
+                className="min-w-0 snap-start"
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`${index + 1} of ${featuredItems.length}: ${category}`}
+                data-testid={`card-home-gallery-${item.id}`}
+              >
+                <Link
+                  href="/gallery"
+                  className="group block h-full overflow-hidden rounded-[1.5rem] border border-[#0b3472]/10 bg-white shadow-[0_10px_26px_rgba(11,52,114,.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(11,52,114,.12)]"
+                  aria-label={`${category}: ${item.title}. Open the full gallery.`}
+                >
+                  <div className="aspect-[4/3] overflow-hidden bg-[#e8edf4]">
+                    <img
+                      src={collegeLogo(item.imageUrl)}
+                      alt={altText}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="p-5">
+                    <p className="eyebrow text-[#e3212b]">{category}</p>
+                    <h3 className="mt-2 truncate font-display text-xl font-extrabold text-[#0b3472]">
+                      {item.title}
+                    </h3>
+                    {item.description ? (
+                      <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">
+                        {item.description}
+                      </p>
+                    ) : null}
+                  </div>
+                </Link>
+              </article>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+          <p className="text-xs text-slate-500">
+            One selected image from each featured category.
+          </p>
+          <Link
+            href="/gallery"
+            className="focus-ring inline-flex items-center gap-2 rounded-full px-1 py-2 text-sm font-bold text-[#0b3472] transition hover:text-[#e3212b]"
+            data-testid="link-home-gallery-all"
+          >
+            Explore the full gallery
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function PageSections({ home }: { home: HomePage }) {
   const sections = useMemo(() => {
     const visible = home.sections.filter((section) => section.isVisible);
@@ -918,6 +1147,9 @@ function PageSections({ home }: { home: HomePage }) {
         }
         return <StatisticsBar key={section.id} section={section} items={items} />;
       })}
+      {sections.some(
+        (section) => section.sectionKey.toLowerCase() === "statistics",
+      ) ? <GalleryPreviewSection home={home} /> : null}
     </main>
   );
 }
