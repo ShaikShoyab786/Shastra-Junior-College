@@ -44,6 +44,11 @@ function assetUrl(value: string | null) {
   return value.startsWith("/objects/") ? `/api/storage${value}` : value;
 }
 
+function hasUsefulImageAlt(value: string) {
+  const normalized = value.trim().toLowerCase();
+  return normalized.length > 0 && !["img", "image", "photo", "picture"].includes(normalized);
+}
+
 function newId(prefix: string) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
@@ -215,6 +220,20 @@ export default function AdminCoursesEditor({ onFlash }: { onFlash: (flash: Flash
     setDraft(normalizeSettings(next));
     setError("");
   };
+  const updateBrandImageUrl = (
+    key: "logoImageUrl" | "backgroundImageUrl",
+    value: string | null,
+  ) => {
+    setDraft((current) =>
+      current
+        ? normalizeSettings({
+            ...current,
+            brandPanel: { ...current.brandPanel, [key]: value },
+          })
+        : current,
+    );
+    setError("");
+  };
   const upload = async (file: File) => {
     if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) throw new Error("Use a PNG, JPEG, or WebP image.");
     if (file.size > 2 * 1024 * 1024) throw new Error("Images must be 2 MB or smaller.");
@@ -241,8 +260,8 @@ export default function AdminCoursesEditor({ onFlash }: { onFlash: (flash: Flash
     if (!draft) return;
     setError("");
     try {
-      if (draft.brandPanel.logoImageUrl && !draft.brandPanel.logoImageAlt.trim()) throw new Error("Useful alt text is required for the brand logo.");
-      if (draft.brandPanel.backgroundImageUrl && !draft.brandPanel.backgroundImageAlt.trim()) throw new Error("Useful alt text is required for the brand background image.");
+      if (draft.brandPanel.logoImageUrl && !hasUsefulImageAlt(draft.brandPanel.logoImageAlt)) throw new Error("Add descriptive alt text for the brand logo (not just “image”).");
+      if (draft.brandPanel.backgroundImageUrl && !hasUsefulImageAlt(draft.brandPanel.backgroundImageAlt)) throw new Error("Add descriptive alt text for the brand background image (not just “image”).");
       for (const card of draft.courseCards) {
         if (card.imageUrl && !card.imageAlt.trim()) throw new Error(`Useful alt text is required for the image on “${card.title || card.id}”.`);
         if (card.isVisible && (!card.title.trim() || !card.category.trim() || !card.description.trim() || !card.destination.trim())) throw new Error(`Complete the title, category, description, and destination for visible course “${card.title || card.id}”.`);
@@ -279,8 +298,8 @@ export default function AdminCoursesEditor({ onFlash }: { onFlash: (flash: Flash
           <Field label="Supporting text" value={draft.brandPanel.supportingText} onChange={(value) => setDraftValue({ ...draft, brandPanel: { ...draft.brandPanel, supportingText: value } })} multiline testId="textarea-courses-brand-supporting-text" />
         </div>
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
-          <ImageField label="Brand logo" value={draft.brandPanel.logoImageUrl} alt={draft.brandPanel.logoImageAlt} onValue={(value) => setDraftValue({ ...draft, brandPanel: { ...draft.brandPanel, logoImageUrl: value } })} onAlt={(value) => setDraftValue({ ...draft, brandPanel: { ...draft.brandPanel, logoImageAlt: value } })} onUpload={async (file) => setDraftValue({ ...draft, brandPanel: { ...draft.brandPanel, logoImageUrl: await upload(file) } })} testId="courses-brand-logo" />
-          <ImageField label="Brand background" value={draft.brandPanel.backgroundImageUrl} alt={draft.brandPanel.backgroundImageAlt} onValue={(value) => setDraftValue({ ...draft, brandPanel: { ...draft.brandPanel, backgroundImageUrl: value } })} onAlt={(value) => setDraftValue({ ...draft, brandPanel: { ...draft.brandPanel, backgroundImageAlt: value } })} onUpload={async (file) => setDraftValue({ ...draft, brandPanel: { ...draft.brandPanel, backgroundImageUrl: await upload(file) } })} testId="courses-brand-background" />
+          <ImageField label="Brand logo" value={draft.brandPanel.logoImageUrl} alt={draft.brandPanel.logoImageAlt} onValue={(value) => setDraftValue({ ...draft, brandPanel: { ...draft.brandPanel, logoImageUrl: value } })} onAlt={(value) => setDraftValue({ ...draft, brandPanel: { ...draft.brandPanel, logoImageAlt: value } })} onUpload={async (file) => updateBrandImageUrl("logoImageUrl", await upload(file))} testId="courses-brand-logo" />
+          <ImageField label="Brand background" value={draft.brandPanel.backgroundImageUrl} alt={draft.brandPanel.backgroundImageAlt} onValue={(value) => setDraftValue({ ...draft, brandPanel: { ...draft.brandPanel, backgroundImageUrl: value } })} onAlt={(value) => setDraftValue({ ...draft, brandPanel: { ...draft.brandPanel, backgroundImageAlt: value } })} onUpload={async (file) => updateBrandImageUrl("backgroundImageUrl", await upload(file))} testId="courses-brand-background" />
         </div>
       </Panel>
 

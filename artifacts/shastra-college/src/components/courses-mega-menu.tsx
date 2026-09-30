@@ -172,7 +172,7 @@ function MenuPanel({
               />
               <div
                 aria-hidden="true"
-                className="absolute inset-0 bg-gradient-to-br from-[#0b3472]/95 to-[#0b3472]/80"
+                className="absolute inset-0 bg-gradient-to-br from-[#0b3472]/90 to-[#0b3472]/72"
               />
             </>
           ) : null}

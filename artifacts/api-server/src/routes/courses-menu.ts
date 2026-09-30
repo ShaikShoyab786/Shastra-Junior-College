@@ -128,6 +128,11 @@ function isSafeImageReference(value: string | null): boolean {
   }
 }
 
+function hasUsefulImageAlt(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+  return normalized.length > 0 && !["img", "image", "photo", "picture"].includes(normalized);
+}
+
 function validateCoursesMenu(menu: CoursesMenuContent): string | null {
   const orderedLists = [
     ["course cards", menu.courseCards],
@@ -203,8 +208,8 @@ function validateCoursesMenu(menu: CoursesMenuContent): string | null {
     if (!isSafeImageReference(url)) {
       return "Brand images must use a safe site path or an HTTP(S) URL.";
     }
-    if (url?.trim() && !alt.trim()) {
-      return "Every brand image needs useful alt text.";
+    if (url?.trim() && !hasUsefulImageAlt(alt)) {
+      return "Every brand image needs descriptive alt text, not a generic label.";
     }
   }
 
