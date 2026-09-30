@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import {
   ArrowRight,
   BookOpen,
@@ -132,10 +133,12 @@ function Benefit({ benefit }: { benefit: CoursesMenuBenefit }) {
 function MenuPanel({
   data,
   onClose,
+  onDismiss,
   fallbackLogoUrl,
 }: {
   data: CoursesMenuSettings;
   onClose: () => void;
+  onDismiss: () => void;
   fallbackLogoUrl: string;
 }) {
   const brandImage = assetUrl(data.brandPanel.backgroundImageUrl);
@@ -152,7 +155,7 @@ function MenuPanel({
     <div className="overflow-hidden rounded-[1.65rem] border border-[#0b3472]/12 bg-[#fbfaf6] shadow-[0_24px_70px_rgba(11,52,114,.18)]" data-testid="panel-courses-mega-menu">
       <div className="flex items-center justify-between border-b border-[#0b3472]/10 px-5 py-3 md:hidden">
         <span className="eyebrow text-[#e3212b]">Explore Courses</span>
-        <button type="button" onClick={onClose} className="focus-ring rounded-lg p-2 text-[#0b3472]" aria-label="Close Courses menu" data-testid="button-close-courses-menu">
+        <button type="button" onClick={onDismiss} className="focus-ring rounded-lg p-2 text-[#0b3472]" aria-label="Close Courses menu" data-testid="button-close-courses-menu">
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -239,25 +242,50 @@ export default function CoursesMegaMenu({
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [panelTop, setPanelTop] = useState(88);
   const query = useGetCoursesMenu({
     query: { enabled: open, queryKey: getGetCoursesMenuQueryKey() },
   });
-  const close = () => {
+  const getPanelTop = () => {
+    const trigger = triggerRef.current;
+    if (!trigger) return 88;
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+    const anchor = isMobile ? trigger : trigger.closest("header");
+    return Math.ceil((anchor?.getBoundingClientRect().bottom ?? 76) + 8);
+  };
+  const close = (restoreFocus = false) => {
     setOpen(false);
-    onMobileNavClose?.();
+    if (!restoreFocus) onMobileNavClose?.();
+    if (restoreFocus) {
+      requestAnimationFrame(() => triggerRef.current?.focus());
+    }
   };
 
   useEffect(() => {
     if (!open) return;
+    const updatePosition = () => setPanelTop(getPanelTop());
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") close();
+      if (event.key === "Escape") close(true);
     };
     const onPointerDown = (event: PointerEvent) => {
-      if (rootRef.current && !rootRef.current.contains(event.target as Node)) close();
+      const target = event.target as Node;
+      if (
+        !rootRef.current?.contains(target) &&
+        !panelRef.current?.contains(target)
+      ) {
+        setOpen(false);
+      }
     };
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
     window.addEventListener("keydown", onKeyDown);
     document.addEventListener("pointerdown", onPointerDown);
     return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
       window.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("pointerdown", onPointerDown);
     };
@@ -266,8 +294,16 @@ export default function CoursesMegaMenu({
   return (
     <div ref={rootRef} className="relative">
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => {
+          if (open) {
+            close(true);
+            return;
+          }
+          setPanelTop(getPanelTop());
+          setOpen(true);
+        }}
         className="focus-ring inline-flex items-center gap-1 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-bold text-[#0b3472] transition-colors hover:text-[#e3212b] md:px-0 md:py-0"
         aria-haspopup="dialog"
         aria-expanded={open}
@@ -276,8 +312,18 @@ export default function CoursesMegaMenu({
         Courses
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
       </button>
-      {open ? (
-        <div className="absolute left-0 right-0 top-full z-50 mt-3 w-[min(94vw,840px)] md:left-auto md:right-0 md:w-[min(92vw,860px)]" role="dialog" aria-label="Courses menu">
+      {open && typeof document !== "undefined"
+        ? createPortal(
+        <div
+          ref={panelRef}
+          className="fixed left-1/2 z-[60] w-[min(92vw,860px)] -translate-x-1/2 overflow-y-auto overscroll-contain"
+          style={{
+            top: panelTop,
+            maxHeight: `calc(100dvh - ${panelTop + 16}px)`,
+          }}
+          role="dialog"
+          aria-label="Courses menu"
+        >
           {query.isLoading ? (
             <div className="flex items-center gap-3 rounded-2xl border border-[#0b3472]/12 bg-[#fbfaf6] p-6 text-sm font-semibold text-[#0b3472] shadow-[0_24px_70px_rgba(11,52,114,.18)]" data-testid="status-courses-menu-loading">
               <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> Loading confirmed courses…
@@ -290,11 +336,14 @@ export default function CoursesMegaMenu({
             <MenuPanel
               data={query.data}
               onClose={close}
+              onDismiss={() => close(true)}
               fallbackLogoUrl={fallbackLogoUrl}
             />
           )}
-        </div>
-      ) : null}
+        </div>,
+        document.body,
+      )
+        : null}
     </div>
   );
 }
