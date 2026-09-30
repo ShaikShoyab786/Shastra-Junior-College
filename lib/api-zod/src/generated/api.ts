@@ -74,10 +74,10 @@ export const GetHomePageResponse = zod.object({
 
 
 /**
- * @summary Get published About, Faculty, or Gallery content
+ * @summary Get published About, Faculty, Gallery, or Courses content
  */
 export const GetCmsPageParams = zod.object({
-  "pageSlug": zod.enum(['about', 'faculty', 'gallery'])
+  "pageSlug": zod.enum(['about', 'faculty', 'gallery', 'courses'])
 })
 
 export const getCmsPageResponseSettingsNavigationItemLabelMax = 80;
@@ -600,7 +600,7 @@ export const GetAdminCoursesMenuResponse = zod.object({
 
 
 /**
- * @summary Replace Courses mega-menu content for an authorized admin
+ * @summary Update Courses mega-menu content for an authorized admin
  */
 export const updateAdminCoursesMenuBodyBrandPanelCollegeNameMax = 120;
 
@@ -703,12 +703,12 @@ export const UpdateAdminCoursesMenuBody = zod.object({
   "logoImageAlt": zod.string().max(updateAdminCoursesMenuBodyBrandPanelLogoImageAltMax),
   "backgroundImageUrl": zod.string().max(updateAdminCoursesMenuBodyBrandPanelBackgroundImageUrlMax).nullable(),
   "backgroundImageAlt": zod.string().max(updateAdminCoursesMenuBodyBrandPanelBackgroundImageAltMax)
-}),
+}).optional(),
   "heading": zod.object({
   "eyebrow": zod.string().max(updateAdminCoursesMenuBodyHeadingEyebrowMax),
   "title": zod.string().max(updateAdminCoursesMenuBodyHeadingTitleMax),
   "pathwayBadge": zod.string().max(updateAdminCoursesMenuBodyHeadingPathwayBadgeMax).nullable()
-}),
+}).optional(),
   "courseCards": zod.array(zod.object({
   "id": zod.string().min(1).max(updateAdminCoursesMenuBodyCourseCardsItemIdMax).regex(updateAdminCoursesMenuBodyCourseCardsItemIdRegExp),
   "order": zod.number().int().min(updateAdminCoursesMenuBodyCourseCardsItemOrderMin),
@@ -721,13 +721,13 @@ export const UpdateAdminCoursesMenuBody = zod.object({
   "tint": zod.string().regex(updateAdminCoursesMenuBodyCourseCardsItemTintRegExp).nullable(),
   "imageUrl": zod.string().max(updateAdminCoursesMenuBodyCourseCardsItemImageUrlMax).nullable(),
   "imageAlt": zod.string().max(updateAdminCoursesMenuBodyCourseCardsItemImageAltMax)
-})).max(updateAdminCoursesMenuBodyCourseCardsMax),
+})).max(updateAdminCoursesMenuBodyCourseCardsMax).optional(),
   "comingSoonCard": zod.union([zod.object({
   "title": zod.string().max(updateAdminCoursesMenuBodyComingSoonCardOneTitleMax),
   "description": zod.string().max(updateAdminCoursesMenuBodyComingSoonCardOneDescriptionMax),
   "statusLabel": zod.string().max(updateAdminCoursesMenuBodyComingSoonCardOneStatusLabelMax),
   "isVisible": zod.boolean()
-}),zod.null()]),
+}),zod.null()]).optional(),
   "benefits": zod.array(zod.object({
   "id": zod.string().min(1).max(updateAdminCoursesMenuBodyBenefitsItemIdMax).regex(updateAdminCoursesMenuBodyBenefitsItemIdRegExp),
   "order": zod.number().int().min(updateAdminCoursesMenuBodyBenefitsItemOrderMin),
@@ -735,14 +735,14 @@ export const UpdateAdminCoursesMenuBody = zod.object({
   "description": zod.string().max(updateAdminCoursesMenuBodyBenefitsItemDescriptionMax),
   "icon": zod.string().max(updateAdminCoursesMenuBodyBenefitsItemIconMax).nullable(),
   "isVisible": zod.boolean()
-})).max(updateAdminCoursesMenuBodyBenefitsMax),
+})).max(updateAdminCoursesMenuBodyBenefitsMax).optional(),
   "utilityLinks": zod.array(zod.object({
   "id": zod.string().min(1).max(updateAdminCoursesMenuBodyUtilityLinksItemIdMax).regex(updateAdminCoursesMenuBodyUtilityLinksItemIdRegExp),
   "order": zod.number().int().min(updateAdminCoursesMenuBodyUtilityLinksItemOrderMin),
   "label": zod.string().max(updateAdminCoursesMenuBodyUtilityLinksItemLabelMax),
   "destination": zod.string().max(updateAdminCoursesMenuBodyUtilityLinksItemDestinationMax),
   "isVisible": zod.boolean()
-})).max(updateAdminCoursesMenuBodyUtilityLinksMax),
+})).max(updateAdminCoursesMenuBodyUtilityLinksMax).optional(),
   "ctaButtons": zod.array(zod.object({
   "id": zod.string().min(1).max(updateAdminCoursesMenuBodyCtaButtonsItemOneIdMax).regex(updateAdminCoursesMenuBodyCtaButtonsItemOneIdRegExp),
   "order": zod.number().int().min(updateAdminCoursesMenuBodyCtaButtonsItemOneOrderMin),
@@ -751,7 +751,7 @@ export const UpdateAdminCoursesMenuBody = zod.object({
   "isVisible": zod.boolean()
 }).and(zod.object({
   "variant": zod.enum(['primary', 'secondary'])
-}))).max(updateAdminCoursesMenuBodyCtaButtonsMax)
+}))).max(updateAdminCoursesMenuBodyCtaButtonsMax).optional()
 })
 
 export const updateAdminCoursesMenuResponseBrandPanelCollegeNameMax = 120;
@@ -908,10 +908,10 @@ export const UpdateAdminCoursesMenuResponse = zod.object({
 
 
 /**
- * @summary Get About, Faculty, or Gallery content for authorized staff
+ * @summary Get About, Faculty, Gallery, or Courses content for authorized staff
  */
 export const GetAdminCmsPageParams = zod.object({
-  "pageSlug": zod.enum(['about', 'faculty', 'gallery'])
+  "pageSlug": zod.enum(['about', 'faculty', 'gallery', 'courses'])
 })
 
 export const getAdminCmsPageResponseSettingsNavigationItemLabelMax = 80;

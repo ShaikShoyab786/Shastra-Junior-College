@@ -32,8 +32,8 @@ import { requireAdmin } from "../middlewares/requireAdmin";
 const router: IRouter = Router();
 const adminRouter: IRouter = Router();
 const homePageSlug = "home";
-const managedPageSlugs = ["home", "about", "faculty", "gallery"] as const;
-const publicPageSlugs = ["about", "faculty", "gallery"] as const;
+const managedPageSlugs = ["home", "about", "faculty", "gallery", "courses"] as const;
+const publicPageSlugs = ["about", "faculty", "gallery", "courses"] as const;
 type ManagedPageSlug = (typeof managedPageSlugs)[number];
 type PublicPageSlug = (typeof publicPageSlugs)[number];
 

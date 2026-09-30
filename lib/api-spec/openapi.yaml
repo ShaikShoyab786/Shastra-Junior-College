@@ -48,14 +48,14 @@ paths:
     get:
       operationId: getCmsPage
       tags: [home]
-      summary: Get published About, Faculty, or Gallery content
+      summary: Get published About, Faculty, Gallery, or Courses content
       parameters:
         - name: pageSlug
           in: path
           required: true
           schema:
             type: string
-            enum: [about, faculty, gallery]
+            enum: [about, faculty, gallery, courses]
       responses:
         "200":
           description: Published page content
@@ -229,16 +229,16 @@ paths:
           description: Sign-in required
         "403":
           description: The signed-in account is not an authorized admin
-    put:
+    patch:
       operationId: updateAdminCoursesMenu
       tags: [admin]
-      summary: Replace Courses mega-menu content for an authorized admin
+      summary: Update Courses mega-menu content for an authorized admin
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CoursesMenuSettings"
+              $ref: "#/components/schemas/CoursesMenuPatch"
       responses:
         "200":
           description: Updated Courses mega-menu content
@@ -256,14 +256,14 @@ paths:
     get:
       operationId: getAdminCmsPage
       tags: [admin]
-      summary: Get About, Faculty, or Gallery content for authorized staff
+      summary: Get About, Faculty, Gallery, or Courses content for authorized staff
       parameters:
         - name: pageSlug
           in: path
           required: true
           schema:
             type: string
-            enum: [about, faculty, gallery]
+            enum: [about, faculty, gallery, courses]
       responses:
         "200":
           description: Page content including unpublished sections and items
@@ -801,6 +801,37 @@ components:
         - benefits
         - utilityLinks
         - ctaButtons
+    CoursesMenuPatch:
+      type: object
+      properties:
+        brandPanel:
+          $ref: "#/components/schemas/CoursesMenuBrandPanel"
+        heading:
+          $ref: "#/components/schemas/CoursesMenuHeading"
+        courseCards:
+          type: array
+          maxItems: 40
+          items:
+            $ref: "#/components/schemas/CoursesMenuCard"
+        comingSoonCard:
+          anyOf:
+            - $ref: "#/components/schemas/CoursesMenuComingSoonCard"
+            - type: "null"
+        benefits:
+          type: array
+          maxItems: 24
+          items:
+            $ref: "#/components/schemas/CoursesMenuBenefit"
+        utilityLinks:
+          type: array
+          maxItems: 24
+          items:
+            $ref: "#/components/schemas/CoursesMenuLink"
+        ctaButtons:
+          type: array
+          maxItems: 8
+          items:
+            $ref: "#/components/schemas/CoursesMenuButton"
     SiteSettings:
       type: object
       properties:

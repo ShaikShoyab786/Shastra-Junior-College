@@ -10,9 +10,9 @@ import HomePage from '@/pages/public-home';
 import AboutPage from '@/pages/about';
 import GalleryPage from '@/pages/gallery';
 import FacultyPage from '@/pages/faculty';
+import { PublicCoursesPage as CoursesPage } from '@/pages/public-courses';
 import {
   ContactPage,
-  CoursesPage,
   KnowledgeHubPage,
   ResultsPage,
 } from '@/pages/public-destination-page';

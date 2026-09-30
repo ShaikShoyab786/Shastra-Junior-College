@@ -61,6 +61,7 @@ import AdminGalleryEditor from "./admin-gallery-editor";
 import AdminFacultyEditor from "./admin-faculty-editor";
 import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
 import AdminCoursesEditor from "./admin-courses-editor";
+import AdminCoursesPageEditor from "./admin-courses-page-editor";
 
 type Flash = {
   tone: "success" | "error";
@@ -88,6 +89,7 @@ type WorkspaceView =
   | "results"
   | "faculty"
   | "courses"
+  | "courses-explore"
   | "gallery";
 
 const pageItems: Array<{ key: WorkspaceView; label: string; note?: string }> = [
@@ -313,6 +315,7 @@ function Shell({
     activeView === "courses-mega-menu",
   );
   const [pagesOpen, setPagesOpen] = useState(false);
+  const [coursesOpen, setCoursesOpen] = useState(activeView === "courses" || activeView === "courses-explore");
   const [aboutOpen, setAboutOpen] = useState(
     activeView === "about" ||
       activeView === "about-hero" ||
@@ -347,6 +350,8 @@ function Shell({
           ? "Pages / About"
           : homeSectionActive
             ? "Pages / Home"
+              : activeView === "courses" || activeView === "courses-explore"
+                ? "Pages / Courses"
             : "Pages";
   const activeTitle =
     activeView === "dashboard"
@@ -355,6 +360,8 @@ function Shell({
         ? "Site identity"
           : activeView === "courses-mega-menu"
             ? "Courses Mega Menu"
+            : activeView === "courses-explore"
+              ? "Explore Courses"
         : activeView === "about"
           ? "About · Sub sections"
           : activeView === "about-hero"
@@ -403,6 +410,9 @@ function Shell({
       view === "about-core-values"
     ) {
       setAboutOpen(true);
+    }
+    if (view === "courses" || view === "courses-explore") {
+      setCoursesOpen(true);
     }
     onNavigate(view);
     setMobileNav(false);
@@ -606,6 +616,39 @@ function Shell({
                               active={activeView === "about-core-values"}
                               onClick={() => go("about-core-values")}
                             />
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  }
+
+                  if (item.key === "courses") {
+                    return (
+                      <div key={item.key}>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => go("courses")}
+                            className={`flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${
+                              activeView === "courses" || activeView === "courses-explore"
+                                ? "bg-white/10 text-white"
+                                : "text-blue-100 hover:bg-white/10 hover:text-white"
+                            }`}
+                            data-testid="nav-courses-page"
+                          >
+                            <FolderOpen className="h-4 w-4 shrink-0" />
+                            <span className="min-w-0 flex-1 truncate">Courses</span>
+                          </button>
+                          <button type="button" onClick={() => setCoursesOpen((current) => !current)} aria-label="Toggle Courses subsections" aria-expanded={coursesOpen} className="rounded-lg p-2 text-blue-300 hover:bg-white/10 hover:text-white" data-testid="button-toggle-courses-subsections">
+                            {coursesOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                          </button>
+                        </div>
+                        {coursesOpen ? (
+                          <div className="ml-3 mt-1 space-y-1 border-l border-white/10 pl-2">
+                            <NavRow icon={FileText} label="Explore Courses" nested active={activeView === "courses-explore"} onClick={() => go("courses-explore")} />
+                            <NavRow icon={FileText} label="Quick Course Highlights" nested active={false} onClick={() => undefined} badge="Soon" />
+                            <NavRow icon={FileText} label="Why Choose This Pathway" nested active={false} onClick={() => undefined} badge="Soon" />
+                            <NavRow icon={FileText} label="Syllabus" nested active={false} onClick={() => undefined} badge="Soon" />
                           </div>
                         ) : null}
                       </div>
@@ -1353,25 +1396,41 @@ function AdminWorkspace() {
           description="The public Courses page remains separate from the header mega menu."
         />
         <SectionCard className="max-w-3xl">
-          <h2 className="font-display text-xl font-extrabold text-[#0b3472]">
-            Public page information
-          </h2>
+          <h2 className="font-display text-xl font-extrabold text-[#0b3472]">Courses page tools</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            The existing Courses page directs visitors to contact the college
-            for current course information. The header pathway menu is managed
-            separately under Site settings, then Mega Menus.
+            Manage the public page hero, Regular Pathways settings, and the shared course records from the Explore Courses editor.
           </p>
+            <button
+              type="button"
+              onClick={() => setActiveView("courses-explore")}
+              className="focus-ring mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0b3472] px-4 py-2.5 text-sm font-bold text-white"
+              data-testid="button-admin-open-explore-courses"
+            >
+              Open Explore Courses
+              <ChevronRight className="h-4 w-4" />
+            </button>
           <Link
             href="/courses"
             target="_blank"
             rel="noreferrer"
-            className="focus-ring mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0b3472] px-4 py-2.5 text-sm font-bold text-white"
+              className="focus-ring ml-2 mt-5 inline-flex items-center gap-2 rounded-xl border border-[#0b3472]/20 bg-white px-4 py-2.5 text-sm font-bold text-[#0b3472]"
             data-testid="link-admin-preview-courses-page"
           >
             Preview public Courses page
             <ExternalLink className="h-4 w-4" />
           </Link>
         </SectionCard>
+      </div>
+    );
+  } else if (activeView === "courses-explore") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / Courses / Explore Courses"
+          title="Edit Explore Courses."
+          description="Shape the public Courses page and maintain the shared course records used by the header mega menu."
+        />
+        <AdminCoursesPageEditor onFlash={showFlash} />
       </div>
     );
   } else {

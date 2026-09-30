@@ -169,6 +169,20 @@ export interface CoursesMenuSettings {
   ctaButtons: CoursesMenuButton[];
 }
 
+export interface CoursesMenuPatch {
+  brandPanel?: CoursesMenuBrandPanel;
+  heading?: CoursesMenuHeading;
+  /** @maxItems 40 */
+  courseCards?: CoursesMenuCard[];
+  comingSoonCard?: CoursesMenuComingSoonCard | null;
+  /** @maxItems 24 */
+  benefits?: CoursesMenuBenefit[];
+  /** @maxItems 24 */
+  utilityLinks?: CoursesMenuLink[];
+  /** @maxItems 8 */
+  ctaButtons?: CoursesMenuButton[];
+}
+
 export interface SiteSettings {
   id: string;
   collegeName: string;

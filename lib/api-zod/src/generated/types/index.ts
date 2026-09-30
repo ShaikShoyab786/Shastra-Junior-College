@@ -24,6 +24,7 @@ export * from './coursesMenuCard';
 export * from './coursesMenuComingSoonCard';
 export * from './coursesMenuHeading';
 export * from './coursesMenuLink';
+export * from './coursesMenuPatch';
 export * from './coursesMenuSettings';
 export * from './enquiryActionResult';
 export * from './enquiryAnswer';

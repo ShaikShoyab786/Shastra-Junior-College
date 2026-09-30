@@ -148,17 +148,16 @@ function validateCoursesMenu(menu: CoursesMenuContent): string | null {
   }
 
   for (const card of menu.courseCards) {
-    if (!isSafeDestination(card.destination, card.isVisible)) {
+    if (!isSafeDestination(card.destination, false)) {
       return "Course destinations must be safe internal paths or HTTP(S) URLs.";
     }
     if (
       card.isVisible &&
       (!card.title.trim() ||
         !card.category.trim() ||
-        !card.description.trim() ||
-        !card.destination.trim())
+        !card.description.trim())
     ) {
-      return "Visible course cards need a title, category, description, and destination.";
+      return "Visible course cards need a title, category, and description.";
     }
     if (!isSafeImageReference(card.imageUrl)) {
       return "Course images must use a safe site path or an HTTP(S) URL.";
@@ -289,7 +288,7 @@ router.get(
   },
 );
 
-router.put(
+router.patch(
   "/admin/courses-menu",
   ...adminMiddleware,
   async (req, res): Promise<void> => {
@@ -299,23 +298,49 @@ router.put(
       return;
     }
 
-    const content = parsedBody.data as CoursesMenuContent;
-    const validationError = validateCoursesMenu(content);
-    if (validationError) {
-      res.status(400).json({ error: validationError });
+    const result = await db.transaction(async (tx) => {
+      const [current] = await tx
+        .select({ content: coursesMenuSettingsTable.content })
+        .from(coursesMenuSettingsTable)
+        .where(eq(coursesMenuSettingsTable.id, "primary"))
+        .for("update")
+        .limit(1);
+
+      if (!current) {
+        return { kind: "missing" as const };
+      }
+
+      const content = {
+        ...current.content,
+        ...parsedBody.data,
+      } as CoursesMenuContent;
+      const validationError = validateCoursesMenu(content);
+      if (validationError) {
+        return { kind: "invalid" as const, error: validationError };
+      }
+
+      const [updated] = await tx
+        .update(coursesMenuSettingsTable)
+        .set({ content, updatedAt: new Date() })
+        .where(eq(coursesMenuSettingsTable.id, "primary"))
+        .returning({ content: coursesMenuSettingsTable.content });
+
+      return updated
+        ? { kind: "updated" as const, content: updated.content }
+        : { kind: "missing" as const };
+    });
+
+    if (result.kind === "missing") {
+      res.status(503).json({ error: "Courses menu content is not ready." });
       return;
     }
 
-    const [updated] = await db
-      .insert(coursesMenuSettingsTable)
-      .values({ id: "primary", content })
-      .onConflictDoUpdate({
-        target: coursesMenuSettingsTable.id,
-        set: { content, updatedAt: new Date() },
-      })
-      .returning({ content: coursesMenuSettingsTable.content });
+    if (result.kind === "invalid") {
+      res.status(400).json({ error: result.error });
+      return;
+    }
 
-    const parsed = GetAdminCoursesMenuResponse.safeParse(updated?.content);
+    const parsed = GetAdminCoursesMenuResponse.safeParse(result.content);
     if (!parsed.success) {
       req.log.error(
         { errors: parsed.error.flatten() },

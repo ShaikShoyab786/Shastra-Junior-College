@@ -30,6 +30,7 @@ import type {
   ContentSection,
   ContentSectionInput,
   ContentSectionUpdate,
+  CoursesMenuPatch,
   CoursesMenuSettings,
   EnquiryActionResult,
   EnquiryReceipt,
@@ -226,7 +227,7 @@ export function useGetHomePage<TData = Awaited<ReturnType<typeof getHomePage>>, 
 
 
 
-export const getGetCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery',) => {
+export const getGetCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses',) => {
 
 
 
@@ -235,9 +236,9 @@ export const getGetCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery',) => 
 }
 
 /**
- * @summary Get published About, Faculty, or Gallery content
+ * @summary Get published About, Faculty, Gallery, or Courses content
  */
-export const getCmsPage = async (pageSlug: 'about' | 'faculty' | 'gallery', options?: Parameters<typeof customFetch>[1]): Promise<CmsPage> => {
+export const getCmsPage = async (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses', options?: Parameters<typeof customFetch>[1]): Promise<CmsPage> => {
 
   return customFetch<CmsPage>(getGetCmsPageUrl(pageSlug),
   {
@@ -252,14 +253,14 @@ export const getCmsPage = async (pageSlug: 'about' | 'faculty' | 'gallery', opti
 
 
 
-export const getGetCmsPageQueryKey = (pageSlug: 'about' | 'faculty' | 'gallery',) => {
+export const getGetCmsPageQueryKey = (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses',) => {
     return [
     `/api/pages/${pageSlug}`
     ] as const;
     }
 
 
-export const getGetCmsPageQueryOptions = <TData = Awaited<ReturnType<typeof getCmsPage>>, TError = ErrorType<void>>(pageSlug: 'about' | 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetCmsPageQueryOptions = <TData = Awaited<ReturnType<typeof getCmsPage>>, TError = ErrorType<void>>(pageSlug: 'about' | 'faculty' | 'gallery' | 'courses', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -282,11 +283,11 @@ export type GetCmsPageQueryError = ErrorType<void>
 
 
 /**
- * @summary Get published About, Faculty, or Gallery content
+ * @summary Get published About, Faculty, Gallery, or Courses content
  */
 
 export function useGetCmsPage<TData = Awaited<ReturnType<typeof getCmsPage>>, TError = ErrorType<void>>(
- pageSlug: 'about' | 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ pageSlug: 'about' | 'faculty' | 'gallery' | 'courses', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -945,9 +946,9 @@ export const getUpdateAdminCoursesMenuUrl = () => {
 }
 
 /**
- * @summary Replace Courses mega-menu content for an authorized admin
+ * @summary Update Courses mega-menu content for an authorized admin
  */
-export const updateAdminCoursesMenu = async (coursesMenuSettings: CoursesMenuSettings, options?: Parameters<typeof customFetch>[1]): Promise<CoursesMenuSettings> => {
+export const updateAdminCoursesMenu = async (coursesMenuPatch: CoursesMenuPatch, options?: Parameters<typeof customFetch>[1]): Promise<CoursesMenuSettings> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -966,9 +967,9 @@ export const updateAdminCoursesMenu = async (coursesMenuSettings: CoursesMenuSet
 return customFetch<CoursesMenuSettings>(getUpdateAdminCoursesMenuUrl(),
   {
     ...options,
-    method: 'PUT',
+    method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
-    body: JSON.stringify(coursesMenuSettings)
+    body: JSON.stringify(coursesMenuPatch)
   }
 );}
 
@@ -1006,12 +1007,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type UpdateAdminCoursesMenuMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminCoursesMenu>>>
-    export type UpdateAdminCoursesMenuMutationBody = BodyType<CoursesMenuSettings>
+    export type UpdateAdminCoursesMenuMutationBody = BodyType<CoursesMenuPatch>
     export type UpdateAdminCoursesMenuMutationError = ErrorType<void>
-    export type UpdateAdminCoursesMenuMutationVariables = {data: BodyType<CoursesMenuSettings>}
+    export type UpdateAdminCoursesMenuMutationVariables = {data: BodyType<CoursesMenuPatch>}
 
     /**
- * @summary Replace Courses mega-menu content for an authorized admin
+ * @summary Update Courses mega-menu content for an authorized admin
  */
 export const useUpdateAdminCoursesMenu = <TError = ErrorType<void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminCoursesMenu>>, TError,UpdateAdminCoursesMenuMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -1024,7 +1025,7 @@ export const useUpdateAdminCoursesMenu = <TError = ErrorType<void>,
       return useMutation(getUpdateAdminCoursesMenuMutationOptions(options));
     }
 
-export const getGetAdminCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery',) => {
+export const getGetAdminCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses',) => {
 
 
 
@@ -1033,9 +1034,9 @@ export const getGetAdminCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery',
 }
 
 /**
- * @summary Get About, Faculty, or Gallery content for authorized staff
+ * @summary Get About, Faculty, Gallery, or Courses content for authorized staff
  */
-export const getAdminCmsPage = async (pageSlug: 'about' | 'faculty' | 'gallery', options?: Parameters<typeof customFetch>[1]): Promise<CmsPage> => {
+export const getAdminCmsPage = async (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses', options?: Parameters<typeof customFetch>[1]): Promise<CmsPage> => {
 
   return customFetch<CmsPage>(getGetAdminCmsPageUrl(pageSlug),
   {
@@ -1050,14 +1051,14 @@ export const getAdminCmsPage = async (pageSlug: 'about' | 'faculty' | 'gallery',
 
 
 
-export const getGetAdminCmsPageQueryKey = (pageSlug: 'about' | 'faculty' | 'gallery',) => {
+export const getGetAdminCmsPageQueryKey = (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses',) => {
     return [
     `/api/admin/pages/${pageSlug}`
     ] as const;
     }
 
 
-export const getGetAdminCmsPageQueryOptions = <TData = Awaited<ReturnType<typeof getAdminCmsPage>>, TError = ErrorType<void>>(pageSlug: 'about' | 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetAdminCmsPageQueryOptions = <TData = Awaited<ReturnType<typeof getAdminCmsPage>>, TError = ErrorType<void>>(pageSlug: 'about' | 'faculty' | 'gallery' | 'courses', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -1080,11 +1081,11 @@ export type GetAdminCmsPageQueryError = ErrorType<void>
 
 
 /**
- * @summary Get About, Faculty, or Gallery content for authorized staff
+ * @summary Get About, Faculty, Gallery, or Courses content for authorized staff
  */
 
 export function useGetAdminCmsPage<TData = Awaited<ReturnType<typeof getAdminCmsPage>>, TError = ErrorType<void>>(
- pageSlug: 'about' | 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ pageSlug: 'about' | 'faculty' | 'gallery' | 'courses', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 

@@ -243,6 +243,52 @@ const demoEnquiryForm = {
   ],
 };
 
+export async function seedCoursesPageSections(): Promise<void> {
+  await db.transaction(async (tx) => {
+    const [coursesMenu] = await tx
+      .select({ content: coursesMenuSettingsTable.content })
+      .from(coursesMenuSettingsTable)
+      .where(eq(coursesMenuSettingsTable.id, "primary"))
+      .limit(1);
+    const heroImageUrl =
+      coursesMenu?.content.brandPanel.backgroundImageUrl ?? null;
+    const heroImageAlt =
+      coursesMenu?.content.brandPanel.backgroundImageAlt ??
+      "Shastra Junior College students learning together";
+
+    const defaults: SeedSection[] = [
+      {
+        sectionKey: "hero",
+        title: "Explore Shastra’s course pathways",
+        subtitle:
+          "Compare Intermediate MPC and BIPC options alongside the exam pathways listed below. Contact Shastra Junior College for current course information.",
+        content: {
+          eyebrow: "SHASTRA JUNIOR COLLEGE · COURSE PATHWAYS",
+          ctaLabel: "Explore courses",
+          imageUrl: heroImageUrl,
+          imageAlt: heroImageAlt,
+        },
+        isVisible: true,
+        position: 0,
+      },
+      {
+        sectionKey: "regular-pathways",
+        title: "Explore regular pathways",
+        subtitle:
+          "Review each course name, category, and description before contacting the college.",
+        content: { eyebrow: "REGULAR PATHWAYS" },
+        isVisible: true,
+        position: 1,
+      },
+    ];
+
+    await tx
+      .insert(contentSectionsTable)
+      .values(defaults.map((section) => ({ ...section, pageSlug: "courses" })))
+      .onConflictDoNothing();
+  });
+}
+
 type SeedSection = {
   sectionKey: string;
   title: string;
