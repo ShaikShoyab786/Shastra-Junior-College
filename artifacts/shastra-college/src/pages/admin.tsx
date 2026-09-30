@@ -62,6 +62,8 @@ import AdminFacultyEditor from "./admin-faculty-editor";
 import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
 import AdminCoursesEditor from "./admin-courses-editor";
 import AdminCoursesPageEditor from "./admin-courses-page-editor";
+import AdminCourseDetailEditor from "./admin-course-detail-editor";
+import { COURSE_DETAILS, type CourseDetailAdminView } from "./course-detail-config";
 
 type Flash = {
   tone: "success" | "error";
@@ -90,6 +92,7 @@ type WorkspaceView =
   | "faculty"
   | "courses"
   | "courses-explore"
+  | CourseDetailAdminView
   | "gallery";
 
 const pageItems: Array<{ key: WorkspaceView; label: string; note?: string }> = [
@@ -315,7 +318,11 @@ function Shell({
     activeView === "courses-mega-menu",
   );
   const [pagesOpen, setPagesOpen] = useState(false);
-  const [coursesOpen, setCoursesOpen] = useState(activeView === "courses" || activeView === "courses-explore");
+  const [coursesOpen, setCoursesOpen] = useState(
+    activeView === "courses" ||
+      activeView === "courses-explore" ||
+      COURSE_DETAILS.some((course) => course.adminView === activeView),
+  );
   const [aboutOpen, setAboutOpen] = useState(
     activeView === "about" ||
       activeView === "about-hero" ||
@@ -350,11 +357,14 @@ function Shell({
           ? "Pages / About"
           : homeSectionActive
             ? "Pages / Home"
-              : activeView === "courses" || activeView === "courses-explore"
+              : activeView === "courses" || activeView === "courses-explore" || COURSE_DETAILS.some((course) => course.adminView === activeView)
                 ? "Pages / Courses"
             : "Pages";
+  const selectedCourse = COURSE_DETAILS.find((course) => course.adminView === activeView);
   const activeTitle =
-    activeView === "dashboard"
+    selectedCourse
+      ? `${selectedCourse.name} course page`
+      : activeView === "dashboard"
       ? "Dashboard"
       : activeView === "identity"
         ? "Site identity"
@@ -411,7 +421,7 @@ function Shell({
     ) {
       setAboutOpen(true);
     }
-    if (view === "courses" || view === "courses-explore") {
+    if (view === "courses" || view === "courses-explore" || COURSE_DETAILS.some((course) => course.adminView === view)) {
       setCoursesOpen(true);
     }
     onNavigate(view);
@@ -630,7 +640,7 @@ function Shell({
                             type="button"
                             onClick={() => go("courses")}
                             className={`flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${
-                              activeView === "courses" || activeView === "courses-explore"
+                              activeView === "courses" || activeView === "courses-explore" || COURSE_DETAILS.some((course) => course.adminView === activeView)
                                 ? "bg-white/10 text-white"
                                 : "text-blue-100 hover:bg-white/10 hover:text-white"
                             }`}
@@ -646,7 +656,9 @@ function Shell({
                         {coursesOpen ? (
                           <div className="ml-3 mt-1 space-y-1 border-l border-white/10 pl-2">
                             <NavRow icon={FileText} label="Explore Courses" nested active={activeView === "courses-explore"} onClick={() => go("courses-explore")} />
-                            <NavRow icon={FileText} label="Quick Course Highlights" nested active={false} onClick={() => undefined} badge="Soon" />
+                            {COURSE_DETAILS.map((course) => (
+                              <NavRow key={course.slug} icon={FileText} label={course.name} nested active={activeView === course.adminView} onClick={() => go(course.adminView)} />
+                            ))}
                             <NavRow icon={FileText} label="Why Choose This Pathway" nested active={false} onClick={() => undefined} badge="Soon" />
                             <NavRow icon={FileText} label="Syllabus" nested active={false} onClick={() => undefined} badge="Soon" />
                           </div>
@@ -1433,6 +1445,18 @@ function AdminWorkspace() {
         <AdminCoursesPageEditor onFlash={showFlash} />
       </div>
     );
+  } else if (COURSE_DETAILS.some((course) => course.adminView === activeView)) {
+    const course = COURSE_DETAILS.find((item) => item.adminView === activeView);
+    body = course ? (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow={`Pages / Courses / ${course.name} / Sections`}
+          title={`Edit ${course.name}.`}
+          description="Manage this course page’s Hero and Quick Course Highlights. Each course saves separately."
+        />
+        <AdminCourseDetailEditor course={course} onFlash={showFlash} />
+      </div>
+    ) : null;
   } else {
     body = (
       <PlaceholderView

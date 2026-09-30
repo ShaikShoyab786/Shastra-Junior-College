@@ -11,6 +11,8 @@ import AboutPage from '@/pages/about';
 import GalleryPage from '@/pages/gallery';
 import FacultyPage from '@/pages/faculty';
 import { PublicCoursesPage as CoursesPage } from '@/pages/public-courses';
+import PublicCourseDetailPage from '@/pages/public-course-detail';
+import { getCourseDetail } from '@/pages/course-detail-config';
 import {
   ContactPage,
   KnowledgeHubPage,
@@ -20,6 +22,7 @@ import {
   Route,
   Switch,
   useLocation,
+  useRoute,
   Router as WouterRouter,
 } from 'wouter';
 
@@ -64,6 +67,12 @@ function SignInPage() {
 
 function SignUpPage() {
   return <div className="flex min-h-[100dvh] items-center justify-center bg-[#f5f7fb] px-4"><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} /></div>;
+}
+
+function CourseDetailRoute() {
+  const [match, params] = useRoute<{ courseSlug: string }>('/courses/:courseSlug');
+  const course = match ? getCourseDetail(params?.courseSlug ?? '') : undefined;
+  return course ? <PublicCourseDetailPage course={course} /> : <NotFound />;
 }
 
 function ClerkQueryClientCacheInvalidator() {
@@ -113,6 +122,7 @@ function RoutedApp() {
           <Route path="/" component={HomePage} />
           <Route path="/about" component={AboutPage} />
           <Route path="/courses" component={CoursesPage} />
+          <Route path="/courses/:courseSlug" component={CourseDetailRoute} />
           <Route path="/faculty" component={FacultyPage} />
           <Route path="/results" component={ResultsPage} />
           <Route path="/gallery" component={GalleryPage} />
