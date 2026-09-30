@@ -1,5 +1,6 @@
 - [Vite dependency pre-bundles](vite-dependency-prebundles.md) — if installed React versions match but the browser disagrees, check for a stale optimized-dependency cache before changing versions again.
 - [Headless hover checks](headless-hover-checks.md) — Chromium preview emulation reports no hover-capable pointer; verify emitted hover CSS separately.
 - [Page-scoped CMS seeding](page-scoped-cms-seeding.md) — preserve legacy fallbacks on page moves; optional sections use durable seed markers, and course details use prefixed sections in Courses.
+- [CMS image path inputs](cms-image-path-inputs.md) — App Storage paths are relative; use text inputs with explicit path/HTTP(S) validation instead of native `type=url`.
 - [About statistic visibility](about-statistics-visibility.md) — reuse Home statistic records; About selection must never change Home visibility.
 - [Headless CDP value serialization](headless-cdp-value-serialization.md) — with `returnByValue`, return primitives or plain objects from `Runtime.evaluate`, not DOM nodes.

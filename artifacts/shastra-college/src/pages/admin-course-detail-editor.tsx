@@ -43,6 +43,16 @@ function stringValue(content: Record<string, unknown>, key: string) {
   return typeof content[key] === "string" ? content[key] as string : "";
 }
 
+function isSafeImageUrl(value: string) {
+  if (value.startsWith("/") && !value.startsWith("//")) return true;
+  try {
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password;
+  } catch {
+    return false;
+  }
+}
+
 function errorMessage(error: unknown) {
   const candidate = error as { message?: string; response?: { data?: { error?: string } } };
   return candidate?.response?.data?.error || candidate?.message || "The course page could not be saved. Please try again.";
@@ -222,7 +232,7 @@ function ImageEditor({
         </label>
       </div>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <Field label="Hero image URL" value={imageUrl} onChange={(next) => onChange("imageUrl", next)} testId={`input-course-${course.slug}-hero-image-url`} type="url" />
+        <Field label="Hero image URL or uploaded path" value={imageUrl} onChange={(next) => onChange("imageUrl", next)} testId={`input-course-${course.slug}-hero-image-url`} hint="Accepts uploaded /objects/... paths or full HTTP(S) image URLs." />
         <Field label="Image alt text" value={imageAlt} onChange={(next) => onChange("imageAlt", next)} testId={`input-course-${course.slug}-hero-image-alt`} hint="Describe the image for families using assistive technology." />
       </div>
       {error ? <p className="mt-3 text-xs font-semibold text-red-700" role="alert">{error}</p> : null}
@@ -247,6 +257,7 @@ export default function AdminCourseDetailEditor({
   const [hero, setHero] = useState<SectionDraft | null>(null);
   const [highlightsSection, setHighlightsSection] = useState<SectionDraft | null>(null);
   const [items, setItems] = useState<HighlightDraft[]>([]);
+  const [hydratedCourse, setHydratedCourse] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploadsInProgress, setUploadsInProgress] = useState(0);
@@ -255,7 +266,7 @@ export default function AdminCourseDetailEditor({
   const highlightsSource = page.data?.sections.find((section) => section.sectionKey === courseSectionKey(course.slug, "highlights"));
 
   useEffect(() => {
-    if (!page.data || !heroSource || !highlightsSource) return;
+    if (!page.data || !heroSource || !highlightsSource || hydratedCourse === course.slug) return;
     setHero(draftFromSection(heroSource));
     setHighlightsSection(draftFromSection(highlightsSource));
     setItems(
@@ -265,7 +276,8 @@ export default function AdminCourseDetailEditor({
         .map(draftFromItem),
     );
     setError("");
-  }, [course.slug, page.data, heroSource, highlightsSource]);
+    setHydratedCourse(course.slug);
+  }, [course.slug, page.data, heroSource, highlightsSource, hydratedCourse]);
 
   const upload = async (file: File) => {
     setUploadsInProgress((count) => count + 1);
@@ -311,6 +323,10 @@ export default function AdminCourseDetailEditor({
     const highlightsContent = recordValue(highlightsSection.content);
     const imageUrl = stringValue(heroContent, "imageUrl");
     const imageAlt = stringValue(heroContent, "imageAlt");
+    if (imageUrl.trim() && !isSafeImageUrl(imageUrl.trim())) {
+      setError("Use an uploaded image path or a full HTTP(S) image URL.");
+      return;
+    }
     if (hero.isVisible) {
       if (!hero.title.trim() || !hero.subtitle.trim() || !stringValue(heroContent, "eyebrow").trim() || !stringValue(heroContent, "primaryCtaLabel").trim()) {
         setError("For a published Hero, complete the eyebrow, title, introduction, and primary action label.");
@@ -389,8 +405,11 @@ export default function AdminCourseDetailEditor({
   if (page.isLoading) {
     return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500" aria-busy="true" data-testid={`status-admin-course-${course.slug}-loading`}>Loading {course.name} course content…</div>;
   }
-  if (page.isError || !page.data || !heroSource || !highlightsSource || !hero || !highlightsSection) {
+  if (page.isError || !page.data || !heroSource || !highlightsSource) {
     return <div className="rounded-2xl border border-red-200 bg-white p-6 text-sm text-red-700" role="alert" data-testid={`status-admin-course-${course.slug}-error`}>The saved course sections are unavailable. Restart the site content service and reload this page.</div>;
+  }
+  if (!hero || !highlightsSection || hydratedCourse !== course.slug) {
+    return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500" aria-busy="true" data-testid={`status-admin-course-${course.slug}-loading`}>Loading {course.name} course content…</div>;
   }
 
   return (

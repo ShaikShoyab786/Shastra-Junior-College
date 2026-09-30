@@ -38,7 +38,7 @@ const DEFAULT_COURSES_MENU: CoursesMenuContent = {
       category: "Intermediate science",
       description:
         "Mathematics, Physics and Chemistry are the core subjects in this science pathway.",
-      destination: "/courses",
+      destination: "/courses/mpc",
       isVisible: true,
       icon: null,
       tint: null,
@@ -52,7 +52,7 @@ const DEFAULT_COURSES_MENU: CoursesMenuContent = {
       category: "Intermediate science",
       description:
         "Biology, Physics and Chemistry are the core subjects in this science pathway.",
-      destination: "/courses",
+      destination: "/courses/bipc",
       isVisible: true,
       icon: null,
       tint: null,
@@ -66,7 +66,7 @@ const DEFAULT_COURSES_MENU: CoursesMenuContent = {
       category: "IIT-JEE Main pathway",
       description:
         "Mathematics, Physics and Chemistry alongside preparation for IIT-JEE Main.",
-      destination: "/courses",
+      destination: "/courses/iit-jee",
       isVisible: true,
       icon: null,
       tint: null,
@@ -80,7 +80,7 @@ const DEFAULT_COURSES_MENU: CoursesMenuContent = {
       category: "NEET pathway",
       description:
         "Biology, Physics and Chemistry alongside preparation for NEET.",
-      destination: "/courses",
+      destination: "/courses/neet",
       isVisible: true,
       icon: null,
       tint: null,
@@ -94,7 +94,7 @@ const DEFAULT_COURSES_MENU: CoursesMenuContent = {
       category: "EAMCET pathway",
       description:
         "A Mathematics, Physics and Chemistry pathway associated with EAMCET.",
-      destination: "/courses",
+      destination: "/courses/mpc",
       isVisible: true,
       icon: null,
       tint: null,
@@ -255,7 +255,7 @@ export async function seedCoursesPageSections(): Promise<void> {
       throw new Error("Courses menu settings must exist before Courses content is seeded.");
     }
 
-    const seedableMenu = coursesMenu.content as CoursesMenuContent & {
+    let seedableMenu = coursesMenu.content as CoursesMenuContent & {
       __seedMarkers?: string[];
     };
     const heroImageUrl =
@@ -296,6 +296,24 @@ export async function seedCoursesPageSections(): Promise<void> {
       .onConflictDoNothing();
 
     const seedMarkers = new Set(seedableMenu.__seedMarkers ?? []);
+    const courseCardDestinationSeedMarker = "course-detail-card-destinations-v1";
+    if (!seedMarkers.has(courseCardDestinationSeedMarker)) {
+      const detailDestinations: Record<string, string> = {
+        "mpc": "/courses/mpc",
+        "bipc": "/courses/bipc",
+        "mpc+iit-jee": "/courses/iit-jee",
+        "bipc+neet": "/courses/neet",
+        "mpc_eamcet": "/courses/mpc",
+      };
+      const courseCards = seedableMenu.courseCards.map((card) => {
+        const destination = detailDestinations[card.title.trim().toLowerCase()];
+        return destination && card.destination === "/courses"
+          ? { ...card, destination }
+          : card;
+      });
+      seedableMenu = { ...seedableMenu, courseCards };
+      seedMarkers.add(courseCardDestinationSeedMarker);
+    }
     const courseDetailsSeedMarker = "course-detail-pages-v1";
     if (!seedMarkers.has(courseDetailsSeedMarker)) {
       const detailPages = [
