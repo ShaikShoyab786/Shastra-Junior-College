@@ -145,8 +145,8 @@ export function Header({ home }: { home?: HomePage }) {
         <nav
           className={`${
             mobileOpen
-              ? "absolute left-0 right-0 top-full flex flex-col items-stretch gap-1 border-b border-[#0b3472]/10 bg-[#f7f5ef] p-4 shadow-lg md:static md:flex-row md:items-center md:gap-5 md:border-0 md:bg-transparent md:p-0 md:shadow-none"
-              : "hidden md:flex md:items-center md:gap-5 lg:gap-8"
+              ? "absolute left-0 right-0 top-full flex flex-col items-stretch gap-1 border-b border-[#0b3472]/10 bg-[#f7f5ef] p-4 shadow-lg md:static md:ml-auto md:flex md:flex-1 md:flex-row md:flex-wrap md:items-center md:justify-end md:gap-x-3 md:gap-y-2 md:border-0 md:bg-transparent md:p-0 md:shadow-none lg:gap-x-4"
+              : "hidden md:ml-auto md:flex md:flex-1 md:flex-wrap md:items-center md:justify-end md:gap-x-3 md:gap-y-2 lg:gap-x-4"
           }`}
           aria-label="Primary navigation"
           data-testid="nav-primary"
@@ -166,7 +166,7 @@ export function Header({ home }: { home?: HomePage }) {
                 href={link.path}
                 key={`${link.path}-${index}`}
                 onClick={() => setMobileOpen(false)}
-                className="focus-ring rounded-lg px-3 py-2 text-sm font-bold text-[#0b3472] transition-colors hover:text-[#e3212b] md:px-0 md:py-0"
+                className="focus-ring whitespace-nowrap rounded-lg px-3 py-2 text-sm font-bold text-[#0b3472] transition-colors hover:text-[#e3212b] md:px-0 md:py-0"
                 data-testid={`link-nav-custom-${index}`}
               >
                 {link.label}
@@ -176,10 +176,18 @@ export function Header({ home }: { home?: HomePage }) {
           <Link
             href="/admin"
             onClick={() => setMobileOpen(false)}
-            className="focus-ring rounded-full border border-[#0b3472]/20 px-4 py-2 text-sm font-bold text-[#0b3472] transition-colors hover:border-[#e3212b] hover:text-[#e3212b] sm:px-5 sm:py-2.5"
+            className="focus-ring whitespace-nowrap rounded-full border border-[#0b3472]/20 px-4 py-2 text-sm font-bold text-[#0b3472] transition-colors hover:border-[#e3212b] hover:text-[#e3212b] sm:px-5 sm:py-2.5"
             data-testid="link-nav-staff-login"
           >
             Staff Login
+          </Link>
+          <Link
+            href="/contact"
+            onClick={() => setMobileOpen(false)}
+            className="focus-ring whitespace-nowrap rounded-full bg-[#e3212b] px-5 py-2.5 text-center text-sm font-extrabold text-white shadow-[0_8px_22px_rgba(227,33,43,.2)] transition-colors hover:bg-[#c71927] md:ml-1"
+            data-testid="link-nav-admissions-cta"
+          >
+            Admissions
           </Link>
         </nav>
         <button
@@ -200,49 +208,25 @@ export function Header({ home }: { home?: HomePage }) {
 function publicNavigation(
   links: Array<{ label: string; path: string }>,
 ): Array<{ label: string; path: string }> {
-  const campusIndex = links.findIndex(
-    (link) =>
-      link.path === "/campus-life" || /campus life/i.test(link.label),
-  );
-  const retainedBeforeCampus =
-    campusIndex < 0
-      ? -1
-      : links
-          .slice(0, campusIndex)
-          .filter(
-            (link) =>
-              link.path !== "/faculty" &&
-              link.path !== "/gallery" &&
-              link.path !== "/about" &&
-              link.path !== "/sign-in" &&
-              !/about/i.test(link.label) &&
-              !/staff login/i.test(link.label),
-          ).length;
-  const navigation = links.filter(
-    (link) =>
-      link.path !== "/campus-life" &&
-      link.path !== "/faculty" &&
-      link.path !== "/gallery" &&
-      link.path !== "/about" &&
-      link.path !== "/sign-in" &&
-      !/about/i.test(link.label) &&
-      !/campus life|staff login/i.test(link.label),
-  );
-  const homeIndex = navigation.findIndex((link) => link.path === "/");
-  const insertAt =
-    retainedBeforeCampus >= 0
-      ? Math.min(retainedBeforeCampus, navigation.length)
-      : homeIndex >= 0
-        ? homeIndex + 1
-        : 0;
-  navigation.splice(
-    insertAt,
-    0,
-    { label: "About", path: "/about" },
-    { label: "Faculty", path: "/faculty" },
-    { label: "Gallery", path: "/gallery" },
-  );
-  return navigation;
+  return links.flatMap((link) => {
+    const label = link.label.trim();
+    const path = link.path.trim();
+    if (
+      !label ||
+      !path ||
+      path === "/admin" ||
+      path === "/sign-in" ||
+      path === "/admissions" ||
+      path === "/campus-life" ||
+      /^(admissions|staff login|campus life)$/i.test(label)
+    ) {
+      return [];
+    }
+    if (path === "/academics" || /^academics$/i.test(label)) {
+      return [{ label: "Courses", path: "/courses" }];
+    }
+    return [{ label, path }];
+  });
 }
 
 export function Footer({ home }: { home: HomePage }) {
@@ -441,7 +425,7 @@ function initialFieldValues(fields: EnquiryField[]) {
   }, {});
 }
 
-function EnquiryForm({ section }: { section: ContentSection }) {
+export function EnquiryForm({ section }: { section: ContentSection }) {
   const queryClient = useQueryClient();
   const createEnquiry = useCreateEnquiry();
   const config = useMemo(() => getHeroFormContent(section.content), [section.content]);

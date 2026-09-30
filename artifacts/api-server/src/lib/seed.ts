@@ -8,6 +8,33 @@ import {
 } from "@workspace/db";
 import { logger } from "./logger";
 
+const DEFAULT_PUBLIC_NAVIGATION = [
+  { label: "Home", path: "/" },
+  { label: "About", path: "/about" },
+  { label: "Courses", path: "/courses" },
+  { label: "Faculty", path: "/faculty" },
+  { label: "Results", path: "/results" },
+  { label: "Gallery", path: "/gallery" },
+  { label: "Knowledge Hub", path: "/knowledge-hub" },
+  { label: "Contact", path: "/contact" },
+];
+
+const LEGACY_DEFAULT_PUBLIC_NAVIGATION = [
+  { label: "Home", path: "/" },
+  { label: "About", path: "/about" },
+  { label: "Academics", path: "/academics" },
+  { label: "Admissions", path: "/admissions" },
+  { label: "Campus Life", path: "/campus-life" },
+  { label: "Knowledge Hub", path: "/knowledge-hub" },
+  { label: "Contact", path: "/contact" },
+];
+
+const LEGACY_MINIMAL_PUBLIC_NAVIGATION = [
+  { label: "Home", path: "/" },
+  { label: "Faculty", path: "/faculty" },
+  { label: "Gallery", path: "/gallery" },
+];
+
 const demoEnquiryForm = {
   eyebrow: "ADMISSIONS ENQUIRY",
   title: "Talk with our team",
@@ -280,11 +307,7 @@ export async function seedInitialHomeContent(): Promise<void> {
         id: "primary",
         collegeName: "Shastra Junior College",
         logoUrl: "/shastra-college-logo.png",
-        navigation: [
-          { label: "Home", path: "/" },
-          { label: "Faculty", path: "/faculty" },
-          { label: "Gallery", path: "/gallery" },
-        ],
+        navigation: DEFAULT_PUBLIC_NAVIGATION,
         footerNote:
           "Homepage demo content — replace with college-approved copy before publishing.",
       })
@@ -292,6 +315,37 @@ export async function seedInitialHomeContent(): Promise<void> {
       .returning({ id: siteSettingsTable.id });
 
     if (!insertedSettings) {
+      const [existingSettings] = await tx
+        .select({ navigation: siteSettingsTable.navigation })
+        .from(siteSettingsTable)
+        .where(eq(siteSettingsTable.id, "primary"))
+        .limit(1);
+      const existingNavigation = existingSettings?.navigation;
+      const isLegacyDefault = [
+        LEGACY_DEFAULT_PUBLIC_NAVIGATION,
+        LEGACY_MINIMAL_PUBLIC_NAVIGATION,
+      ].some(
+        (legacyNavigation) =>
+          Array.isArray(existingNavigation) &&
+          existingNavigation.length === legacyNavigation.length &&
+          existingNavigation.every((entry, index) => {
+            if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+              return false;
+            }
+            const candidate = entry as Record<string, unknown>;
+            return (
+              candidate.label === legacyNavigation[index].label &&
+              candidate.path === legacyNavigation[index].path
+            );
+          }),
+      );
+      if (isLegacyDefault) {
+        await tx
+          .update(siteSettingsTable)
+          .set({ navigation: DEFAULT_PUBLIC_NAVIGATION })
+          .where(eq(siteSettingsTable.id, "primary"));
+      }
+
       const [gallerySection] = await tx
         .select({ id: contentSectionsTable.id })
         .from(contentSectionsTable)
