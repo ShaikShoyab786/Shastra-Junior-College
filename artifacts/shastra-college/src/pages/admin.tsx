@@ -69,6 +69,7 @@ type WorkspaceView =
   | "placement-records"
   | "gallery-preview"
   | "faculty-preview"
+  | "testimonials"
   | "identity"
   | "about"
   | "results"
@@ -298,6 +299,7 @@ function Shell({
     activeView === "statistics" ||
     activeView === "gallery-preview" ||
     activeView === "faculty-preview" ||
+    activeView === "testimonials" ||
     activeView === "placement-records";
   const activePage =
     activeView === "dashboard"
@@ -324,6 +326,8 @@ function Shell({
                     ? "Home · Gallery Preview"
                     : activeView === "faculty-preview"
                       ? "Home · Faculty Preview"
+                      : activeView === "testimonials"
+                        ? "Home · Testimonials"
                       : pageItems.find((item) => item.key === activeView)?.label ||
                         "Home";
 
@@ -403,6 +407,7 @@ function Shell({
                        <NavRow icon={ImagePlus} label="Gallery Preview" nested active={activeView === "gallery-preview"} onClick={() => go("gallery-preview")} />
                       <NavRow icon={ClipboardList} label="Placement Record" nested active={activeView === "placement-records"} onClick={() => go("placement-records")} />
                        <NavRow icon={UserRound} label="Faculty Preview" nested active={activeView === "faculty-preview"} onClick={() => go("faculty-preview")} />
+                       <NavRow icon={ClipboardList} label="Testimonials" nested active={activeView === "testimonials"} onClick={() => go("testimonials")} />
                     </div>
                   ) : null}
                 </div>
@@ -811,7 +816,8 @@ function AdminWorkspace() {
     activeView === "programs" ||
     activeView === "statistics" ||
     activeView === "faculty-preview" ||
-    activeView === "gallery-preview"
+    activeView === "gallery-preview" ||
+    activeView === "testimonials"
   ) {
     const sectionName =
       activeView === "programs"
@@ -822,6 +828,8 @@ function AdminWorkspace() {
             ? "Faculty Preview"
             : activeView === "gallery-preview"
               ? "Gallery Preview"
+              : activeView === "testimonials"
+                ? "Testimonials"
               : "Hero";
     body = (
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">

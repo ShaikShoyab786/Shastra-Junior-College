@@ -24,6 +24,7 @@ import type {
   ContentSection,
   HomePage,
 } from "@workspace/api-client-react";
+import AdminTestimonialsEditor from "./admin-testimonials-editor";
 
 type Flash = { tone: "success" | "error"; message: string } | null;
 type CmsRecord = Record<string, unknown>;
@@ -1217,7 +1218,8 @@ export default function AdminHomeEditor({
     | "programs"
     | "statistics"
     | "faculty-preview"
-    | "gallery-preview";
+    | "gallery-preview"
+    | "testimonials";
   onNavigate: (page: "faculty" | "gallery") => void;
 }) {
   const sections = useMemo(
@@ -1295,6 +1297,10 @@ export default function AdminHomeEditor({
         />
       ) : sectionKey === "gallery-preview" ? (
         <MissingSection title="Gallery Preview" />
+      ) : null}
+
+      {sectionKey === "testimonials" ? (
+        <AdminTestimonialsEditor home={home} onFlash={onFlash} />
       ) : null}
     </div>
   );

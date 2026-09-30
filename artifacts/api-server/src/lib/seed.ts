@@ -1081,6 +1081,7 @@ export async function seedInitialHomeContent(): Promise<void> {
   });
 
   await seedFacultyAndGalleryPages();
+  await seedHomeTestimonials();
 }
 
 const facultyProfiles = [
@@ -1453,5 +1454,187 @@ async function seedFacultyAndGalleryPages(): Promise<void> {
         updatedAt: new Date(),
       })
       .where(eq(contentSectionsTable.id, facultySection.id));
+  });
+}
+
+const homeTestimonialProfiles = [
+  {
+    name: "Anvi Desai",
+    role: "Student",
+    course: "IIT-JEE Main · 2025",
+    feedback:
+      "The problem-solving sessions helped me understand why each method works. I felt much more confident tackling unfamiliar questions.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=320&h=320&q=82",
+  },
+  {
+    name: "Vikram Nair",
+    role: "Student",
+    course: "NEET · 2024",
+    feedback:
+      "My teachers made it easy to ask questions and kept me focused through the toughest parts of the syllabus.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=320&h=320&q=82",
+  },
+  {
+    name: "Kavitha Rao",
+    role: "Parent",
+    course: "Parent of an Intermediate student",
+    feedback:
+      "The regular updates and approachable teachers helped us understand how our daughter was progressing and where she needed support.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=320&h=320&q=82",
+  },
+  {
+    name: "Ramesh Kulkarni",
+    role: "Parent",
+    course: "Parent of an IIT-JEE student",
+    feedback:
+      "The mentoring helped our son build a steady routine and stay curious, even when preparation became demanding.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=320&h=320&q=82",
+  },
+  {
+    name: "Nisha Varma",
+    role: "Alumni",
+    course: "NEET · Alumni, 2023",
+    feedback:
+      "Shastra gave me the confidence to trust my preparation. My teachers were patient, encouraging, and always ready to explain a difficult idea again.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=320&h=320&q=82",
+  },
+  {
+    name: "Rohan Shah",
+    role: "Alumni",
+    course: "IIT-JEE Main · Alumni, 2022",
+    feedback:
+      "The strong foundations I built here still help me in my engineering classes. I value the clarity and care my teachers brought to every lesson.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=320&h=320&q=82",
+  },
+] as const;
+
+async function seedHomeTestimonials(): Promise<void> {
+  await db.transaction(async (tx) => {
+    let [section] = await tx
+      .select()
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "home"),
+          eq(contentSectionsTable.sectionKey, "testimonials"),
+        ),
+      )
+      .limit(1);
+
+    if (!section) {
+      [section] = await tx
+        .insert(contentSectionsTable)
+        .values({
+          pageSlug: "home",
+          sectionKey: "testimonials",
+          title: "Stories of progress and possibility",
+          subtitle:
+            "Hear how students, parents, and alumni describe the guidance and growth they found at Shastra.",
+          content: { eyebrow: "FROM THE SHASTRA COMMUNITY" },
+          isVisible: true,
+          position: 13,
+        })
+        .onConflictDoNothing()
+        .returning();
+
+      if (!section) {
+        [section] = await tx
+          .select()
+          .from(contentSectionsTable)
+          .where(
+            and(
+              eq(contentSectionsTable.pageSlug, "home"),
+              eq(contentSectionsTable.sectionKey, "testimonials"),
+            ),
+          )
+          .limit(1);
+      }
+    }
+
+    if (!section) {
+      throw new Error("The Home testimonials section could not be initialized.");
+    }
+
+    const sectionContent = isCmsRecord(section.content) ? section.content : {};
+    if (sectionContent.testimonialsSeedVersion === 1) return;
+
+    const existingItems = await tx
+      .select()
+      .from(contentItemsTable)
+      .where(
+        and(
+          eq(contentItemsTable.sectionId, section.id),
+          eq(contentItemsTable.itemType, "testimonial"),
+        ),
+      );
+    const existingNames = new Set(
+      existingItems.map((item) => item.title.trim().toLocaleLowerCase()),
+    );
+    const nextPosition =
+      existingItems.length > 0
+        ? Math.max(...existingItems.map((item) => item.position)) + 1
+        : 0;
+    const newItems = homeTestimonialProfiles
+      .filter((profile) => !existingNames.has(profile.name.toLocaleLowerCase()))
+      .map((profile, index) => ({
+        sectionId: section.id,
+        itemType: "testimonial",
+        title: profile.name,
+        description: profile.feedback,
+        imageUrl: profile.imageUrl,
+        linkPath: null,
+        label: null,
+        content: {
+          role: profile.role,
+          course: profile.course,
+          altText: `Portrait of ${profile.name}`,
+          showOnHome: true,
+          isDemo: true,
+        },
+        isVisible: true,
+        position: nextPosition + index,
+      }));
+
+    if (newItems.length > 0) {
+      await tx.insert(contentItemsTable).values(newItems);
+    }
+
+    const eyebrow =
+      typeof sectionContent.eyebrow === "string" &&
+      sectionContent.eyebrow.trim()
+        ? sectionContent.eyebrow
+        : "FROM THE SHASTRA COMMUNITY";
+    const title =
+      section.title === "Stories & outcomes" || !section.title.trim()
+        ? "Stories of progress and possibility"
+        : section.title;
+    const subtitle =
+      section.subtitle ===
+        "Hidden until verified, client-approved content is supplied." ||
+      section.subtitle === null
+        ? "Hear how students, parents, and alumni describe the guidance and growth they found at Shastra."
+        : section.subtitle;
+
+    await tx
+      .update(contentSectionsTable)
+      .set({
+        title,
+        subtitle,
+        content: {
+          ...sectionContent,
+          eyebrow,
+          testimonialsSeedVersion: 1,
+        },
+        isVisible: true,
+        position: 13,
+        updatedAt: new Date(),
+      })
+      .where(eq(contentSectionsTable.id, section.id));
   });
 }

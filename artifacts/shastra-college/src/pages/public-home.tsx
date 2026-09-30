@@ -24,6 +24,7 @@ import type {
   HomePage,
 } from "@workspace/api-client-react";
 import PlacementRecordsSection from "./placement-records-section";
+import TestimonialsCarousel from "../components/testimonials-carousel";
 
 const logoPath = "/shastra-college-logo.png";
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -1091,6 +1092,24 @@ function PageSections({ home }: { home: HomePage }) {
       section.sectionKey.toLowerCase() === "faculty-preview" &&
       section.isVisible,
   );
+  const testimonialsSection = home.sections.find(
+    (section) =>
+      section.pageSlug === "home" &&
+      section.sectionKey.toLowerCase() === "testimonials" &&
+      section.isVisible,
+  );
+  const testimonialItems = testimonialsSection
+    ? home.items
+        .filter(
+          (item) =>
+            item.sectionId === testimonialsSection.id &&
+            item.itemType === "testimonial" &&
+            item.isVisible &&
+            isRecord(item.content) &&
+            item.content.showOnHome === true,
+        )
+        .sort((a, b) => a.position - b.position)
+    : [];
   const facultyPageSection = facultyPage.data?.sections.find(
     (section) => section.sectionKey.toLowerCase() === "faculty" && section.isVisible,
   );
@@ -1132,6 +1151,12 @@ function PageSections({ home }: { home: HomePage }) {
         <FacultyPreviewSection
           section={facultyPreviewSection}
           profiles={facultyPreviewProfiles}
+        />
+      ) : null}
+      {testimonialsSection && testimonialItems.length > 0 ? (
+        <TestimonialsCarousel
+          section={testimonialsSection}
+          items={testimonialItems}
         />
       ) : null}
     </main>
