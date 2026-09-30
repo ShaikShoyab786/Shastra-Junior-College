@@ -309,6 +309,19 @@ html { scroll-behavior: smooth; }
 .reveal-delay-3 { animation-delay: .24s; }
 @keyframes reveal { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
+.about-hero-heading {
+  animation: about-hero-heading-in 700ms cubic-bezier(.2, .8, .2, 1) both;
+}
+@keyframes about-hero-heading-in {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .about-hero-heading {
+    animation: none;
+  }
+}
+
 /**
  * Using the elevate system.
  * Automatic contrast adjustment.

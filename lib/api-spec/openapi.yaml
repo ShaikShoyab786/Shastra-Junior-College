@@ -48,14 +48,14 @@ paths:
     get:
       operationId: getCmsPage
       tags: [home]
-      summary: Get published Faculty or Gallery content
+      summary: Get published About, Faculty, or Gallery content
       parameters:
         - name: pageSlug
           in: path
           required: true
           schema:
             type: string
-            enum: [faculty, gallery]
+            enum: [about, faculty, gallery]
       responses:
         "200":
           description: Published page content
@@ -203,14 +203,14 @@ paths:
     get:
       operationId: getAdminCmsPage
       tags: [admin]
-      summary: Get Faculty or Gallery content for authorized staff
+      summary: Get About, Faculty, or Gallery content for authorized staff
       parameters:
         - name: pageSlug
           in: path
           required: true
           schema:
             type: string
-            enum: [faculty, gallery]
+            enum: [about, faculty, gallery]
       responses:
         "200":
           description: Page content including unpublished sections and items
@@ -956,6 +956,10 @@ components:
           items:
             $ref: "#/components/schemas/ContentSection"
         items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContentItem"
+        aboutStatistics:
           type: array
           items:
             $ref: "#/components/schemas/ContentItem"

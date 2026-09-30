@@ -74,10 +74,10 @@ export const GetHomePageResponse = zod.object({
 
 
 /**
- * @summary Get published Faculty or Gallery content
+ * @summary Get published About, Faculty, or Gallery content
  */
 export const GetCmsPageParams = zod.object({
-  "pageSlug": zod.enum(['faculty', 'gallery'])
+  "pageSlug": zod.enum(['about', 'faculty', 'gallery'])
 })
 
 export const getCmsPageResponseSettingsNavigationItemLabelMax = 80;
@@ -129,7 +129,22 @@ export const GetCmsPageResponse = zod.object({
   "position": zod.number().int(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
-}))
+})),
+  "aboutStatistics": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "sectionId": zod.string().uuid(),
+  "itemType": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "linkPath": zod.string().nullable(),
+  "label": zod.string().nullable(),
+  "content": zod.record(zod.string(), zod.unknown()),
+  "isVisible": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})).optional()
 })
 
 
@@ -273,10 +288,10 @@ export const GetAdminHomeResponse = zod.object({
 
 
 /**
- * @summary Get Faculty or Gallery content for authorized staff
+ * @summary Get About, Faculty, or Gallery content for authorized staff
  */
 export const GetAdminCmsPageParams = zod.object({
-  "pageSlug": zod.enum(['faculty', 'gallery'])
+  "pageSlug": zod.enum(['about', 'faculty', 'gallery'])
 })
 
 export const getAdminCmsPageResponseSettingsNavigationItemLabelMax = 80;
@@ -328,7 +343,22 @@ export const GetAdminCmsPageResponse = zod.object({
   "position": zod.number().int(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
-}))
+})),
+  "aboutStatistics": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "sectionId": zod.string().uuid(),
+  "itemType": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "linkPath": zod.string().nullable(),
+  "label": zod.string().nullable(),
+  "content": zod.record(zod.string(), zod.unknown()),
+  "isVisible": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})).optional()
 })
 
 

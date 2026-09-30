@@ -1,3 +1,4 @@
 - [Vite dependency pre-bundles](vite-dependency-prebundles.md) — if installed React versions match but the browser disagrees, check for a stale optimized-dependency cache before changing versions again.
 - [Headless hover checks](headless-hover-checks.md) — Chromium preview emulation reports no hover-capable pointer; verify emitted hover CSS separately.
 - [Page-scoped CMS seeding](page-scoped-cms-seeding.md) — moving a default section requires adjusting its legacy startup fallback too, or restarts can recreate and reimport it.
+- [About statistic visibility](about-statistics-visibility.md) — reuse Home statistic records; About selection must never change Home visibility.

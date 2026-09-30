@@ -1083,6 +1083,148 @@ export async function seedInitialHomeContent(): Promise<void> {
   await seedFacultyAndGalleryPages();
   await seedGalleryHomePreviewDefaults();
   await seedHomeTestimonials();
+  await seedAboutPage();
+}
+
+async function seedAboutPage(): Promise<void> {
+  await db.transaction(async (tx) => {
+    const [galleryImage] = await tx
+      .select({
+        imageUrl: contentItemsTable.imageUrl,
+        content: contentItemsTable.content,
+      })
+      .from(contentItemsTable)
+      .innerJoin(
+        contentSectionsTable,
+        eq(contentItemsTable.sectionId, contentSectionsTable.id),
+      )
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "gallery"),
+          eq(contentItemsTable.itemType, "gallery-image"),
+        ),
+      )
+      .orderBy(asc(contentItemsTable.position), asc(contentItemsTable.createdAt))
+      .limit(1);
+    const galleryContent =
+      galleryImage && isCmsRecord(galleryImage.content)
+        ? galleryImage.content
+        : {};
+    const defaults = {
+      eyebrow: "ABOUT SHASTRA",
+      imageUrl: galleryImage?.imageUrl || "",
+      imageAlt:
+        typeof galleryContent.altText === "string"
+          ? galleryContent.altText
+          : "A campus view of Shastra Junior College",
+      primaryCtaLabel: "Explore Programs",
+      primaryCtaPath: "/#programs",
+      secondaryCtaLabel: "Contact Us",
+      secondaryCtaPath: "/#enquire",
+    };
+
+    let [heroSection] = await tx
+      .select()
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "about"),
+          eq(contentSectionsTable.sectionKey, "hero"),
+        ),
+      )
+      .limit(1);
+
+    if (!heroSection) {
+      const [created] = await tx
+        .insert(contentSectionsTable)
+        .values({
+          pageSlug: "about",
+          sectionKey: "hero",
+          title: "A strong foundation for future success",
+          subtitle:
+            "At Shastra Junior College, students build deep subject knowledge, confidence, and the habits that help them take their next step.",
+          content: defaults,
+          isVisible: true,
+          position: 0,
+        })
+        .onConflictDoNothing()
+        .returning();
+      heroSection = created;
+    }
+
+    if (!heroSection) {
+      [heroSection] = await tx
+        .select()
+        .from(contentSectionsTable)
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "about"),
+            eq(contentSectionsTable.sectionKey, "hero"),
+          ),
+        )
+        .limit(1);
+    }
+
+    if (!heroSection) {
+      throw new Error("The default About hero could not be initialized.");
+    }
+
+    const [statisticsSection] = await tx
+      .select({ id: contentSectionsTable.id })
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "home"),
+          eq(contentSectionsTable.sectionKey, "statistics"),
+        ),
+      )
+      .limit(1);
+
+    if (!statisticsSection) {
+      return;
+    }
+
+    const sectionContent = isCmsRecord(heroSection.content)
+      ? heroSection.content
+      : {};
+    if (sectionContent.aboutStatisticsSeedVersion === 1) {
+      return;
+    }
+
+    const statisticItems = await tx
+      .select()
+      .from(contentItemsTable)
+      .where(eq(contentItemsTable.sectionId, statisticsSection.id));
+
+    for (const item of statisticItems) {
+      if (item.itemType !== "statistic" || !item.isVisible) {
+        continue;
+      }
+      const itemContent = isCmsRecord(item.content) ? item.content : {};
+      if (typeof itemContent.showOnAbout === "boolean") {
+        continue;
+      }
+      await tx
+        .update(contentItemsTable)
+        .set({
+          content: { ...itemContent, showOnAbout: true } as CmsJson,
+          updatedAt: new Date(),
+        })
+        .where(eq(contentItemsTable.id, item.id));
+    }
+
+    await tx
+      .update(contentSectionsTable)
+      .set({
+        content: {
+          ...defaults,
+          ...sectionContent,
+          aboutStatisticsSeedVersion: 1,
+        } as CmsJson,
+        updatedAt: new Date(),
+      })
+      .where(eq(contentSectionsTable.id, heroSection.id));
+  });
 }
 
 const facultyProfiles = [

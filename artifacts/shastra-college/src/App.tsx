@@ -7,6 +7,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import AdminPage from '@/pages/admin';
 import HomePage from '@/pages/public-home';
+import AboutPage from '@/pages/about';
 import GalleryPage from '@/pages/gallery';
 import FacultyPage from '@/pages/faculty';
 import {
@@ -76,7 +77,7 @@ function ClerkQueryClientCacheInvalidator() {
 
 function RoutedApp() {
   const [, setLocation] = useLocation();
-  return <ClerkProvider publishableKey={clerkPubKey} proxyUrl={clerkProxyUrl} appearance={clerkAppearance} signInUrl={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} localization={{ signIn: { start: { title: 'Welcome back', subtitle: 'Sign in to access the staff workspace' } }, signUp: { start: { title: 'Create your account', subtitle: 'Your college content workspace awaits' } } }} routerPush={(to) => setLocation(stripBase(to))} routerReplace={(to) => setLocation(stripBase(to), { replace: true })}><ClerkQueryClientCacheInvalidator /><QueryClientProvider client={queryClient}><Switch><Route path="/" component={HomePage} /><Route path="/faculty" component={FacultyPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/admin" component={AdminPage} /><Route path="/sign-in/*?" component={SignInPage} /><Route path="/sign-up/*?" component={SignUpPage} /><Route component={NotFound} /></Switch></QueryClientProvider></ClerkProvider>;
+  return <ClerkProvider publishableKey={clerkPubKey} proxyUrl={clerkProxyUrl} appearance={clerkAppearance} signInUrl={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} localization={{ signIn: { start: { title: 'Welcome back', subtitle: 'Sign in to access the staff workspace' } }, signUp: { start: { title: 'Create your account', subtitle: 'Your college content workspace awaits' } } }} routerPush={(to) => setLocation(stripBase(to))} routerReplace={(to) => setLocation(stripBase(to), { replace: true })}><ClerkQueryClientCacheInvalidator /><QueryClientProvider client={queryClient}><Switch><Route path="/" component={HomePage} /><Route path="/about" component={AboutPage} /><Route path="/faculty" component={FacultyPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/admin" component={AdminPage} /><Route path="/sign-in/*?" component={SignInPage} /><Route path="/sign-up/*?" component={SignUpPage} /><Route component={NotFound} /></Switch></QueryClientProvider></ClerkProvider>;
 }
 
 function App() {

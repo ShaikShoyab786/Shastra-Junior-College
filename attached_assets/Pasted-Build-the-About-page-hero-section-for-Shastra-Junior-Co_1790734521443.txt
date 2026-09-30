@@ -1,0 +1,29 @@
+Build the About page hero section for Shastra Junior College.
+
+DESIGN
+- Use the attached reference only for the composition: text on the left, a large image on the right, with a statistics row beneath the text.
+- Follow the existing Shastra theme: navy, red accents, and white/light neutrals. Do not copy the reference’s colors, branding, or text.
+- Make the hero clean and professional, with an editable eyebrow, prominent heading, concise supporting description, and two well-designed CTA buttons.
+- Use an appropriate education-related image from existing project assets or add a suitable image asset. Do not reuse the reference image. Make the image replaceable from Admin and include editable alt text.
+- On mobile, stack the content neatly with the text and CTAs first, the image next, and statistics arranged without horizontal overflow.
+
+HEADING ANIMATION
+- On initial page load, animate the main heading once: slide it in from the left to its final position.
+- Keep the animation smooth and restrained. Do not use a repeating marquee or leave text off-screen.
+- Respect reduced-motion preferences and avoid layout shifts or horizontal scrollbars.
+
+SHARED HOME STATISTICS
+- Reuse the existing Home Statistics records and values; do not create separate About-only copies or add metrics from the reference image.
+- In Admin → Pages → About → Hero, show the existing statistics as a list with a “Show on About” checkbox for each one.
+- The checkbox should control visibility on About only. The displayed label and value must remain linked to the Home Statistics data, so edits there are reflected on About.
+- Preserve the current Home Statistics settings and visibility behavior.
+
+ADMIN SETTINGS
+Under Admin → Pages → About → Hero, allow editing and saving the eyebrow, heading, supporting description, image, alt text, CTA labels, and CTA destinations.
+- Add convenient access to the existing Home Statistics settings without duplicating their data.
+- Persist changes using the existing backend/data system; verify they remain after refresh.
+
+CTAS AND QUALITY CHECKS
+- Use suitable sample CTA labels such as “Explore Programs” and “Contact Us.”
+- Link each CTA to an existing relevant page or section. If a destination does not exist yet, use a safe existing destination rather than creating a broken route.
+- Verify the hero at desktop and mobile widths, confirm the heading animation works, and test that About statistics stay synchronized with Home Statistics.

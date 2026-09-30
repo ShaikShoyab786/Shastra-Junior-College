@@ -208,7 +208,9 @@ function publicNavigation(
             (link) =>
               link.path !== "/faculty" &&
               link.path !== "/gallery" &&
+              link.path !== "/about" &&
               link.path !== "/sign-in" &&
+              !/about/i.test(link.label) &&
               !/staff login/i.test(link.label),
           ).length;
   const navigation = links.filter(
@@ -216,7 +218,9 @@ function publicNavigation(
       link.path !== "/campus-life" &&
       link.path !== "/faculty" &&
       link.path !== "/gallery" &&
+      link.path !== "/about" &&
       link.path !== "/sign-in" &&
+      !/about/i.test(link.label) &&
       !/campus life|staff login/i.test(link.label),
   );
   const homeIndex = navigation.findIndex((link) => link.path === "/");
@@ -229,6 +233,7 @@ function publicNavigation(
   navigation.splice(
     insertAt,
     0,
+    { label: "About", path: "/about" },
     { label: "Faculty", path: "/faculty" },
     { label: "Gallery", path: "/gallery" },
   );

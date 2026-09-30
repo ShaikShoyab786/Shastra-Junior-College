@@ -52,6 +52,7 @@ import type {
 } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import AdminHomeEditor from "./admin-home-editor";
+import AdminAboutEditor from "./admin-about-editor";
 import AdminGalleryEditor from "./admin-gallery-editor";
 import AdminFacultyEditor from "./admin-faculty-editor";
 import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
@@ -78,7 +79,7 @@ type WorkspaceView =
   | "gallery";
 
 const pageItems: Array<{ key: WorkspaceView; label: string; note?: string }> = [
-  { key: "about", label: "About", note: "Coming soon" },
+  { key: "about", label: "About" },
   { key: "faculty", label: "Faculty" },
   { key: "gallery", label: "Gallery" },
   { key: "results", label: "Results", note: "Coming soon" },
@@ -811,6 +812,21 @@ function AdminWorkspace() {
     );
   } else if (activeView === "identity") {
     body = <IdentityView home={home} onFlash={showFlash} />;
+  } else if (activeView === "about") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / About / Hero"
+          title="Edit the About hero."
+          description="Update the public About page introduction, image, buttons, and select which existing Home Statistics records appear here."
+        />
+        <AdminAboutEditor
+          home={home}
+          onFlash={showFlash}
+          onNavigate={() => setActiveView("statistics")}
+        />
+      </div>
+    );
   } else if (
     activeView === "hero" ||
     activeView === "programs" ||

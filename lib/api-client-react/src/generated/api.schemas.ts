@@ -310,6 +310,7 @@ export interface CmsPage {
   settings: SiteSettings;
   sections: ContentSection[];
   items: ContentItem[];
+  aboutStatistics?: ContentItem[];
 }
 
 export interface AdminHomeSummary {

@@ -32,8 +32,8 @@ import { requireAdmin } from "../middlewares/requireAdmin";
 const router: IRouter = Router();
 const adminRouter: IRouter = Router();
 const homePageSlug = "home";
-const managedPageSlugs = ["home", "faculty", "gallery"] as const;
-const publicPageSlugs = ["faculty", "gallery"] as const;
+const managedPageSlugs = ["home", "about", "faculty", "gallery"] as const;
+const publicPageSlugs = ["about", "faculty", "gallery"] as const;
 type ManagedPageSlug = (typeof managedPageSlugs)[number];
 type PublicPageSlug = (typeof publicPageSlugs)[number];
 
@@ -69,6 +69,15 @@ function isSafeInternalPath(value: string): boolean {
     value === "" ||
     value.startsWith("#") ||
     (value.startsWith("/") && !value.startsWith("//") && !value.includes("\\"))
+  );
+}
+
+function isAboutStatistic(content: unknown): boolean {
+  return (
+    typeof content === "object" &&
+    content !== null &&
+    !Array.isArray(content) &&
+    (content as CmsRecord).showOnAbout === true
   );
 }
 
@@ -160,6 +169,35 @@ async function loadCmsPage(pageSlug: ManagedPageSlug, includeHidden: boolean) {
   };
 }
 
+async function loadAboutStatistics() {
+  const [statisticsSection] = await db
+    .select({ id: contentSectionsTable.id })
+    .from(contentSectionsTable)
+    .where(
+      and(
+        eq(contentSectionsTable.pageSlug, homePageSlug),
+        eq(contentSectionsTable.sectionKey, "statistics"),
+      ),
+    )
+    .limit(1);
+
+  if (!statisticsSection) {
+    return [];
+  }
+
+  const items = await db
+    .select()
+    .from(contentItemsTable)
+    .where(eq(contentItemsTable.sectionId, statisticsSection.id))
+    .orderBy(asc(contentItemsTable.position), asc(contentItemsTable.createdAt));
+
+  return items
+    .filter(
+      (item) => item.itemType === "statistic" && isAboutStatistic(item.content),
+    )
+    .map(serializeItem);
+}
+
 router.get("/home", async (req, res): Promise<void> => {
   const content = await loadCmsPage(homePageSlug, false);
 
@@ -189,7 +227,11 @@ router.get("/pages/:pageSlug", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Page not found." });
     return;
   }
-  const parsed = GetCmsPageResponse.safeParse(content);
+  const responseContent =
+    req.params.pageSlug === "about"
+      ? { ...content, aboutStatistics: await loadAboutStatistics() }
+      : content;
+  const parsed = GetCmsPageResponse.safeParse(responseContent);
   if (!parsed.success) {
     req.log.error({ errors: parsed.error.flatten() }, "Invalid public page response.");
     res.status(500).json({ error: "Page content could not be loaded." });

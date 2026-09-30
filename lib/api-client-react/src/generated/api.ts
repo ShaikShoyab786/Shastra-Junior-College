@@ -225,7 +225,7 @@ export function useGetHomePage<TData = Awaited<ReturnType<typeof getHomePage>>, 
 
 
 
-export const getGetCmsPageUrl = (pageSlug: 'faculty' | 'gallery',) => {
+export const getGetCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery',) => {
 
 
 
@@ -234,9 +234,9 @@ export const getGetCmsPageUrl = (pageSlug: 'faculty' | 'gallery',) => {
 }
 
 /**
- * @summary Get published Faculty or Gallery content
+ * @summary Get published About, Faculty, or Gallery content
  */
-export const getCmsPage = async (pageSlug: 'faculty' | 'gallery', options?: Parameters<typeof customFetch>[1]): Promise<CmsPage> => {
+export const getCmsPage = async (pageSlug: 'about' | 'faculty' | 'gallery', options?: Parameters<typeof customFetch>[1]): Promise<CmsPage> => {
 
   return customFetch<CmsPage>(getGetCmsPageUrl(pageSlug),
   {
@@ -251,14 +251,14 @@ export const getCmsPage = async (pageSlug: 'faculty' | 'gallery', options?: Para
 
 
 
-export const getGetCmsPageQueryKey = (pageSlug: 'faculty' | 'gallery',) => {
+export const getGetCmsPageQueryKey = (pageSlug: 'about' | 'faculty' | 'gallery',) => {
     return [
     `/api/pages/${pageSlug}`
     ] as const;
     }
 
 
-export const getGetCmsPageQueryOptions = <TData = Awaited<ReturnType<typeof getCmsPage>>, TError = ErrorType<void>>(pageSlug: 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetCmsPageQueryOptions = <TData = Awaited<ReturnType<typeof getCmsPage>>, TError = ErrorType<void>>(pageSlug: 'about' | 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -281,11 +281,11 @@ export type GetCmsPageQueryError = ErrorType<void>
 
 
 /**
- * @summary Get published Faculty or Gallery content
+ * @summary Get published About, Faculty, or Gallery content
  */
 
 export function useGetCmsPage<TData = Awaited<ReturnType<typeof getCmsPage>>, TError = ErrorType<void>>(
- pageSlug: 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ pageSlug: 'about' | 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -781,7 +781,7 @@ export function useGetAdminHome<TData = Awaited<ReturnType<typeof getAdminHome>>
 
 
 
-export const getGetAdminCmsPageUrl = (pageSlug: 'faculty' | 'gallery',) => {
+export const getGetAdminCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery',) => {
 
 
 
@@ -790,9 +790,9 @@ export const getGetAdminCmsPageUrl = (pageSlug: 'faculty' | 'gallery',) => {
 }
 
 /**
- * @summary Get Faculty or Gallery content for authorized staff
+ * @summary Get About, Faculty, or Gallery content for authorized staff
  */
-export const getAdminCmsPage = async (pageSlug: 'faculty' | 'gallery', options?: Parameters<typeof customFetch>[1]): Promise<CmsPage> => {
+export const getAdminCmsPage = async (pageSlug: 'about' | 'faculty' | 'gallery', options?: Parameters<typeof customFetch>[1]): Promise<CmsPage> => {
 
   return customFetch<CmsPage>(getGetAdminCmsPageUrl(pageSlug),
   {
@@ -807,14 +807,14 @@ export const getAdminCmsPage = async (pageSlug: 'faculty' | 'gallery', options?:
 
 
 
-export const getGetAdminCmsPageQueryKey = (pageSlug: 'faculty' | 'gallery',) => {
+export const getGetAdminCmsPageQueryKey = (pageSlug: 'about' | 'faculty' | 'gallery',) => {
     return [
     `/api/admin/pages/${pageSlug}`
     ] as const;
     }
 
 
-export const getGetAdminCmsPageQueryOptions = <TData = Awaited<ReturnType<typeof getAdminCmsPage>>, TError = ErrorType<void>>(pageSlug: 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetAdminCmsPageQueryOptions = <TData = Awaited<ReturnType<typeof getAdminCmsPage>>, TError = ErrorType<void>>(pageSlug: 'about' | 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -837,11 +837,11 @@ export type GetAdminCmsPageQueryError = ErrorType<void>
 
 
 /**
- * @summary Get Faculty or Gallery content for authorized staff
+ * @summary Get About, Faculty, or Gallery content for authorized staff
  */
 
 export function useGetAdminCmsPage<TData = Awaited<ReturnType<typeof getAdminCmsPage>>, TError = ErrorType<void>>(
- pageSlug: 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ pageSlug: 'about' | 'faculty' | 'gallery', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
