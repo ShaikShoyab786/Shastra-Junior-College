@@ -9,6 +9,8 @@ import AboutHeroSection from "./about-hero-section";
 import { AboutWhoWeAreSection } from "./about-who-we-are-section";
 import { AboutChairmanSection } from "./about-chairman-section";
 import { AboutBoardSection } from "./about-board-section";
+import { AboutInstitutionalStrengthsSection } from "./about-institutional-strengths-section";
+import { AboutCoreValuesSection } from "./about-core-values-section";
 import { Footer, Header } from "./public-home";
 
 function AboutLoading() {
@@ -75,7 +77,9 @@ export default function AboutPage() {
       section.sectionKey === "hero" ||
       section.sectionKey === "who-we-are" ||
       section.sectionKey === "chairman-message" ||
-      section.sectionKey === "board-of-directors",
+      section.sectionKey === "board-of-directors" ||
+      section.sectionKey === "institutional-strengths" ||
+      section.sectionKey === "core-values",
   );
 
   return (
@@ -131,6 +135,24 @@ export default function AboutPage() {
                     facultyLoading={faculty.isLoading}
                     facultyError={faculty.isError}
                     onRetryFaculty={() => void faculty.refetch()}
+                  />
+                );
+              }
+              if (section.sectionKey === "institutional-strengths") {
+                return (
+                  <AboutInstitutionalStrengthsSection
+                    key={section.id}
+                    section={section}
+                    items={page.data?.items ?? []}
+                  />
+                );
+              }
+              if (section.sectionKey === "core-values") {
+                return (
+                  <AboutCoreValuesSection
+                    key={section.id}
+                    section={section}
+                    items={page.data?.items ?? []}
                   />
                 );
               }

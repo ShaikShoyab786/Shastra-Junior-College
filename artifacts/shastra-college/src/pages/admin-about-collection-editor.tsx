@@ -3,11 +3,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowDown,
   ArrowUp,
+  Clock,
   Eye,
   EyeOff,
   Pencil,
   Plus,
   Save,
+  Target,
   Trash2,
   X,
 } from "lucide-react";
@@ -142,6 +144,15 @@ function ItemForm({
   const [error, setError] = useState("");
   const pending = create.isPending || update.isPending;
 
+  useEffect(() => {
+    const content = record(initial?.content);
+    setTitle(initial?.title || "");
+    setDescription(initial?.description || "");
+    setIcon(text(content.icon));
+    setIsVisible(initial?.isVisible ?? false);
+    setError("");
+  }, [initial?.id, initial?.updatedAt]);
+
   const save = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const cleanTitle = title.trim();
@@ -150,10 +161,11 @@ function ItemForm({
       return;
     }
     setError("");
-    const content = {
-      ...existingContent,
-      ...(config.supportsIcons && icon.trim() ? { icon: icon.trim() } : {}),
-    };
+    const content: CmsRecord = { ...existingContent };
+    if (config.supportsIcons) {
+      if (icon.trim()) content.icon = icon.trim();
+      else delete content.icon;
+    }
     const data: ContentItemInput = {
       sectionId: section.id,
       itemType: config.itemType,
@@ -214,6 +226,7 @@ function ItemForm({
               <option value="">No icon</option>
               <option value="book-open">Book</option>
               <option value="briefcase">Briefcase</option>
+              <option value="clock">Clock</option>
               <option value="compass">Compass</option>
               <option value="graduation">Graduation</option>
               <option value="heart-handshake">Handshake</option>
@@ -221,6 +234,7 @@ function ItemForm({
               <option value="lightbulb">Lightbulb</option>
               <option value="shield">Shield</option>
               <option value="sparkles">Sparkles</option>
+              <option value="target">Target</option>
               <option value="users">Users</option>
             </select>
           </label>
@@ -311,7 +325,7 @@ export default function AdminAboutCollectionEditor({
     setEyebrow(text(record(section.content).eyebrow));
     setTitle(section.title);
     setSubtitle(section.subtitle || "");
-  }, [section?.id]);
+  }, [section?.id, section?.updatedAt]);
 
   const addSection = async () => {
     setSectionError("");

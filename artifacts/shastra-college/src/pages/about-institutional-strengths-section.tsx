@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,
   BriefcaseBusiness,
+  Clock,
   Compass,
   GraduationCap,
   HeartHandshake,
@@ -10,6 +11,7 @@ import {
   Lightbulb,
   ShieldCheck,
   Sparkles,
+  Target,
   Users,
 } from "lucide-react";
 import type { ContentItem, ContentSection } from "@workspace/api-client-react";
@@ -30,6 +32,7 @@ const iconMap: Record<string, LucideIcon> = {
   book: BookOpen,
   "book-open": BookOpen,
   briefcase: BriefcaseBusiness,
+  clock: Clock,
   compass: Compass,
   graduation: GraduationCap,
   "heart-handshake": HeartHandshake,
@@ -37,6 +40,7 @@ const iconMap: Record<string, LucideIcon> = {
   lightbulb: Lightbulb,
   shield: ShieldCheck,
   sparkles: Sparkles,
+  target: Target,
   users: Users,
 };
 

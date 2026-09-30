@@ -56,6 +56,7 @@ import AdminAboutEditor from "./admin-about-editor";
 import AdminAboutWhoWeAreEditor from "./admin-about-who-we-are-editor";
 import AdminAboutChairmanEditor from "./admin-about-chairman-editor";
 import AdminAboutBoardEditor from "./admin-about-board-editor";
+import AdminAboutCollectionEditor from "./admin-about-collection-editor";
 import AdminGalleryEditor from "./admin-gallery-editor";
 import AdminFacultyEditor from "./admin-faculty-editor";
 import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
@@ -80,6 +81,8 @@ type WorkspaceView =
   | "about-who-we-are"
   | "about-chairman"
   | "about-board"
+  | "about-institutional-strengths"
+  | "about-core-values"
   | "results"
   | "faculty"
   | "courses"
@@ -306,7 +309,9 @@ function Shell({
       activeView === "about-hero" ||
       activeView === "about-who-we-are" ||
       activeView === "about-chairman" ||
-      activeView === "about-board",
+      activeView === "about-board" ||
+      activeView === "about-institutional-strengths" ||
+      activeView === "about-core-values",
   );
   const homeSectionActive =
     activeView === "hero" ||
@@ -321,7 +326,9 @@ function Shell({
     activeView === "about-hero" ||
     activeView === "about-who-we-are" ||
     activeView === "about-chairman" ||
-    activeView === "about-board";
+    activeView === "about-board" ||
+    activeView === "about-institutional-strengths" ||
+    activeView === "about-core-values";
   const activePage =
     activeView === "dashboard"
       ? "Dashboard"
@@ -347,6 +354,10 @@ function Shell({
                 ? "About · Chairman’s Message"
                 : activeView === "about-board"
                   ? "About · Board of Directors"
+                  : activeView === "about-institutional-strengths"
+                    ? "About · Institutional Strengths"
+                    : activeView === "about-core-values"
+                      ? "About · Core Values"
         : activeView === "hero"
           ? "Home · Hero"
           : activeView === "programs"
@@ -370,7 +381,9 @@ function Shell({
       view === "about-hero" ||
       view === "about-who-we-are" ||
       view === "about-chairman" ||
-      view === "about-board"
+      view === "about-board" ||
+      view === "about-institutional-strengths" ||
+      view === "about-core-values"
     ) {
       setAboutOpen(true);
     }
@@ -529,6 +542,20 @@ function Shell({
                               nested
                               active={activeView === "about-board"}
                               onClick={() => go("about-board")}
+                            />
+                            <NavRow
+                              icon={FileText}
+                              label="Institutional Strengths"
+                              nested
+                              active={activeView === "about-institutional-strengths"}
+                              onClick={() => go("about-institutional-strengths")}
+                            />
+                            <NavRow
+                              icon={FileText}
+                              label="Core Values"
+                              nested
+                              active={activeView === "about-core-values"}
+                              onClick={() => go("about-core-values")}
                             />
                           </div>
                         ) : null}
@@ -987,6 +1014,22 @@ function AdminWorkspace() {
                 "Edit the About board heading and publication. Board members stay linked to Faculty profiles.",
               action: "Edit Board of Directors",
             },
+            {
+              key: "about-institutional-strengths" as const,
+              number: "05",
+              title: "Institutional Strengths",
+              description:
+                "Edit the section introduction and the ordered learning strengths shown to visitors.",
+              action: "Edit Institutional Strengths",
+            },
+            {
+              key: "about-core-values" as const,
+              number: "06",
+              title: "Core Values",
+              description:
+                "Edit the section introduction and the values displayed on the About page.",
+              action: "Edit Core Values",
+            },
           ].map((subsection) => (
             <button
               key={subsection.key}
@@ -1107,6 +1150,55 @@ function AdminWorkspace() {
           onFlash={showFlash}
           onNavigate={() => setActiveView("faculty")}
         />
+      </div>
+    );
+  } else if (
+    activeView === "about-institutional-strengths" ||
+    activeView === "about-core-values"
+  ) {
+    const isStrengths = activeView === "about-institutional-strengths";
+    const config = isStrengths
+      ? {
+          sectionKey: "institutional-strengths" as const,
+          itemType: "institutional-strength" as const,
+          label: "Institutional Strengths",
+          position: 4,
+          defaultEyebrow: "WHAT GUIDES OUR LEARNING",
+          defaultTitle: "Institutional Strengths",
+          defaultSubtitle:
+            "A focused learning experience built around clear teaching, purposeful practice, and student guidance.",
+          supportsIcons: true,
+        }
+      : {
+          sectionKey: "core-values" as const,
+          itemType: "core-value" as const,
+          label: "Core Values",
+          position: 5,
+          defaultEyebrow: "OUR PRINCIPLES",
+          defaultTitle: "Our Core Values",
+          defaultSubtitle:
+            "Principles that can guide learning, choices, and our shared community.",
+          supportsIcons: false,
+        };
+
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow={`Pages / About / ${config.label}`}
+          title={`Manage ${config.label}.`}
+          description="Edit the section copy and manage the ordered entries shown on the public About page."
+          actions={
+            <button
+              type="button"
+              onClick={() => setActiveView("about")}
+              className="focus-ring rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-[#0b3472] transition hover:border-[#0b3472]/30"
+              data-testid={`button-back-${config.sectionKey}`}
+            >
+              All About subsections
+            </button>
+          }
+        />
+        <AdminAboutCollectionEditor config={config} onFlash={showFlash} />
       </div>
     );
   } else if (

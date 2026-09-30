@@ -1086,6 +1086,104 @@ export async function seedInitialHomeContent(): Promise<void> {
   await seedAboutPage();
 }
 
+type AboutCollectionSeed = {
+  sectionKey: "institutional-strengths" | "core-values";
+  itemType: "institutional-strength" | "core-value";
+  title: string;
+  subtitle: string;
+  eyebrow: string;
+  position: number;
+  items: Array<{ title: string; description: string; icon?: string }>;
+};
+
+const initialAboutCollections: AboutCollectionSeed[] = [
+  {
+    sectionKey: "institutional-strengths",
+    itemType: "institutional-strength",
+    title: "Institutional Strengths",
+    subtitle:
+      "A focused learning experience built around clear teaching, purposeful practice, and student guidance.",
+    eyebrow: "WHAT GUIDES OUR LEARNING",
+    position: 4,
+    items: [
+      {
+        title: "Strong subject foundations",
+        description:
+          "Build understanding step by step through clear explanations, deliberate practice, and attention to core concepts.",
+        icon: "book-open",
+      },
+      {
+        title: "Focused JEE and NEET preparation",
+        description:
+          "Structured learning and regular practice support students preparing for competitive entrance exams.",
+        icon: "target",
+      },
+      {
+        title: "Supportive faculty",
+        description:
+          "Approachable teachers help clarify challenging ideas and encourage students to keep asking questions.",
+        icon: "users",
+      },
+      {
+        title: "Personal academic guidance",
+        description:
+          "Students can plan their learning, reflect on progress, and identify practical next steps with guidance.",
+        icon: "compass",
+      },
+      {
+        title: "Disciplined study habits",
+        description:
+          "A steady routine helps learners strengthen focus and approach coursework with purpose.",
+        icon: "clock",
+      },
+      {
+        title: "Curiosity beyond the syllabus",
+        description:
+          "Ask questions, connect ideas, and keep learning with an open and thoughtful approach.",
+        icon: "sparkles",
+      },
+    ],
+  },
+  {
+    sectionKey: "core-values",
+    itemType: "core-value",
+    title: "Our Core Values",
+    subtitle: "Principles that can guide learning, choices, and our shared community.",
+    eyebrow: "OUR PRINCIPLES",
+    position: 5,
+    items: [
+      {
+        title: "Integrity",
+        description: "Act honestly and thoughtfully in learning and everyday choices.",
+      },
+      {
+        title: "Excellence",
+        description: "Bring care and attention to the effort behind each goal.",
+      },
+      {
+        title: "Discipline",
+        description: "Practice consistently and follow through on commitments.",
+      },
+      {
+        title: "Curiosity",
+        description: "Ask questions and explore ideas with an open mind.",
+      },
+      {
+        title: "Innovation",
+        description: "Look for fresh ways to understand ideas and solve problems.",
+      },
+      {
+        title: "Responsibility",
+        description: "Respect people, shared spaces, and the commitments we make.",
+      },
+      {
+        title: "Student Growth",
+        description: "Build knowledge, confidence, and independence over time.",
+      },
+    ],
+  },
+];
+
 async function seedAboutPage(): Promise<void> {
   await db.transaction(async (tx) => {
     const [galleryImage] = await tx
@@ -1324,6 +1422,66 @@ async function seedAboutPage(): Promise<void> {
         ...defaults,
         ...heroSectionContent,
         aboutLeadershipSeedVersion: 1,
+      };
+      await tx
+        .update(contentSectionsTable)
+        .set({
+          content: heroSectionContent as CmsJson,
+          updatedAt: new Date(),
+        })
+        .where(eq(contentSectionsTable.id, heroSection.id));
+    }
+
+    if (heroSectionContent.aboutCollectionsSeedVersion !== 1) {
+      for (const collection of initialAboutCollections) {
+        const [existingSection] = await tx
+          .select({ id: contentSectionsTable.id })
+          .from(contentSectionsTable)
+          .where(
+            and(
+              eq(contentSectionsTable.pageSlug, "about"),
+              eq(contentSectionsTable.sectionKey, collection.sectionKey),
+            ),
+          )
+          .limit(1);
+
+        if (existingSection) continue;
+
+        const [createdSection] = await tx
+          .insert(contentSectionsTable)
+          .values({
+            pageSlug: "about",
+            sectionKey: collection.sectionKey,
+            title: collection.title,
+            subtitle: collection.subtitle,
+            content: { eyebrow: collection.eyebrow },
+            isVisible: true,
+            position: collection.position,
+          })
+          .onConflictDoNothing()
+          .returning({ id: contentSectionsTable.id });
+
+        if (!createdSection) continue;
+
+        await tx.insert(contentItemsTable).values(
+          collection.items.map((item, position) => ({
+            sectionId: createdSection.id,
+            itemType: collection.itemType,
+            title: item.title,
+            description: item.description,
+            imageUrl: null,
+            linkPath: null,
+            label: null,
+            content: item.icon ? { icon: item.icon } : {},
+            isVisible: true,
+            position,
+          })),
+        );
+      }
+
+      heroSectionContent = {
+        ...heroSectionContent,
+        aboutCollectionsSeedVersion: 1,
       };
       await tx
         .update(contentSectionsTable)
