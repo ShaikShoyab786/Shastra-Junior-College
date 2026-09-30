@@ -244,6 +244,9 @@ export default function CoursesMegaMenu({
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const hoverCloseTimerRef = useRef<number | null>(null);
+  const triggerHoveredRef = useRef(false);
+  const panelHoveredRef = useRef(false);
   const [panelTop, setPanelTop] = useState(88);
   const query = useGetCoursesMenu({
     query: { enabled: open, queryKey: getGetCoursesMenuQueryKey() },
@@ -255,7 +258,39 @@ export default function CoursesMegaMenu({
     const anchor = isMobile ? trigger : trigger.closest("header");
     return Math.ceil((anchor?.getBoundingClientRect().bottom ?? 76) + 8);
   };
+  const cancelHoverClose = () => {
+    if (hoverCloseTimerRef.current !== null) {
+      window.clearTimeout(hoverCloseTimerRef.current);
+      hoverCloseTimerRef.current = null;
+    }
+  };
+  const scheduleHoverClose = () => {
+    cancelHoverClose();
+    hoverCloseTimerRef.current = window.setTimeout(() => {
+      hoverCloseTimerRef.current = null;
+      if (!triggerHoveredRef.current && !panelHoveredRef.current) {
+        setOpen(false);
+      }
+    }, 180);
+  };
+  const handleHoverEnter = (area: "trigger" | "panel") => {
+    if (area === "trigger") triggerHoveredRef.current = true;
+    else panelHoveredRef.current = true;
+    cancelHoverClose();
+    if (area === "trigger") {
+      setPanelTop(getPanelTop());
+      setOpen(true);
+    }
+  };
+  const handleHoverLeave = (area: "trigger" | "panel") => {
+    if (area === "trigger") triggerHoveredRef.current = false;
+    else panelHoveredRef.current = false;
+    if (!triggerHoveredRef.current && !panelHoveredRef.current) {
+      scheduleHoverClose();
+    }
+  };
   const close = (restoreFocus = false) => {
+    cancelHoverClose();
     setOpen(false);
     if (!restoreFocus) onMobileNavClose?.();
     if (restoreFocus) {
@@ -275,6 +310,7 @@ export default function CoursesMegaMenu({
         !rootRef.current?.contains(target) &&
         !panelRef.current?.contains(target)
       ) {
+        cancelHoverClose();
         setOpen(false);
       }
     };
@@ -288,6 +324,7 @@ export default function CoursesMegaMenu({
       window.removeEventListener("scroll", updatePosition, true);
       window.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("pointerdown", onPointerDown);
+      cancelHoverClose();
     };
   }, [open]);
 
@@ -296,7 +333,24 @@ export default function CoursesMegaMenu({
       <button
         ref={triggerRef}
         type="button"
-        onClick={() => {
+        onPointerEnter={(event) => {
+          if (event.pointerType === "mouse" || event.pointerType === "pen") {
+            handleHoverEnter("trigger");
+          }
+        }}
+        onPointerLeave={(event) => {
+          if (event.pointerType === "mouse" || event.pointerType === "pen") {
+            handleHoverLeave("trigger");
+          }
+        }}
+        onClick={(event) => {
+          if (
+            event.detail > 0 &&
+            triggerHoveredRef.current &&
+            open
+          ) {
+            return;
+          }
           if (open) {
             close(true);
             return;
@@ -317,6 +371,16 @@ export default function CoursesMegaMenu({
         <div
           ref={panelRef}
           className="fixed left-1/2 z-[60] w-[min(92vw,860px)] -translate-x-1/2 overflow-y-auto overscroll-contain"
+          onPointerEnter={(event) => {
+            if (event.pointerType === "mouse" || event.pointerType === "pen") {
+              handleHoverEnter("panel");
+            }
+          }}
+          onPointerLeave={(event) => {
+            if (event.pointerType === "mouse" || event.pointerType === "pen") {
+              handleHoverLeave("panel");
+            }
+          }}
           style={{
             top: panelTop,
             maxHeight: `calc(100dvh - ${panelTop + 16}px)`,
