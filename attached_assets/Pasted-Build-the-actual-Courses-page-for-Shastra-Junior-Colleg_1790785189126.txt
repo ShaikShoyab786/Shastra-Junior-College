@@ -1,0 +1,35 @@
+Build the actual Courses page for Shastra Junior College. The Courses mega menu is already implemented—preserve it and refine only its navigation behavior as described below.
+
+Use the existing stack: React + Vite, Express, PostgreSQL, and Drizzle. Do not introduce Prisma or another ORM.
+
+PUBLIC NAVIGATION AND MEGA MENU
+- Keep “Courses” in the public navigation as a trigger for the existing mega menu only. Clicking it must not navigate directly to /courses.
+- Keep the existing mega-menu content and layout.
+- The “Explore courses” button inside the mega menu must navigate to the actual Courses page at /courses. Close the menu after activation.
+- Ensure this works with mouse, keyboard, and mobile interactions.
+
+COURSES PAGE
+- Create the public Courses page at /courses.
+- Build only these two sections now:
+  1. Courses hero
+  2. Regular Pathways
+- Use the attached references for layout ideas only. Use Shastra’s existing navy, red, and light-neutral theme; do not copy another college’s branding, wording, or exact design.
+- The hero should have editable eyebrow text, headline, supporting description, and CTA. Its “Explore courses” button should scroll to the Regular Pathways section.
+- The Regular Pathways section should show every published, visible course configured in the existing Courses mega menu, including the full course name and its available category and description.
+- Use the mega-menu course records as the single source of truth. Do not hardcode a second course list or create duplicate course records.
+- Ensure course titles and descriptions read naturally and are complete. Do not use placeholders such as “demo-subject,” “sample-title,” or empty card content. Use the existing course names; if sample descriptions are needed, make them realistic and editable without adding unsupported guarantees or achievement claims.
+- Use responsive pathway cards that are easy to scan and match the Shastra theme.
+- Do not build individual course-detail pages or add broken links. Only show card actions when a valid configured destination exists.
+
+ADMIN
+Under Admin → Pages → Courses:
+- Use “Explore Courses” as the admin sub-item for managing the course listing; keep this distinct from the public top-level “Courses” mega-menu trigger.
+- Add editable settings for the page Hero and Regular Pathways section.
+- Manage the existing course records from the shared source used by the mega menu. Allow admins to add, edit, delete, reorder, publish/unpublish, and update each course’s title, category, description, and configured media/destination.
+- Persist changes using the existing PostgreSQL + Drizzle models and migration workflow. Do not reset data or duplicate the course editor.
+
+FUTURE SECTIONS
+- Keep “Quick Course Highlights,” “Why Choose This Pathway,” and “Syllabus” as Admin-only “Coming Soon” items for later updates.
+- Do not show empty or “Coming Soon” sections on the public Courses page.
+
+Verify that /courses loads, the mega-menu “Explore courses” button opens it, the top-level “Courses” item still only opens the mega menu, all published course names appear, Admin edits persist after refresh, and the page works on desktop and mobile.
