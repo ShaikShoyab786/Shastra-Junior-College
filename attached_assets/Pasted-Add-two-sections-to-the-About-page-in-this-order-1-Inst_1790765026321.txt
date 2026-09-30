@@ -1,0 +1,32 @@
+Add two sections to the About page, in this order:
+1. Institutional Strengths
+2. Core Values
+
+Place them beneath the existing Board of Directors section. Keep all previously completed About sections unchanged.
+
+INSTITUTIONAL STRENGTHS
+- Create a clean section with an editable eyebrow, heading, and supporting description.
+- Use an interactive layout inspired by the first reference: a selectable list of strengths on the left and a detail panel on the right.
+- Selecting a strength should update the detail panel to show its title, short description, and optional icon. Add a subtle, polished transition.
+- Make the list and panel responsive and keyboard accessible.
+- Seed six non-empty, editable strength items using Shastra-relevant themes such as strong subject foundations, focused JEE/NEET preparation, supportive faculty, and student guidance.
+- Do not copy the reference’s claims, dates, years, metrics, or placement outcomes.
+
+CORE VALUES
+- Add this section directly beneath Institutional Strengths.
+- Include editable eyebrow, heading, and supporting description.
+- Display the values as polished responsive pills or compact cards, inspired by the second reference but using Shastra’s brand styling.
+- Seed editable values such as Integrity, Excellence, Discipline, Curiosity, Innovation, Responsibility, and Student Growth.
+- Keep the layout balanced on desktop and mobile.
+
+ADMIN
+Under Admin → Pages → About, add:
+- Institutional Strengths
+- Core Values
+
+For each section, allow admins to edit the section text and add, edit, delete, reorder, and show/hide its items. Persist changes using the existing backend/data system; do not hardcode the content into the public page.
+- Seed the sections with complete sample content, not empty cards or generic placeholder text.
+- Keep demo/sample labels off the public page.
+- Confirm edits and visibility changes persist after refresh.
+
+Do not alter unrelated pages, existing About sections, or authentication. Verify both sections at desktop and mobile widths.
