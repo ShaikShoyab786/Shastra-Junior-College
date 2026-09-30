@@ -249,11 +249,19 @@ export async function seedCoursesPageSections(): Promise<void> {
       .select({ content: coursesMenuSettingsTable.content })
       .from(coursesMenuSettingsTable)
       .where(eq(coursesMenuSettingsTable.id, "primary"))
+      .for("update")
       .limit(1);
+    if (!coursesMenu) {
+      throw new Error("Courses menu settings must exist before Courses content is seeded.");
+    }
+
+    const seedableMenu = coursesMenu.content as CoursesMenuContent & {
+      __seedMarkers?: string[];
+    };
     const heroImageUrl =
-      coursesMenu?.content.brandPanel.backgroundImageUrl ?? null;
+      seedableMenu.brandPanel.backgroundImageUrl ?? null;
     const heroImageAlt =
-      coursesMenu?.content.brandPanel.backgroundImageAlt ??
+      seedableMenu.brandPanel.backgroundImageAlt ??
       "Shastra Junior College students learning together";
 
     const defaults: SeedSection[] = [
@@ -286,6 +294,226 @@ export async function seedCoursesPageSections(): Promise<void> {
       .insert(contentSectionsTable)
       .values(defaults.map((section) => ({ ...section, pageSlug: "courses" })))
       .onConflictDoNothing();
+
+    const starterSeedMarker = "courses-batches-schedule-admissions-v1";
+    if (seedableMenu.__seedMarkers?.includes(starterSeedMarker)) {
+      return;
+    }
+
+    const extendedSections: SeedSection[] = [
+      {
+        sectionKey: "batch-details-schedule",
+        title: "Build a focused study routine.",
+        subtitle:
+          "Review upcoming preparation batches and the daily class schedule at Shastra Junior College.",
+        content: {
+          eyebrow: "BATCH DETAILS & SCHEDULE",
+          batchHeading: "Upcoming Batches",
+          batchDescription:
+            "Find the next preparation batch for your examination goal.",
+          scheduleHeading: "Daily Schedule",
+          scheduleDescription:
+            "A considered rhythm for core subjects, breaks, and problem-solving.",
+        },
+        isVisible: true,
+        position: 2,
+      },
+      {
+        sectionKey: "admissions-cta",
+        title: "Choose the path that fits your goals.",
+        subtitle:
+          "Talk through subject choices, exam preparation, upcoming batches, and your next steps with the Shastra admissions team.",
+        content: {
+          eyebrow: "NEED GUIDANCE?",
+          buttonLabel: "Talk with Admissions",
+          buttonPath: "/contact",
+          benefits: [
+            {
+              id: "subject-guidance",
+              title: "Subject guidance",
+              description:
+                "Compare subject combinations and examination pathways.",
+              isVisible: true,
+            },
+            {
+              id: "batch-details",
+              title: "Batch details",
+              description:
+                "Ask about NEET and IIT-JEE Main preparation starts.",
+              isVisible: true,
+            },
+            {
+              id: "admissions-support",
+              title: "Admissions support",
+              description:
+                "Get help understanding the next steps in the process.",
+              isVisible: true,
+            },
+          ],
+        },
+        isVisible: true,
+        position: 3,
+      },
+    ];
+
+    await tx
+      .insert(contentSectionsTable)
+      .values(
+        extendedSections.map((section) => ({
+          ...section,
+          pageSlug: "courses",
+        })),
+      )
+      .onConflictDoNothing();
+
+    const courseSections = await tx
+      .select({
+        id: contentSectionsTable.id,
+        sectionKey: contentSectionsTable.sectionKey,
+      })
+      .from(contentSectionsTable)
+      .where(eq(contentSectionsTable.pageSlug, "courses"));
+    const sectionIds = new Map(
+      courseSections.map((section) => [section.sectionKey, section.id]),
+    );
+
+    const batchSectionId = sectionIds.get("batch-details-schedule");
+    if (batchSectionId) {
+      const [existingBatch] = await tx
+        .select({ id: contentItemsTable.id })
+        .from(contentItemsTable)
+        .where(eq(contentItemsTable.sectionId, batchSectionId))
+        .limit(1);
+      if (!existingBatch) {
+        await tx.insert(contentItemsTable).values([
+          {
+            sectionId: batchSectionId,
+            itemType: "course-batch",
+            title: "NEET 2027 Preparation Batch",
+            description:
+              "Focused preparation across Biology, Physics, and Chemistry for the NEET 2027 examination.",
+            imageUrl: null,
+            linkPath: null,
+            label: null,
+            content: {
+              status: "Upcoming",
+              startDate: "2026-10-15",
+              targetExam: "NEET 2027",
+            },
+            isVisible: true,
+            position: 0,
+          },
+          {
+            sectionId: batchSectionId,
+            itemType: "course-batch",
+            title: "IIT-JEE Main 2027 Preparation Batch",
+            description:
+              "Focused preparation across Mathematics, Physics, and Chemistry for IIT-JEE Main 2027.",
+            imageUrl: null,
+            linkPath: null,
+            label: null,
+            content: {
+              status: "Upcoming",
+              startDate: "2026-10-15",
+              targetExam: "IIT-JEE Main 2027",
+            },
+            isVisible: true,
+            position: 1,
+          },
+        ]);
+      }
+    }
+
+    const scheduleSectionId = sectionIds.get("batch-details-schedule");
+    if (scheduleSectionId) {
+      const [existingSchedule] = await tx
+        .select({ id: contentItemsTable.id })
+        .from(contentItemsTable)
+        .where(
+          and(
+            eq(contentItemsTable.sectionId, scheduleSectionId),
+            eq(contentItemsTable.itemType, "course-schedule"),
+          ),
+        )
+        .limit(1);
+      if (!existingSchedule) {
+        await tx.insert(contentItemsTable).values([
+          {
+            sectionId: scheduleSectionId,
+            itemType: "course-schedule",
+            title: "Mathematics / Biology",
+            description: null,
+            imageUrl: null,
+            linkPath: null,
+            label: null,
+            content: { startTime: "8:00 AM", endTime: "10:00 AM" },
+            isVisible: true,
+            position: 0,
+          },
+          {
+            sectionId: scheduleSectionId,
+            itemType: "course-schedule",
+            title: "Physics",
+            description: null,
+            imageUrl: null,
+            linkPath: null,
+            label: null,
+            content: { startTime: "10:15 AM", endTime: "12:00 PM" },
+            isVisible: true,
+            position: 1,
+          },
+          {
+            sectionId: scheduleSectionId,
+            itemType: "course-schedule",
+            title: "Lunch Break",
+            description: null,
+            imageUrl: null,
+            linkPath: null,
+            label: null,
+            content: { startTime: "12:00 PM", endTime: "1:00 PM" },
+            isVisible: true,
+            position: 2,
+          },
+          {
+            sectionId: scheduleSectionId,
+            itemType: "course-schedule",
+            title: "Chemistry",
+            description: null,
+            imageUrl: null,
+            linkPath: null,
+            label: null,
+            content: { startTime: "1:00 PM", endTime: "2:00 PM" },
+            isVisible: true,
+            position: 3,
+          },
+          {
+            sectionId: scheduleSectionId,
+            itemType: "course-schedule",
+            title: "Problem Solving & Doubt Session",
+            description: null,
+            imageUrl: null,
+            linkPath: null,
+            label: null,
+            content: { startTime: "2:00 PM", endTime: "3:00 PM" },
+            isVisible: true,
+            position: 4,
+          },
+        ]);
+      }
+    }
+
+    const markers = new Set(seedableMenu.__seedMarkers ?? []);
+    markers.add(starterSeedMarker);
+    await tx
+      .update(coursesMenuSettingsTable)
+      .set({
+        content: {
+          ...seedableMenu,
+          __seedMarkers: [...markers],
+        } as CoursesMenuContent,
+        updatedAt: new Date(),
+      })
+      .where(eq(coursesMenuSettingsTable.id, "primary"));
   });
 }
 

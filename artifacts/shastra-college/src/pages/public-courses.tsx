@@ -1,5 +1,5 @@
-import { ArrowRight, BookOpen, CircleAlert, RefreshCw } from "lucide-react";
-import { useMemo } from "react";
+import { ArrowRight, BookOpen, CalendarDays, CircleAlert, Clock3, GraduationCap, RefreshCw } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { Link } from "wouter";
 import {
   getGetCmsPageQueryKey,
@@ -9,7 +9,7 @@ import {
   useGetCoursesMenu,
   useGetHomePage,
 } from "@workspace/api-client-react";
-import type { ContentSection, CoursesMenuCard } from "@workspace/api-client-react";
+import type { ContentItem, ContentSection, CoursesMenuCard } from "@workspace/api-client-react";
 import { Footer, Header } from "./public-home";
 
 function assetUrl(value: string | null | undefined) {
@@ -23,6 +23,39 @@ function textValue(content: Record<string, unknown>, keys: string[], fallback: s
     if (typeof value === "string" && value.trim()) return value;
   }
   return fallback;
+}
+
+function recordValue(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function itemText(item: ContentItem, key: string, fallback = "") {
+  const value = recordValue(item.content)[key];
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function sectionItems(
+  items: ContentItem[],
+  section: ContentSection | undefined,
+  itemType: string,
+) {
+  if (!section) return [];
+  return items
+    .filter((item) => item.sectionId === section.id && item.itemType === itemType && item.isVisible)
+    .sort((a, b) => a.position - b.position);
+}
+
+function displayDate(value: string) {
+  const date = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
 }
 
 function sectionByKey(sections: ContentSection[] | undefined, key: string) {
@@ -180,19 +213,141 @@ function Pathways({ section, cards }: { section?: ContentSection; cards: Courses
   );
 }
 
+function BatchSchedule({ section, items }: { section: ContentSection; items: ContentItem[] }) {
+  const content = recordValue(section.content);
+  const batches = sectionItems(items, section, "course-batch");
+  const schedule = sectionItems(items, section, "course-schedule");
+
+  return (
+    <section
+      id="batch-details-schedule"
+      className="scroll-mt-24 bg-[#f7f5ef] px-5 py-14 sm:px-8 sm:py-20"
+      data-testid={`section-courses-batch-schedule-${section.id}`}
+    >
+      <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="eyebrow text-[#e3212b]">{textValue(content, ["eyebrow"], "BATCH DETAILS & SCHEDULE")}</p>
+          <h2 className="mt-4 font-display text-4xl font-extrabold tracking-[-.055em] text-[#0b3472] sm:text-5xl">
+            {section.title}
+          </h2>
+          {section.subtitle ? <p className="mt-4 text-base leading-7 text-[#53657d]">{section.subtitle}</p> : null}
+        </div>
+
+        <div className="mt-9 grid gap-5 lg:grid-cols-2">
+          <section className="rounded-[1.75rem] border border-[#0b3472]/20 bg-white/75 p-5 shadow-[0_18px_50px_rgba(11,52,114,.05)] sm:p-7" aria-labelledby="courses-upcoming-batches-heading">
+            <div className="flex items-start gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#e3212b]/10 text-[#e3212b]"><CalendarDays className="h-5 w-5" aria-hidden="true" /></span>
+              <div>
+                <h3 id="courses-upcoming-batches-heading" className="font-display text-2xl font-extrabold text-[#0b3472]">{textValue(content, ["batchHeading"], "Upcoming Batches")}</h3>
+                <p className="mt-1 text-sm leading-6 text-[#53657d]">{textValue(content, ["batchDescription"], "Find the next preparation batch for your examination goal.")}</p>
+              </div>
+            </div>
+            <div className="mt-6 space-y-3">
+              {batches.length ? batches.map((batch) => (
+                <article key={batch.id} className="rounded-2xl border border-[#0b3472]/15 bg-[#fbfcff] p-4 sm:p-5" data-testid={`card-course-batch-${batch.id}`}>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <h4 className="font-display text-lg font-extrabold text-[#0b3472]">{batch.title}</h4>
+                    <span className="rounded-full bg-[#e3212b]/10 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#b71927]">{itemText(batch, "status", "Upcoming")}</span>
+                  </div>
+                  {batch.description ? <p className="mt-2 text-sm leading-6 text-[#53657d]">{batch.description}</p> : null}
+                  <div className="mt-4 grid gap-3 text-xs sm:grid-cols-2">
+                    <div className="flex items-start gap-2 text-[#53657d]"><CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-[#0b3472]" aria-hidden="true" /><span><span className="block font-semibold text-[#0b3472]">Starts</span>{displayDate(itemText(batch, "startDate"))}</span></div>
+                    <div className="flex items-start gap-2 text-[#53657d]"><GraduationCap className="mt-0.5 h-4 w-4 shrink-0 text-[#0b3472]" aria-hidden="true" /><span><span className="block font-semibold text-[#0b3472]">Target exam</span>{itemText(batch, "targetExam")}</span></div>
+                  </div>
+                </article>
+              )) : <p className="rounded-xl bg-[#f7f5ef] px-4 py-5 text-sm text-[#53657d]">No upcoming batches are listed right now.</p>}
+            </div>
+          </section>
+
+          <section className="rounded-[1.75rem] border border-[#0b3472]/20 bg-white/75 p-5 shadow-[0_18px_50px_rgba(11,52,114,.05)] sm:p-7" aria-labelledby="courses-daily-schedule-heading">
+            <div className="flex items-start gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#e3212b]/10 text-[#e3212b]"><Clock3 className="h-5 w-5" aria-hidden="true" /></span>
+              <div>
+                <h3 id="courses-daily-schedule-heading" className="font-display text-2xl font-extrabold text-[#0b3472]">{textValue(content, ["scheduleHeading"], "Daily Schedule")}</h3>
+                <p className="mt-1 text-sm leading-6 text-[#53657d]">{textValue(content, ["scheduleDescription"], "A considered rhythm for core subjects, breaks, and problem-solving.")}</p>
+              </div>
+            </div>
+            <ol className="mt-5 divide-y divide-[#0b3472]/10">
+              {schedule.length ? schedule.map((entry) => (
+                <li key={entry.id} className="flex items-center justify-between gap-4 py-4" data-testid={`row-course-schedule-${entry.id}`}>
+                  <span className="flex min-w-0 items-center gap-3 font-semibold text-[#0b3472]"><span className="h-2 w-2 shrink-0 rounded-full bg-[#e3212b]" aria-hidden="true" /><span>{entry.title}</span></span>
+                  <span className="shrink-0 rounded-full bg-[#eef2f8] px-3 py-2 text-[11px] font-bold text-[#53657d]">{itemText(entry, "startTime")} – {itemText(entry, "endTime")}</span>
+                </li>
+              )) : <li className="rounded-xl bg-[#f7f5ef] px-4 py-5 text-sm text-[#53657d]">The daily schedule is being updated.</li>}
+            </ol>
+          </section>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AdmissionsCta({ section }: { section: ContentSection }) {
+  const content = recordValue(section.content);
+  const benefits = Array.isArray(content.benefits)
+    ? content.benefits
+        .map((benefit) => recordValue(benefit))
+        .filter((benefit) => benefit.isVisible !== false && typeof benefit.title === "string" && typeof benefit.description === "string")
+    : [];
+
+  return (
+    <section id="admissions-cta" className="scroll-mt-24 bg-[#fbfaf6] px-5 pb-14 sm:px-8 sm:pb-20" data-testid={`section-courses-admissions-${section.id}`}>
+      <div className="mx-auto max-w-7xl">
+        <div className="overflow-hidden rounded-[2rem] border border-[#0b3472]/20 bg-white px-6 py-8 shadow-[0_18px_55px_rgba(11,52,114,.07)] sm:px-9 sm:py-10 lg:px-12">
+          <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <p className="eyebrow text-[#e3212b]">{textValue(content, ["eyebrow"], "NEED GUIDANCE?")}</p>
+              <h2 className="mt-3 max-w-3xl font-display text-3xl font-extrabold tracking-[-.055em] text-[#0b3472] sm:text-4xl">{section.title}</h2>
+              {section.subtitle ? <p className="mt-3 max-w-3xl text-sm leading-6 text-[#53657d] sm:text-base">{section.subtitle}</p> : null}
+              {benefits.length ? (
+                <ul className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {benefits.map((benefit) => (
+                    <li key={String(benefit.id || benefit.title)} className="flex items-start gap-3">
+                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e3212b]/10 text-[#e3212b]"><BookOpen className="h-4 w-4" aria-hidden="true" /></span>
+                      <span><span className="block text-xs font-extrabold text-[#0b3472]">{String(benefit.title)}</span><span className="mt-1 block text-xs leading-5 text-[#53657d]">{String(benefit.description)}</span></span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+            <div className="flex flex-col items-start gap-3 border-t border-[#0b3472]/10 pt-6 lg:items-center lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+              <Link href="/contact" className="focus-ring inline-flex items-center justify-center gap-3 rounded-full bg-[#e3212b] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_12px_25px_rgba(227,33,43,.18)] transition-transform hover:-translate-y-0.5" data-testid="link-courses-admissions-contact">
+                Talk with Admissions<ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+              <span className="text-xs text-[#53657d]">Connect with the Shastra admissions team.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function PublicCoursesPage() {
   const home = useGetHomePage({ query: { queryKey: getGetHomePageQueryKey() } });
   const cms = useGetCmsPage("courses", { query: { queryKey: getGetCmsPageQueryKey("courses") } });
   const menu = useGetCoursesMenu({ query: { queryKey: getGetCoursesMenuQueryKey() } });
   const cards = useMemo(() => (menu.data?.courseCards || []).filter((card) => card.isVisible).sort((a, b) => a.order - b.order), [menu.data?.courseCards]);
+  useEffect(() => {
+    if (!cms.data || !window.location.hash) return;
+    const targetId = decodeURIComponent(window.location.hash.slice(1));
+    requestAnimationFrame(() => document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, [cms.data]);
   if (home.isLoading || cms.isLoading || menu.isLoading) return <LoadingCourses />;
   if (home.isError || cms.isError || menu.isError || !home.data || !cms.data || !menu.data) return <CoursesError retry={() => { void home.refetch(); void cms.refetch(); void menu.refetch(); }} />;
   const hero = sectionByKey(cms.data.sections, "hero");
   const pathways = sectionByKey(cms.data.sections, "regular-pathways") || sectionByKey(cms.data.sections, "pathways");
+  const batchSchedule = sectionByKey(cms.data.sections, "batch-details-schedule");
+  const admissions = sectionByKey(cms.data.sections, "admissions-cta");
   return (
     <div className="min-h-[100dvh] bg-[#f7f5ef]" data-college-theme style={{ "--college-primary": home.data.settings.primaryColor, "--college-accent": home.data.settings.accentColor } as React.CSSProperties}>
       <Header home={home.data} />
-      <main>{hero ? <Hero section={hero} /> : null}{pathways ? <Pathways section={pathways} cards={cards} /> : null}</main>
+       <main>
+         {hero ? <Hero section={hero} /> : null}
+         {pathways ? <Pathways section={pathways} cards={cards} /> : null}
+         {batchSchedule ? <BatchSchedule section={batchSchedule} items={cms.data.items} /> : null}
+         {admissions ? <AdmissionsCta section={admissions} /> : null}
+       </main>
       <Footer home={home.data} />
     </div>
   );
