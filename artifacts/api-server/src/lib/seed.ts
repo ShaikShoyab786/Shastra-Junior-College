@@ -1170,7 +1170,10 @@ async function seedAboutPage(): Promise<void> {
     }
 
     const [whoWeAreSection] = await tx
-      .select({ id: contentSectionsTable.id })
+      .select({
+        id: contentSectionsTable.id,
+        content: contentSectionsTable.content,
+      })
       .from(contentSectionsTable)
       .where(
         and(
@@ -1189,6 +1192,9 @@ async function seedAboutPage(): Promise<void> {
           title: "Who We Are",
           content: {
             eyebrow: "LEARNING WITH PURPOSE",
+            imageUrl: "/about-classroom-demo.jpg",
+            imageAlt:
+              "A teacher guiding students as they learn together in a classroom.",
             paragraphs: [
               "At Shastra Junior College, strong subject foundations and thoughtful guidance help students approach their next step with confidence.",
               "Learning here is about more than completing a syllabus. We encourage curiosity, disciplined practice, and clear thinking in a supportive setting where every student can make steady progress.",
@@ -1208,6 +1214,37 @@ async function seedAboutPage(): Promise<void> {
           position: 1,
         })
         .onConflictDoNothing();
+    } else {
+      const existingContent = isCmsRecord(whoWeAreSection.content)
+        ? whoWeAreSection.content
+        : {};
+      const imageUrl =
+        typeof existingContent.imageUrl === "string" &&
+        existingContent.imageUrl.trim()
+          ? existingContent.imageUrl
+          : "/about-classroom-demo.jpg";
+      const imageAlt =
+        typeof existingContent.imageAlt === "string" &&
+        existingContent.imageAlt.trim()
+          ? existingContent.imageAlt
+          : "A teacher guiding students as they learn together in a classroom.";
+
+      if (
+        imageUrl !== existingContent.imageUrl ||
+        imageAlt !== existingContent.imageAlt
+      ) {
+        await tx
+          .update(contentSectionsTable)
+          .set({
+            content: {
+              ...existingContent,
+              imageUrl,
+              imageAlt,
+            } as CmsJson,
+            updatedAt: new Date(),
+          })
+          .where(eq(contentSectionsTable.id, whoWeAreSection.id));
+      }
     }
 
     const [statisticsSection] = await tx

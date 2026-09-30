@@ -4,6 +4,8 @@ import { ArrowUpRight, Compass, Target } from "lucide-react";
 type AboutWhoWeAreContent = {
   eyebrow?: unknown;
   paragraphs?: unknown;
+  imageUrl?: unknown;
+  imageAlt?: unknown;
   visionTitle?: unknown;
   visionText?: unknown;
   missionTitle?: unknown;
@@ -26,6 +28,15 @@ function contentFrom(section: ContentSection): AboutWhoWeAreContent {
   return section.content as AboutWhoWeAreContent;
 }
 
+function assetUrl(value: string): string {
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+  if (value.startsWith("/objects/")) return `/api/storage${value}`;
+  if (value.startsWith("/") && basePath && !value.startsWith(`${basePath}/`)) {
+    return `${basePath}${value}`;
+  }
+  return value;
+}
+
 export function AboutWhoWeAreSection({
   section,
 }: {
@@ -34,6 +45,8 @@ export function AboutWhoWeAreSection({
   const content = contentFrom(section);
   const eyebrow = textValue(content.eyebrow);
   const paragraphs = textList(content.paragraphs);
+  const imageUrl = textValue(content.imageUrl);
+  const imageAlt = textValue(content.imageAlt);
   const visionTitle = textValue(content.visionTitle);
   const visionText = textValue(content.visionText);
   const missionTitle = textValue(content.missionTitle);
@@ -46,43 +59,49 @@ export function AboutWhoWeAreSection({
       aria-labelledby={titleId}
       data-testid={`section-about-who-we-are-${section.id}`}
     >
-      <div
-        className="pointer-events-none absolute -right-16 top-16 h-44 w-44 rounded-full border border-[#e3212b]/15 sm:h-64 sm:w-64"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute -right-4 top-28 h-20 w-20 rounded-full border border-[#e3212b]/20 sm:right-16 sm:top-36"
-        aria-hidden="true"
-      />
-
       <div className="relative mx-auto max-w-7xl">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:gap-x-20">
-          <header className="reveal reveal-delay-1 lg:sticky lg:top-10 lg:self-start">
-            {eyebrow ? (
-              <p
-                className="eyebrow mb-5 text-[#e3212b]"
-                data-testid={`text-about-who-we-are-eyebrow-${section.id}`}
+          <div className="min-w-0">
+            <header className="reveal reveal-delay-1 lg:self-start">
+              {eyebrow ? (
+                <p
+                  className="eyebrow mb-5 text-[#e3212b]"
+                  data-testid={`text-about-who-we-are-eyebrow-${section.id}`}
+                >
+                  {eyebrow}
+                </p>
+              ) : null}
+              <h2
+                id={titleId}
+                className="max-w-[10ch] font-display text-[clamp(2.8rem,6vw,5.65rem)] font-extrabold leading-[0.95] tracking-[-0.065em] text-[#0b3472]"
+                data-testid={`text-about-who-we-are-title-${section.id}`}
               >
-                {eyebrow}
-              </p>
+                {section.title}
+              </h2>
+              <div
+                className="mt-8 flex items-center gap-3 text-[#52647c]"
+                aria-hidden="true"
+              >
+                <span className="h-px w-14 bg-[#e3212b]" />
+                <span className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.18em]">
+                  Our starting point
+                </span>
+              </div>
+            </header>
+            {imageUrl ? (
+              <figure
+                className="reveal reveal-delay-2 mt-8 aspect-square overflow-hidden rounded-[1.5rem] border border-[#0b3472]/10 bg-[#e8edf4] shadow-[0_20px_46px_rgba(11,52,114,.12)]"
+                data-testid={`figure-about-who-we-are-image-${section.id}`}
+              >
+                <img
+                  src={assetUrl(imageUrl)}
+                  alt={imageAlt}
+                  className="h-full w-full object-cover"
+                  data-testid={`img-about-who-we-are-${section.id}`}
+                />
+              </figure>
             ) : null}
-            <h2
-              id={titleId}
-              className="max-w-[10ch] font-display text-[clamp(2.8rem,6vw,5.65rem)] font-extrabold leading-[0.95] tracking-[-0.065em] text-[#0b3472]"
-              data-testid={`text-about-who-we-are-title-${section.id}`}
-            >
-              {section.title}
-            </h2>
-            <div
-              className="mt-8 flex items-center gap-3 text-[#52647c]"
-              aria-hidden="true"
-            >
-              <span className="h-px w-14 bg-[#e3212b]" />
-              <span className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.18em]">
-                Our starting point
-              </span>
-            </div>
-          </header>
+          </div>
 
           <div className="space-y-14">
             <div

@@ -1,10 +1,11 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Save } from "lucide-react";
+import { ImagePlus, Save, X } from "lucide-react";
 import {
   getGetAdminCmsPageQueryKey,
   getGetCmsPageQueryKey,
   useGetAdminCmsPage,
+  useRequestUploadUrl,
   useUpdateContentSection,
 } from "@workspace/api-client-react";
 import type { ContentSection } from "@workspace/api-client-react";
@@ -15,6 +16,8 @@ type WhoWeAreDraft = {
   eyebrow: string;
   title: string;
   paragraphs: string;
+  imageUrl: string;
+  imageAlt: string;
   visionTitle: string;
   visionText: string;
   missionTitle: string;
@@ -25,6 +28,8 @@ const emptyDraft: WhoWeAreDraft = {
   eyebrow: "",
   title: "",
   paragraphs: "",
+  imageUrl: "",
+  imageAlt: "",
   visionTitle: "",
   visionText: "",
   missionTitle: "",
@@ -53,6 +58,8 @@ function draftFrom(section: ContentSection): WhoWeAreDraft {
     eyebrow: text(content.eyebrow),
     title: section.title,
     paragraphs: textList(content.paragraphs).join("\n\n"),
+    imageUrl: text(content.imageUrl),
+    imageAlt: text(content.imageAlt),
     visionTitle: text(content.visionTitle),
     visionText: text(content.visionText),
     missionTitle: text(content.missionTitle),
@@ -118,6 +125,15 @@ function errorMessage(error: unknown) {
     : "The subsection could not be saved. Please try again.";
 }
 
+function assetUrl(path: string): string {
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+  if (path.startsWith("/objects/")) return `/api/storage${path}`;
+  if (path.startsWith("/") && basePath && !path.startsWith(`${basePath}/`)) {
+    return `${basePath}${path}`;
+  }
+  return path;
+}
+
 export default function AdminAboutWhoWeAreEditor({
   onFlash,
 }: {
@@ -128,16 +144,30 @@ export default function AdminAboutWhoWeAreEditor({
     query: { queryKey: getGetAdminCmsPageQueryKey("about") },
   });
   const update = useUpdateContentSection();
+  const requestUpload = useRequestUploadUrl();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const section = page.data?.sections.find(
     (candidate) => candidate.sectionKey === "who-we-are",
   );
   const [draft, setDraft] = useState(emptyDraft);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [localPreviewUrl, setLocalPreviewUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (section) setDraft(draftFrom(section));
   }, [section?.id, section?.updatedAt]);
+
+  useEffect(() => {
+    if (!selectedFile) {
+      setLocalPreviewUrl("");
+      return;
+    }
+    const preview = URL.createObjectURL(selectedFile);
+    setLocalPreviewUrl(preview);
+    return () => URL.revokeObjectURL(preview);
+  }, [selectedFile]);
 
   const set = (key: keyof WhoWeAreDraft, value: string) =>
     setDraft((current) => ({ ...current, [key]: value }));
@@ -160,19 +190,50 @@ export default function AdminAboutWhoWeAreEditor({
       !draft.title.trim() ||
       !draft.eyebrow.trim() ||
       paragraphs.length === 0 ||
+      !draft.imageAlt.trim() ||
       !draft.visionTitle.trim() ||
       !draft.visionText.trim() ||
       !draft.missionTitle.trim() ||
       missionPoints.length === 0
     ) {
       setError(
-        "Complete each heading and description, and include at least one paragraph and one mission point.",
+        "Complete all headings, descriptions, and image alt text, and include at least one paragraph and mission point.",
       );
+      return;
+    }
+    if (!draft.imageUrl.trim() && !selectedFile) {
+      setError("Choose an About image before saving.");
       return;
     }
 
     setIsSaving(true);
     try {
+      let imageUrl = draft.imageUrl.trim();
+      if (selectedFile) {
+        if (!["image/png", "image/jpeg", "image/webp"].includes(selectedFile.type)) {
+          throw new Error("Use a PNG, JPEG, or WebP image.");
+        }
+        if (selectedFile.size > 2 * 1024 * 1024) {
+          throw new Error("The About image must be 2 MB or smaller.");
+        }
+        const uploadInfo = await requestUpload.mutateAsync({
+          data: {
+            name: selectedFile.name,
+            size: selectedFile.size,
+            contentType: selectedFile.type,
+          },
+        });
+        const response = await fetch(uploadInfo.uploadURL, {
+          method: "PUT",
+          headers: { "Content-Type": selectedFile.type },
+          body: selectedFile,
+        });
+        if (!response.ok) {
+          throw new Error("The image upload could not be completed.");
+        }
+        imageUrl = uploadInfo.objectPath;
+      }
+
       await update.mutateAsync({
         id: section.id,
         data: {
@@ -181,6 +242,8 @@ export default function AdminAboutWhoWeAreEditor({
             ...record(section.content),
             eyebrow: draft.eyebrow.trim(),
             paragraphs,
+            imageUrl,
+            imageAlt: draft.imageAlt.trim(),
             visionTitle: draft.visionTitle.trim(),
             visionText: draft.visionText.trim(),
             missionTitle: draft.missionTitle.trim(),
@@ -196,6 +259,9 @@ export default function AdminAboutWhoWeAreEditor({
           queryKey: getGetCmsPageQueryKey("about"),
         }),
       ]);
+      setDraft((current) => ({ ...current, imageUrl }));
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       onFlash({ tone: "success", message: "Who We Are subsection saved." });
     } catch (failure) {
       setError(errorMessage(failure));
@@ -280,6 +346,83 @@ export default function AdminAboutWhoWeAreEditor({
               testId="textarea-about-who-paragraphs"
               maxLength={5000}
             />
+          </div>
+          <div className="md:col-span-2 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.8fr)]">
+            <div className="space-y-4">
+              <Field
+                label="Image alt text"
+                value={draft.imageAlt}
+                onChange={(value) => set("imageAlt", value)}
+                hint="Describe the learning scene for screen readers."
+                testId="input-about-who-image-alt"
+                maxLength={500}
+              />
+              <div>
+                <label
+                  className="block text-sm font-semibold text-slate-700"
+                  htmlFor="about-who-we-are-image-upload"
+                >
+                  Replace classroom image
+                </label>
+                <input
+                  ref={fileInputRef}
+                  id="about-who-we-are-image-upload"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={(event) =>
+                    setSelectedFile(event.currentTarget.files?.[0] || null)
+                  }
+                  disabled={isSaving}
+                  className="mt-1.5 block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[#0b3472]/5 file:px-3 file:py-2 file:text-sm file:font-bold file:text-[#0b3472] hover:file:bg-[#0b3472]/10 disabled:opacity-60"
+                  data-testid="input-about-who-image-upload"
+                />
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  PNG, JPEG, or WebP; maximum 2 MB. The selected file uploads
+                  when you save this subsection.
+                </p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  The current photo is demo artwork; replace it with an
+                  approved college image when available.
+                </p>
+                {selectedFile ? (
+                  <p className="mt-1 text-xs font-semibold text-[#0b3472]">
+                    New image selected: {selectedFile.name}
+                  </p>
+                ) : null}
+                {selectedFile ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFile(null);
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }}
+                    className="mt-2 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-bold text-slate-600 hover:bg-slate-100"
+                    data-testid="button-clear-about-who-image"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Clear selected image
+                  </button>
+                ) : null}
+              </div>
+            </div>
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-[#e8edf4]">
+              {localPreviewUrl || draft.imageUrl ? (
+                <img
+                  src={
+                    localPreviewUrl ||
+                    (draft.imageUrl ? assetUrl(draft.imageUrl) : "")
+                  }
+                  alt={draft.imageAlt}
+                  className="aspect-[4/3] w-full object-cover"
+                  data-testid="img-admin-about-who-preview"
+                />
+              ) : (
+                <div className="flex aspect-[4/3] flex-col items-center justify-center gap-2 px-5 text-center text-sm text-slate-500">
+                  <ImagePlus className="h-6 w-6 text-[#0b3472]/40" />
+                  Select a classroom image to preview it here.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>
