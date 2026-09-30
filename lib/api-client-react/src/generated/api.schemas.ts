@@ -22,6 +22,153 @@ export interface NavigationLink {
   path: string;
 }
 
+export interface CoursesMenuBrandPanel {
+  /** @maxLength 120 */
+  collegeName: string;
+  /** @maxLength 120 */
+  tagline: string;
+  /** @maxLength 160 */
+  headline: string;
+  /** @maxLength 500 */
+  supportingText: string;
+  /**
+     * @maxLength 2048
+     * @nullable
+     */
+  logoImageUrl: string | null;
+  /** @maxLength 180 */
+  logoImageAlt: string;
+  /**
+     * @maxLength 2048
+     * @nullable
+     */
+  backgroundImageUrl: string | null;
+  /** @maxLength 180 */
+  backgroundImageAlt: string;
+}
+
+export interface CoursesMenuHeading {
+  /** @maxLength 100 */
+  eyebrow: string;
+  /** @maxLength 160 */
+  title: string;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  pathwayBadge: string | null;
+}
+
+export interface CoursesMenuCard {
+  /**
+     * @minLength 1
+     * @maxLength 80
+     * @pattern ^[A-Za-z0-9_-]+$
+     */
+  id: string;
+  /** @minimum 0 */
+  order: number;
+  /** @maxLength 120 */
+  title: string;
+  /** @maxLength 100 */
+  category: string;
+  /** @maxLength 400 */
+  description: string;
+  /** @maxLength 2048 */
+  destination: string;
+  isVisible: boolean;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  icon: string | null;
+  /**
+     * @nullable
+     * @pattern ^#[0-9A-Fa-f]{6}$
+     */
+  tint: string | null;
+  /**
+     * @maxLength 2048
+     * @nullable
+     */
+  imageUrl: string | null;
+  /** @maxLength 180 */
+  imageAlt: string;
+}
+
+export interface CoursesMenuComingSoonCard {
+  /** @maxLength 120 */
+  title: string;
+  /** @maxLength 400 */
+  description: string;
+  /** @maxLength 60 */
+  statusLabel: string;
+  isVisible: boolean;
+}
+
+export interface CoursesMenuBenefit {
+  /**
+     * @minLength 1
+     * @maxLength 80
+     * @pattern ^[A-Za-z0-9_-]+$
+     */
+  id: string;
+  /** @minimum 0 */
+  order: number;
+  /** @maxLength 120 */
+  title: string;
+  /** @maxLength 300 */
+  description: string;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  icon: string | null;
+  isVisible: boolean;
+}
+
+export interface CoursesMenuLink {
+  /**
+     * @minLength 1
+     * @maxLength 80
+     * @pattern ^[A-Za-z0-9_-]+$
+     */
+  id: string;
+  /** @minimum 0 */
+  order: number;
+  /** @maxLength 100 */
+  label: string;
+  /** @maxLength 2048 */
+  destination: string;
+  isVisible: boolean;
+}
+
+export type CoursesMenuButtonVariant = typeof CoursesMenuButtonVariant[keyof typeof CoursesMenuButtonVariant];
+
+
+export const CoursesMenuButtonVariant = {
+  primary: 'primary',
+  secondary: 'secondary',
+} as const;
+
+export type CoursesMenuButton = CoursesMenuLink & {
+  variant: CoursesMenuButtonVariant;
+};
+
+export interface CoursesMenuSettings {
+  brandPanel: CoursesMenuBrandPanel;
+  heading: CoursesMenuHeading;
+  /** @maxItems 40 */
+  courseCards: CoursesMenuCard[];
+  comingSoonCard: CoursesMenuComingSoonCard | null;
+  /** @maxItems 24 */
+  benefits: CoursesMenuBenefit[];
+  /** @maxItems 24 */
+  utilityLinks: CoursesMenuLink[];
+  /** @maxItems 8 */
+  ctaButtons: CoursesMenuButton[];
+}
+
 export interface SiteSettings {
   id: string;
   collegeName: string;

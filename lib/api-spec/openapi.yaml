@@ -199,6 +199,59 @@ paths:
           description: Sign-in required
         "403":
           description: The signed-in account is not an authorized admin
+  /courses-menu:
+    get:
+      operationId: getCoursesMenu
+      tags: [public]
+      summary: Get the visible Courses mega-menu content
+      responses:
+        "200":
+          description: Public Courses mega-menu content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CoursesMenuSettings"
+        "503":
+          description: Courses menu content is not available
+  /admin/courses-menu:
+    get:
+      operationId: getAdminCoursesMenu
+      tags: [admin]
+      summary: Get all Courses mega-menu content for an authorized admin
+      responses:
+        "200":
+          description: Courses mega-menu content including hidden items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CoursesMenuSettings"
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+    put:
+      operationId: updateAdminCoursesMenu
+      tags: [admin]
+      summary: Replace Courses mega-menu content for an authorized admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CoursesMenuSettings"
+      responses:
+        "200":
+          description: Updated Courses mega-menu content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CoursesMenuSettings"
+        "400":
+          description: Invalid menu content
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
   /admin/pages/{pageSlug}:
     get:
       operationId: getAdminCmsPage
@@ -544,6 +597,210 @@ components:
           minLength: 1
           maxLength: 200
       required: [label, path]
+    CoursesMenuBrandPanel:
+      type: object
+      properties:
+        collegeName:
+          type: string
+          maxLength: 120
+        tagline:
+          type: string
+          maxLength: 120
+        headline:
+          type: string
+          maxLength: 160
+        supportingText:
+          type: string
+          maxLength: 500
+        logoImageUrl:
+          type: ["string", "null"]
+          maxLength: 2048
+        logoImageAlt:
+          type: string
+          maxLength: 180
+        backgroundImageUrl:
+          type: ["string", "null"]
+          maxLength: 2048
+        backgroundImageAlt:
+          type: string
+          maxLength: 180
+      required:
+        - collegeName
+        - tagline
+        - headline
+        - supportingText
+        - logoImageUrl
+        - logoImageAlt
+        - backgroundImageUrl
+        - backgroundImageAlt
+    CoursesMenuHeading:
+      type: object
+      properties:
+        eyebrow:
+          type: string
+          maxLength: 100
+        title:
+          type: string
+          maxLength: 160
+        pathwayBadge:
+          type: ["string", "null"]
+          maxLength: 100
+      required: [eyebrow, title, pathwayBadge]
+    CoursesMenuCard:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 80
+          pattern: "^[A-Za-z0-9_-]+$"
+        order:
+          type: integer
+          minimum: 0
+        title:
+          type: string
+          maxLength: 120
+        category:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 400
+        destination:
+          type: string
+          maxLength: 2048
+        isVisible:
+          type: boolean
+        icon:
+          type: ["string", "null"]
+          maxLength: 60
+        tint:
+          type: ["string", "null"]
+          pattern: "^#[0-9A-Fa-f]{6}$"
+        imageUrl:
+          type: ["string", "null"]
+          maxLength: 2048
+        imageAlt:
+          type: string
+          maxLength: 180
+      required:
+        - id
+        - order
+        - title
+        - category
+        - description
+        - destination
+        - isVisible
+        - icon
+        - tint
+        - imageUrl
+        - imageAlt
+    CoursesMenuComingSoonCard:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 400
+        statusLabel:
+          type: string
+          maxLength: 60
+        isVisible:
+          type: boolean
+      required: [title, description, statusLabel, isVisible]
+    CoursesMenuBenefit:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 80
+          pattern: "^[A-Za-z0-9_-]+$"
+        order:
+          type: integer
+          minimum: 0
+        title:
+          type: string
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 300
+        icon:
+          type: ["string", "null"]
+          maxLength: 60
+        isVisible:
+          type: boolean
+      required: [id, order, title, description, icon, isVisible]
+    CoursesMenuLink:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 80
+          pattern: "^[A-Za-z0-9_-]+$"
+        order:
+          type: integer
+          minimum: 0
+        label:
+          type: string
+          maxLength: 100
+        destination:
+          type: string
+          maxLength: 2048
+        isVisible:
+          type: boolean
+      required: [id, order, label, destination, isVisible]
+    CoursesMenuButton:
+      allOf:
+        - $ref: "#/components/schemas/CoursesMenuLink"
+        - type: object
+          properties:
+            variant:
+              type: string
+              enum: [primary, secondary]
+          required: [variant]
+    CoursesMenuSettings:
+      type: object
+      properties:
+        brandPanel:
+          $ref: "#/components/schemas/CoursesMenuBrandPanel"
+        heading:
+          $ref: "#/components/schemas/CoursesMenuHeading"
+        courseCards:
+          type: array
+          maxItems: 40
+          items:
+            $ref: "#/components/schemas/CoursesMenuCard"
+        comingSoonCard:
+          anyOf:
+            - $ref: "#/components/schemas/CoursesMenuComingSoonCard"
+            - type: "null"
+        benefits:
+          type: array
+          maxItems: 24
+          items:
+            $ref: "#/components/schemas/CoursesMenuBenefit"
+        utilityLinks:
+          type: array
+          maxItems: 24
+          items:
+            $ref: "#/components/schemas/CoursesMenuLink"
+        ctaButtons:
+          type: array
+          maxItems: 8
+          items:
+            $ref: "#/components/schemas/CoursesMenuButton"
+      required:
+        - brandPanel
+        - heading
+        - courseCards
+        - comingSoonCard
+        - benefits
+        - utilityLinks
+        - ctaButtons
     SiteSettings:
       type: object
       properties:

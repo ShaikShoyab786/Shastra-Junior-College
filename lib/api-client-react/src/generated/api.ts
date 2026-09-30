@@ -30,6 +30,7 @@ import type {
   ContentSection,
   ContentSectionInput,
   ContentSectionUpdate,
+  CoursesMenuSettings,
   EnquiryActionResult,
   EnquiryReceipt,
   ErrorEnvelope,
@@ -780,6 +781,248 @@ export function useGetAdminHome<TData = Awaited<ReturnType<typeof getAdminHome>>
 
 
 
+
+export const getGetCoursesMenuUrl = () => {
+
+
+
+
+  return `/api/courses-menu`
+}
+
+/**
+ * @summary Get the visible Courses mega-menu content
+ */
+export const getCoursesMenu = async ( options?: Parameters<typeof customFetch>[1]): Promise<CoursesMenuSettings> => {
+
+  return customFetch<CoursesMenuSettings>(getGetCoursesMenuUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCoursesMenuQueryKey = () => {
+    return [
+    `/api/courses-menu`
+    ] as const;
+    }
+
+
+export const getGetCoursesMenuQueryOptions = <TData = Awaited<ReturnType<typeof getCoursesMenu>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCoursesMenu>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCoursesMenuQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCoursesMenu>>> = ({ signal }) => getCoursesMenu({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCoursesMenu>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCoursesMenuQueryResult = NonNullable<Awaited<ReturnType<typeof getCoursesMenu>>>
+export type GetCoursesMenuQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get the visible Courses mega-menu content
+ */
+
+export function useGetCoursesMenu<TData = Awaited<ReturnType<typeof getCoursesMenu>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCoursesMenu>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCoursesMenuQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminCoursesMenuUrl = () => {
+
+
+
+
+  return `/api/admin/courses-menu`
+}
+
+/**
+ * @summary Get all Courses mega-menu content for an authorized admin
+ */
+export const getAdminCoursesMenu = async ( options?: Parameters<typeof customFetch>[1]): Promise<CoursesMenuSettings> => {
+
+  return customFetch<CoursesMenuSettings>(getGetAdminCoursesMenuUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminCoursesMenuQueryKey = () => {
+    return [
+    `/api/admin/courses-menu`
+    ] as const;
+    }
+
+
+export const getGetAdminCoursesMenuQueryOptions = <TData = Awaited<ReturnType<typeof getAdminCoursesMenu>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCoursesMenu>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminCoursesMenuQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminCoursesMenu>>> = ({ signal }) => getAdminCoursesMenu({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminCoursesMenu>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminCoursesMenuQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminCoursesMenu>>>
+export type GetAdminCoursesMenuQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get all Courses mega-menu content for an authorized admin
+ */
+
+export function useGetAdminCoursesMenu<TData = Awaited<ReturnType<typeof getAdminCoursesMenu>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCoursesMenu>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminCoursesMenuQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateAdminCoursesMenuUrl = () => {
+
+
+
+
+  return `/api/admin/courses-menu`
+}
+
+/**
+ * @summary Replace Courses mega-menu content for an authorized admin
+ */
+export const updateAdminCoursesMenu = async (coursesMenuSettings: CoursesMenuSettings, options?: Parameters<typeof customFetch>[1]): Promise<CoursesMenuSettings> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CoursesMenuSettings>(getUpdateAdminCoursesMenuUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(coursesMenuSettings)
+  }
+);}
+
+
+
+
+
+export const getUpdateAdminCoursesMenuMutationKey = () => ['updateAdminCoursesMenu'] as const;
+
+export const getUpdateAdminCoursesMenuMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminCoursesMenu>>, TError,UpdateAdminCoursesMenuMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminCoursesMenu>>, TError,UpdateAdminCoursesMenuMutationVariables, TContext> => {
+
+const mutationKey = getUpdateAdminCoursesMenuMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminCoursesMenu>>, UpdateAdminCoursesMenuMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateAdminCoursesMenu(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAdminCoursesMenuMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminCoursesMenu>>>
+    export type UpdateAdminCoursesMenuMutationBody = BodyType<CoursesMenuSettings>
+    export type UpdateAdminCoursesMenuMutationError = ErrorType<void>
+    export type UpdateAdminCoursesMenuMutationVariables = {data: BodyType<CoursesMenuSettings>}
+
+    /**
+ * @summary Replace Courses mega-menu content for an authorized admin
+ */
+export const useUpdateAdminCoursesMenu = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminCoursesMenu>>, TError,UpdateAdminCoursesMenuMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateAdminCoursesMenu>>,
+        TError,
+        UpdateAdminCoursesMenuMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateAdminCoursesMenuMutationOptions(options));
+    }
 
 export const getGetAdminCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery',) => {
 

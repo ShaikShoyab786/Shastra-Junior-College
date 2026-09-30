@@ -30,6 +30,7 @@ import type {
 } from "@workspace/api-client-react";
 import PlacementRecordsSection from "./placement-records-section";
 import TestimonialsCarousel from "../components/testimonials-carousel";
+import CoursesMegaMenu from "../components/courses-mega-menu";
 
 const logoPath = "/shastra-college-logo.png";
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -161,17 +162,25 @@ export function Header({ home }: { home?: HomePage }) {
               Home
             </Link>
           ) : (
-            navigation.map((link, index) => (
-              <Link
-                href={link.path}
-                key={`${link.path}-${index}`}
-                onClick={() => setMobileOpen(false)}
-                className="focus-ring whitespace-nowrap rounded-lg px-3 py-2 text-sm font-bold text-[#0b3472] transition-colors hover:text-[#e3212b] md:px-0 md:py-0"
-                data-testid={`link-nav-custom-${index}`}
-              >
-                {link.label}
-              </Link>
-            ))
+            navigation.map((link, index) =>
+              link.label === "Courses" && link.path === "/courses" ? (
+                <CoursesMegaMenu
+                  key={`${link.path}-${index}`}
+                  fallbackLogoUrl={collegeLogo(home?.settings.logoUrl)}
+                  onMobileNavClose={() => setMobileOpen(false)}
+                />
+              ) : (
+                <Link
+                  href={link.path}
+                  key={`${link.path}-${index}`}
+                  onClick={() => setMobileOpen(false)}
+                  className="focus-ring whitespace-nowrap rounded-lg px-3 py-2 text-sm font-bold text-[#0b3472] transition-colors hover:text-[#e3212b] md:px-0 md:py-0"
+                  data-testid={`link-nav-custom-${index}`}
+                >
+                  {link.label}
+                </Link>
+              ),
+            )
           )}
           <Link
             href="/admin"

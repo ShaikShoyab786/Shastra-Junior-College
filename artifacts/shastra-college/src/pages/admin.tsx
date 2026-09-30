@@ -60,6 +60,7 @@ import AdminAboutCollectionEditor from "./admin-about-collection-editor";
 import AdminGalleryEditor from "./admin-gallery-editor";
 import AdminFacultyEditor from "./admin-faculty-editor";
 import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
+import AdminCoursesEditor from "./admin-courses-editor";
 
 type Flash = {
   tone: "success" | "error";
@@ -93,7 +94,7 @@ const pageItems: Array<{ key: WorkspaceView; label: string; note?: string }> = [
   { key: "faculty", label: "Faculty" },
   { key: "gallery", label: "Gallery" },
   { key: "results", label: "Results", note: "Coming soon" },
-  { key: "courses", label: "Courses", note: "Coming soon" },
+  { key: "courses", label: "Courses" },
 ];
 
 function errorMessage(error: unknown) {
@@ -1278,6 +1279,17 @@ function AdminWorkspace() {
           description="Add and maintain placement details approved for public sharing. Unpublished records remain available in this workspace."
         />
         <AdminPlacementRecordsEditor home={home} onFlash={showFlash} />
+      </div>
+    );
+  } else if (activeView === "courses") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / Courses"
+          title="Manage the Courses mega-menu."
+          description="Keep public pathway destinations confirmed, accessible, and ready for prospective students and families."
+        />
+        <AdminCoursesEditor onFlash={showFlash} />
       </div>
     );
   } else {

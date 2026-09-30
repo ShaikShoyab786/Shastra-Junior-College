@@ -8,6 +8,7 @@ import {
 import {
   contentItemsTable,
   contentSectionsTable,
+  coursesMenuSettingsTable,
   db,
   siteSettingsTable,
 } from "@workspace/db";
@@ -199,13 +200,30 @@ router.get(
       const aboutImageMatches =
         aboutImageUrls.includes(`/objects/${objectPath}`) ||
         aboutImageUrls.includes(`/api/storage/objects/${objectPath}`);
+      const [coursesMenu] = await db
+        .select({ content: coursesMenuSettingsTable.content })
+        .from(coursesMenuSettingsTable)
+        .where(eq(coursesMenuSettingsTable.id, "primary"))
+        .limit(1);
+      const courseMenuContent = coursesMenu?.content;
+      const coursesMenuImageUrls = courseMenuContent
+        ? [
+            courseMenuContent.brandPanel.logoImageUrl,
+            courseMenuContent.brandPanel.backgroundImageUrl,
+            ...courseMenuContent.courseCards.map((card) => card.imageUrl),
+          ]
+        : [];
+      const coursesMenuImageMatches =
+        coursesMenuImageUrls.includes(`/objects/${objectPath}`) ||
+        coursesMenuImageUrls.includes(`/api/storage/objects/${objectPath}`);
 
       if (
         logoDoesNotMatch &&
         !galleryImage &&
         !placementRecordImage &&
         !facultyPortrait &&
-        !aboutImageMatches
+        !aboutImageMatches &&
+        !coursesMenuImageMatches
       ) {
         res.status(404).json({ error: "Object not found." });
         return;

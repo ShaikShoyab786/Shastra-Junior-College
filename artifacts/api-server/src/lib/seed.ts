@@ -3,10 +3,74 @@ import { and, asc, eq } from "drizzle-orm";
 import {
   contentItemsTable,
   contentSectionsTable,
+  coursesMenuSettingsTable,
   siteSettingsTable,
   type CmsJson,
 } from "@workspace/db";
 import { logger } from "./logger";
+
+const DEFAULT_COURSES_MENU = {
+  brandPanel: {
+    collegeName: "Shastra Junior College",
+    tagline: "Junior College",
+    headline: "Explore course pathways",
+    supportingText: "",
+    logoImageUrl: null,
+    logoImageAlt: "",
+    backgroundImageUrl: null,
+    backgroundImageAlt: "",
+  },
+  heading: {
+    eyebrow: "Shastra Junior College",
+    title: "Explore course pathways",
+    pathwayBadge: null,
+  },
+  courseCards: [
+    {
+      id: "intermediate",
+      order: 0,
+      title: "Intermediate",
+      category: "",
+      description: "",
+      destination: "",
+      isVisible: false,
+      icon: null,
+      tint: null,
+      imageUrl: null,
+      imageAlt: "",
+    },
+    {
+      id: "iit-jee-main",
+      order: 1,
+      title: "IIT-JEE Main",
+      category: "",
+      description: "",
+      destination: "",
+      isVisible: false,
+      icon: null,
+      tint: null,
+      imageUrl: null,
+      imageAlt: "",
+    },
+    {
+      id: "neet",
+      order: 2,
+      title: "NEET",
+      category: "",
+      description: "",
+      destination: "",
+      isVisible: false,
+      icon: null,
+      tint: null,
+      imageUrl: null,
+      imageAlt: "",
+    },
+  ],
+  comingSoonCard: null,
+  benefits: [],
+  utilityLinks: [],
+  ctaButtons: [],
+};
 
 const DEFAULT_PUBLIC_NAVIGATION = [
   { label: "Home", path: "/" },
@@ -301,6 +365,11 @@ function initialGalleryItems(sectionId: string) {
 
 export async function seedInitialHomeContent(): Promise<void> {
   await db.transaction(async (tx) => {
+    await tx
+      .insert(coursesMenuSettingsTable)
+      .values({ id: "primary", content: DEFAULT_COURSES_MENU })
+      .onConflictDoNothing();
+
     const [insertedSettings] = await tx
       .insert(siteSettingsTable)
       .values({
