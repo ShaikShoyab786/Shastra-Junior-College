@@ -6,60 +6,96 @@ import {
   coursesMenuSettingsTable,
   siteSettingsTable,
   type CmsJson,
+  type CoursesMenuContent,
 } from "@workspace/db";
 import { logger } from "./logger";
 
-const DEFAULT_COURSES_MENU = {
+const DEFAULT_COURSES_MENU: CoursesMenuContent = {
   brandPanel: {
     collegeName: "Shastra Junior College",
     tagline: "Junior College",
     headline: "Explore course pathways",
-    supportingText: "",
-    logoImageUrl: null,
-    logoImageAlt: "",
-    backgroundImageUrl: null,
-    backgroundImageAlt: "",
+    supportingText:
+      "Explore science pathways at Shastra Junior College, then contact the college for current course information.",
+    logoImageUrl:
+      "/objects/uploads/ea7f7c4b-0ce9-4a86-b551-bb7f3481e88e",
+    logoImageAlt: "Shastra Junior College crest",
+    backgroundImageUrl:
+      "/objects/uploads/0be0c4d9-6701-4b4a-8963-4be6e72b25e8",
+    backgroundImageAlt:
+      "Student studying a biology lesson for NEET preparation",
   },
   heading: {
-    eyebrow: "Shastra Junior College",
+    eyebrow: "Academic pathways",
     title: "Explore course pathways",
     pathwayBadge: null,
   },
   courseCards: [
     {
-      id: "intermediate",
+      id: "mpc",
       order: 0,
-      title: "Intermediate",
-      category: "",
-      description: "",
-      destination: "",
-      isVisible: false,
+      title: "MPC",
+      category: "Intermediate science",
+      description:
+        "Mathematics, Physics and Chemistry are the core subjects in this science pathway.",
+      destination: "/courses",
+      isVisible: true,
       icon: null,
       tint: null,
       imageUrl: null,
       imageAlt: "",
     },
     {
-      id: "iit-jee-main",
+      id: "bipc",
       order: 1,
-      title: "IIT-JEE Main",
-      category: "",
-      description: "",
-      destination: "",
-      isVisible: false,
+      title: "BIPC",
+      category: "Intermediate science",
+      description:
+        "Biology, Physics and Chemistry are the core subjects in this science pathway.",
+      destination: "/courses",
+      isVisible: true,
       icon: null,
       tint: null,
       imageUrl: null,
       imageAlt: "",
     },
     {
-      id: "neet",
+      id: "mpc-iit-jee",
       order: 2,
-      title: "NEET",
-      category: "",
-      description: "",
-      destination: "",
-      isVisible: false,
+      title: "MPC+IIT-JEE",
+      category: "IIT-JEE Main pathway",
+      description:
+        "Mathematics, Physics and Chemistry alongside preparation for IIT-JEE Main.",
+      destination: "/courses",
+      isVisible: true,
+      icon: null,
+      tint: null,
+      imageUrl: null,
+      imageAlt: "",
+    },
+    {
+      id: "bipc-neet",
+      order: 3,
+      title: "BIPC+NEET",
+      category: "NEET pathway",
+      description:
+        "Biology, Physics and Chemistry alongside preparation for NEET.",
+      destination: "/courses",
+      isVisible: true,
+      icon: null,
+      tint: null,
+      imageUrl: null,
+      imageAlt: "",
+    },
+    {
+      id: "mpc-eamcet",
+      order: 4,
+      title: "MPC_EAMCET",
+      category: "EAMCET pathway",
+      description:
+        "A Mathematics, Physics and Chemistry pathway associated with EAMCET.",
+      destination: "/courses",
+      isVisible: true,
       icon: null,
       tint: null,
       imageUrl: null,
@@ -67,9 +103,76 @@ const DEFAULT_COURSES_MENU = {
     },
   ],
   comingSoonCard: null,
-  benefits: [],
-  utilityLinks: [],
-  ctaButtons: [],
+  benefits: [
+    {
+      id: "science-subjects",
+      order: 0,
+      title: "Science subject pathways",
+      description:
+        "Explore Mathematics, Physics, Chemistry and Biology across the listed options.",
+      icon: null,
+      isVisible: true,
+    },
+    {
+      id: "exam-pathways",
+      order: 1,
+      title: "Exam pathways",
+      description:
+        "Compare pathways featuring IIT-JEE Main, NEET and EAMCET.",
+      icon: null,
+      isVisible: true,
+    },
+    {
+      id: "course-information",
+      order: 2,
+      title: "Course information",
+      description:
+        "Contact the college for current course details.",
+      icon: null,
+      isVisible: true,
+    },
+  ],
+  utilityLinks: [
+    {
+      id: "about",
+      order: 0,
+      label: "About",
+      destination: "/about",
+      isVisible: true,
+    },
+    {
+      id: "faculty",
+      order: 1,
+      label: "Faculty",
+      destination: "/faculty",
+      isVisible: true,
+    },
+    {
+      id: "contact",
+      order: 2,
+      label: "Contact",
+      destination: "/contact",
+      isVisible: true,
+    },
+  ],
+  ctaButtons: [
+    {
+      id: "explore-courses",
+      order: 0,
+      label: "Explore courses",
+      destination: "/courses",
+      variant: "primary",
+      isVisible: true,
+    },
+    {
+      id: "contact-college",
+      order: 1,
+      label: "Contact the college",
+      destination: "/contact",
+      variant: "secondary",
+      isVisible: true,
+    },
+  ],
 };
 
 const DEFAULT_PUBLIC_NAVIGATION = [

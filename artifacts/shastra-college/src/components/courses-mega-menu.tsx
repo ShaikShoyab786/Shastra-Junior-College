@@ -194,7 +194,7 @@ function MenuPanel({
             {data.heading.pathwayBadge ? <span className="rounded-full bg-[#e3212b]/10 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#b71927]">{data.heading.pathwayBadge}</span> : null}
           </div>
           {cards.length ? (
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
               {cards.map((card) => <CourseCard key={card.id} card={card} onSelect={onClose} />)}
             </div>
           ) : (

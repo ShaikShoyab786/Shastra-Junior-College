@@ -271,7 +271,7 @@ export default function AdminCoursesEditor({ onFlash }: { onFlash: (flash: Flash
         client.invalidateQueries({ queryKey: getGetAdminCoursesMenuQueryKey() }),
         client.invalidateQueries({ queryKey: getGetCoursesMenuQueryKey() }),
       ]);
-      onFlash({ tone: "success", message: "Courses menu saved. The public menu will use the updated content on its next open." });
+      onFlash({ tone: "success", message: "Courses menu saved." });
     } catch (failure) {
       setError(errorMessage(failure));
     }

@@ -77,6 +77,7 @@ type WorkspaceView =
   | "faculty-preview"
   | "testimonials"
   | "identity"
+  | "courses-mega-menu"
   | "about"
   | "about-hero"
   | "about-who-we-are"
@@ -223,12 +224,14 @@ function FlashMessage({ flash, onDismiss }: { flash: Flash; onDismiss: () => voi
   if (!flash) return null;
   return (
     <div
-      className={`mb-6 flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold ${
+      className={`pointer-events-auto flex w-fit max-w-full items-start gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold shadow-lg shadow-[#0b3472]/10 ${
         flash.tone === "success"
           ? "border-emerald-200 bg-emerald-50 text-emerald-800"
           : "border-red-200 bg-red-50 text-red-800"
       }`}
       role={flash.tone === "error" ? "alert" : "status"}
+      aria-live={flash.tone === "error" ? "assertive" : "polite"}
+      aria-atomic="true"
       data-testid="status-flash"
     >
       {flash.tone === "success" ? <Check className="mt-0.5 h-4 w-4 shrink-0" /> : <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />}
@@ -303,7 +306,12 @@ function Shell({
   const { user } = useUser();
   const [mobileNav, setMobileNav] = useState(false);
   const [homeOpen, setHomeOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(
+    activeView === "identity" || activeView === "courses-mega-menu",
+  );
+  const [megaMenusOpen, setMegaMenusOpen] = useState(
+    activeView === "courses-mega-menu",
+  );
   const [pagesOpen, setPagesOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(
     activeView === "about" ||
@@ -333,7 +341,7 @@ function Shell({
   const activePage =
     activeView === "dashboard"
       ? "Dashboard"
-      : activeView === "identity"
+      : activeView === "identity" || activeView === "courses-mega-menu"
         ? "Site settings"
         : aboutSectionActive
           ? "Pages / About"
@@ -345,6 +353,8 @@ function Shell({
       ? "Dashboard"
       : activeView === "identity"
         ? "Site identity"
+          : activeView === "courses-mega-menu"
+            ? "Courses Mega Menu"
         : activeView === "about"
           ? "About · Sub sections"
           : activeView === "about-hero"
@@ -377,6 +387,12 @@ function Shell({
                         "Home";
 
   const go = (view: WorkspaceView) => {
+    if (view === "identity" || view === "courses-mega-menu") {
+      setSettingsOpen(true);
+    }
+    if (view === "courses-mega-menu") {
+      setMegaMenusOpen(true);
+    }
     if (
       view === "about" ||
       view === "about-hero" ||
@@ -424,6 +440,38 @@ function Shell({
             {settingsOpen ? (
               <div className="mt-2 space-y-1">
                 <NavRow icon={Settings2} label="Site identity" nested active={activeView === "identity"} onClick={() => go("identity")} />
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setMegaMenusOpen((current) => !current)}
+                    aria-expanded={megaMenusOpen}
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${
+                      activeView === "courses-mega-menu"
+                        ? "bg-white/10 text-white"
+                        : "text-blue-100 hover:bg-white/10 hover:text-white"
+                    }`}
+                    data-testid="button-toggle-mega-menus-nav"
+                  >
+                    <Menu className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0 flex-1">Mega Menus</span>
+                    {megaMenusOpen ? (
+                      <ChevronDown className="h-3.5 w-3.5 text-blue-300" />
+                    ) : (
+                      <ChevronRight className="h-3.5 w-3.5 text-blue-300" />
+                    )}
+                  </button>
+                  {megaMenusOpen ? (
+                    <div className="ml-3 mt-1 space-y-1 border-l border-white/10 pl-2">
+                      <NavRow
+                        icon={FolderOpen}
+                        label="Courses Mega Menu"
+                        nested
+                        active={activeView === "courses-mega-menu"}
+                        onClick={() => go("courses-mega-menu")}
+                      />
+                    </div>
+                  ) : null}
+                </div>
               </div>
             ) : null}
           </div>
@@ -945,7 +993,11 @@ function AdminWorkspace() {
     if (message) {
       flashTimeout.current = window.setTimeout(
         () => setFlash(null),
-        message.action ? 10_000 : 4_500,
+        message.action
+          ? 10_000
+          : message.tone === "success"
+            ? 3_000
+            : 4_500,
       );
     }
   };
@@ -1281,15 +1333,45 @@ function AdminWorkspace() {
         <AdminPlacementRecordsEditor home={home} onFlash={showFlash} />
       </div>
     );
+  } else if (activeView === "courses-mega-menu") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Site settings / Mega Menus"
+          title="Manage the Courses Mega Menu."
+          description="Edit the public header menu, pathway cards, links, benefits, and brand panel."
+        />
+        <AdminCoursesEditor onFlash={showFlash} />
+      </div>
+    );
   } else if (activeView === "courses") {
     body = (
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
         <PageIntro
           eyebrow="Pages / Courses"
-          title="Manage the Courses mega-menu."
-          description="Keep public pathway destinations confirmed, accessible, and ready for prospective students and families."
+          title="Courses page"
+          description="The public Courses page remains separate from the header mega menu."
         />
-        <AdminCoursesEditor onFlash={showFlash} />
+        <SectionCard className="max-w-3xl">
+          <h2 className="font-display text-xl font-extrabold text-[#0b3472]">
+            Public page information
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            The existing Courses page directs visitors to contact the college
+            for current course information. The header pathway menu is managed
+            separately under Site settings, then Mega Menus.
+          </p>
+          <Link
+            href="/courses"
+            target="_blank"
+            rel="noreferrer"
+            className="focus-ring mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0b3472] px-4 py-2.5 text-sm font-bold text-white"
+            data-testid="link-admin-preview-courses-page"
+          >
+            Preview public Courses page
+            <ExternalLink className="h-4 w-4" />
+          </Link>
+        </SectionCard>
       </div>
     );
   } else {
@@ -1305,7 +1387,10 @@ function AdminWorkspace() {
   return (
     <Shell home={home} activeView={activeView} onNavigate={setActiveView}>
       {flash ? (
-        <div className="mx-auto max-w-7xl px-5 pt-4 sm:px-8">
+        <div
+          className="pointer-events-none fixed inset-x-4 bottom-24 z-[70] flex justify-end sm:inset-x-8"
+          data-testid="container-admin-toast"
+        >
           <FlashMessage flash={flash} onDismiss={dismissFlash} />
         </div>
       ) : null}
