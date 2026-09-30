@@ -1,0 +1,29 @@
+Add a Testimonials section to the Home page and make it fully manageable from Admin.
+
+LOCATION AND ORDER
+- Add the section directly beneath the Faculty Preview on the public Home page.
+- In Admin → Pages → Home, add a “Testimonials” sub-item directly beneath “Faculty Preview.”
+
+PUBLIC SECTION
+- Use the existing Shastra Junior College navy, red, and light-neutral theme.
+- Add editable eyebrow text, heading, and supporting description with polished, natural default copy.
+- Display testimonial cards with a small profile image, person’s name, feedback text, and their role: Student, Parent, or Alumni. Optionally include a course or year when available.
+- Make the cards move in a smooth, continuous horizontal carousel, advancing one card at a time. Cards may overlap slightly for a layered look, but keep all text and images readable.
+- Pause the movement on hover or keyboard focus. Include accessible manual navigation, support touch swiping on mobile, and respect reduced-motion preferences.
+- Make the layout responsive and visually consistent with the rest of the Home page.
+
+ADMIN MANAGEMENT
+Under Admin → Pages → Home → Testimonials:
+- Allow admins to add, edit, delete, reorder, publish/unpublish, and manage any number of testimonials.
+- Include a “Show on Home” checkbox for each testimonial. Only published entries with this checkbox enabled should appear on Home.
+- Allow editing the person’s name, role, feedback, profile image, and optional course/year.
+- Allow admins to edit the section’s eyebrow, heading, and supporting description.
+- Store testimonials using the existing backend/data system; do not hardcode them into the public-page component. Changes must persist after refresh.
+- Include confirmation before deleting a testimonial.
+
+DEMO CONTENT
+- Seed at least 6 complete, editable demo testimonials so the carousel is populated and easy to preview.
+- Use natural names, short believable feedback, a mix of Student, Parent, and Alumni roles, and distinct demo profile images. Do not use generic numbered names or placeholder copy.
+- Keep demo indicators in Admin only; do not display public demo labels, warnings, or disclaimers.
+
+Verify the section order, Admin controls, persistence, carousel behavior, pause/focus behavior, and mobile layout.
