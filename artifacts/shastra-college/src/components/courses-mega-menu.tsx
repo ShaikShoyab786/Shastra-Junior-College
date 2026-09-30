@@ -119,12 +119,12 @@ function CourseCard({
 function Benefit({ benefit }: { benefit: CoursesMenuBenefit }) {
   return (
     <li className="flex gap-3">
-      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#0b3472]/[.07] text-[#0b3472]">
+      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/15 text-white">
         {benefit.icon ? <span className="text-[10px] font-extrabold">{benefit.icon.slice(0, 2).toUpperCase()}</span> : <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />}
       </span>
       <span>
-        <span className="block text-xs font-extrabold text-[#0b3472]">{benefit.title}</span>
-        <span className="mt-0.5 block text-[11px] leading-4 text-slate-500">{benefit.description}</span>
+        <span className="block text-xs font-extrabold text-white">{benefit.title}</span>
+        <span className="mt-0.5 block text-[11px] leading-4 text-blue-100/85">{benefit.description}</span>
       </span>
     </li>
   );
