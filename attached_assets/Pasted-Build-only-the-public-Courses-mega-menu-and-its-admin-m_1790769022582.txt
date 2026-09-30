@@ -1,0 +1,42 @@
+Build only the public Courses mega menu and its admin management for this college website.
+
+Scope:
+- Do not build the full Courses landing page or course detail pages yet.
+- Do not build any Knowledge Hub pages or menus yet.
+- Do not change unrelated site features.
+- Use this college’s own branding, logo, colours, verified course information, and existing routes. Do not copy Sahasara’s name, content, or course data.
+
+Before coding:
+1. Inspect the project structure and identify its frontend, API, database/ORM, admin authentication, navigation, image-upload flow, and existing content-management patterns.
+2. Follow the project’s existing conventions and reuse its UI components, theme tokens, authentication, and API client.
+3. If the project uses an OpenAPI contract with generated clients or validation schemas, update the contract first and regenerate those files. Do not edit generated files by hand.
+4. Check which course destinations already exist. Do not create broken links or invent course details. If a course’s verified title or destination is missing, keep it hidden until it can be configured.
+
+Public mega menu:
+- Add a Courses item to the public navigation that opens a responsive mega menu on desktop and mobile.
+- Reuse the same menu data and panel across both layouts.
+- Include an editable brand panel with the college name, tagline, headline, supporting text, and optional logo/background image. Use the site logo when no menu-specific logo is set.
+- Include an editable heading area with an eyebrow, title, and optional pathway badge.
+- Support an ordered list of course cards. Each card should have a title, category, short description, destination, visibility, and optional icon, tint, and image. Require useful alt text whenever an image is supplied.
+- Support an optional non-clickable “coming soon” or integrated-course card with an editable status label.
+- Support ordered benefit items, utility links, and CTA buttons.
+- Hide items marked not visible and display visible items in their configured order.
+- Close the menu after a visitor selects a destination. Use internal app navigation for local routes and safe external links for HTTP(S) destinations.
+- Include loading, unavailable, and retry states. Do not silently substitute demo content when the database or API fails.
+- Make the menu keyboard-accessible, with appropriate labels and expanded state, visible focus, and sensible dismissal behavior.
+
+Admin management and persistence:
+- Add a protected admin editor for the Courses mega menu and link it from the admin navigation.
+- Persist menu content in the project’s database so changes made by an authorized admin remain after refresh and are used by the public menu. Follow the project’s existing data model; for this menu’s ordered content, a singleton settings record with validated structured content is appropriate if it fits the project.
+- Let admins edit the brand panel and heading, add/edit/remove/reorder course cards, benefits, utility links, and CTA buttons, and control each item’s visibility.
+- Let admins configure images through the existing upload flow or an image URL, with alt text for uploaded/linked images.
+- Provide save/loading/success/error feedback. After saving, refresh or update the public menu’s cached data so changes are visible without stale content.
+- Seed sensible initial menu settings idempotently, using only verified college details. Keep unverified items hidden rather than publishing invented content.
+- Validate saved content on the server: require unique item IDs and display orders within each list; allow only safe internal paths or HTTP(S) links; reject `javascript:`, protocol-relative, credential-bearing, and traversal URLs; and require image alt text when an image URL is present.
+- Make database changes additive and use the project’s safe migration workflow. Do not reset data or apply a destructive schema change.
+
+Verification:
+- Run the project’s relevant type checks, tests, and build.
+- Verify an admin can save menu changes and that the public menu shows the saved changes after reload.
+- Check desktop and mobile layouts, visibility toggles, ordering, internal/external links, image alt text, loading/error states, and keyboard use.
+- Report what you implemented, which course destinations were found, any missing verified content, the database changes, and the checks that passed.
