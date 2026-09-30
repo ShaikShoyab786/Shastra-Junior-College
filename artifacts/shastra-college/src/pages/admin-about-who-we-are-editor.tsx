@@ -1,0 +1,360 @@
+import { useEffect, useState, type FormEvent } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Save } from "lucide-react";
+import {
+  getGetAdminCmsPageQueryKey,
+  getGetCmsPageQueryKey,
+  useGetAdminCmsPage,
+  useUpdateContentSection,
+} from "@workspace/api-client-react";
+import type { ContentSection } from "@workspace/api-client-react";
+
+type FlashMessage = { tone: "success" | "error"; message: string };
+
+type WhoWeAreDraft = {
+  eyebrow: string;
+  title: string;
+  paragraphs: string;
+  visionTitle: string;
+  visionText: string;
+  missionTitle: string;
+  missionPoints: string;
+};
+
+const emptyDraft: WhoWeAreDraft = {
+  eyebrow: "",
+  title: "",
+  paragraphs: "",
+  visionTitle: "",
+  visionText: "",
+  missionTitle: "",
+  missionPoints: "",
+};
+
+function record(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function text(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function textList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((entry): entry is string => typeof entry === "string")
+    : [];
+}
+
+function draftFrom(section: ContentSection): WhoWeAreDraft {
+  const content = record(section.content);
+  return {
+    eyebrow: text(content.eyebrow),
+    title: section.title,
+    paragraphs: textList(content.paragraphs).join("\n\n"),
+    visionTitle: text(content.visionTitle),
+    visionText: text(content.visionText),
+    missionTitle: text(content.missionTitle),
+    missionPoints: textList(content.missionPoints).join("\n"),
+  };
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  multiline = false,
+  rows = 4,
+  hint,
+  testId,
+  maxLength,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  multiline?: boolean;
+  rows?: number;
+  hint?: string;
+  testId: string;
+  maxLength?: number;
+}) {
+  const className =
+    "mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm leading-6 text-slate-800 outline-none transition focus:border-[#0b3472] focus:ring-2 focus:ring-[#0b3472]/10";
+
+  return (
+    <label className="block text-sm font-semibold text-slate-700">
+      {label}
+      {multiline ? (
+        <textarea
+          value={value}
+          onChange={(event) => onChange(event.currentTarget.value)}
+          rows={rows}
+          maxLength={maxLength}
+          className={`${className} resize-y`}
+          data-testid={testId}
+        />
+      ) : (
+        <input
+          value={value}
+          onChange={(event) => onChange(event.currentTarget.value)}
+          maxLength={maxLength}
+          className={className}
+          data-testid={testId}
+        />
+      )}
+      {hint ? (
+        <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">
+          {hint}
+        </span>
+      ) : null}
+    </label>
+  );
+}
+
+function errorMessage(error: unknown) {
+  return error instanceof Error
+    ? error.message
+    : "The subsection could not be saved. Please try again.";
+}
+
+export default function AdminAboutWhoWeAreEditor({
+  onFlash,
+}: {
+  onFlash: (flash: FlashMessage) => void;
+}) {
+  const client = useQueryClient();
+  const page = useGetAdminCmsPage("about", {
+    query: { queryKey: getGetAdminCmsPageQueryKey("about") },
+  });
+  const update = useUpdateContentSection();
+  const section = page.data?.sections.find(
+    (candidate) => candidate.sectionKey === "who-we-are",
+  );
+  const [draft, setDraft] = useState(emptyDraft);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (section) setDraft(draftFrom(section));
+  }, [section?.id, section?.updatedAt]);
+
+  const set = (key: keyof WhoWeAreDraft, value: string) =>
+    setDraft((current) => ({ ...current, [key]: value }));
+
+  const save = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+    if (!section) return;
+
+    const paragraphs = draft.paragraphs
+      .split(/\n\s*\n/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean);
+    const missionPoints = draft.missionPoints
+      .split("\n")
+      .map((point) => point.trim())
+      .filter(Boolean);
+
+    if (
+      !draft.title.trim() ||
+      !draft.eyebrow.trim() ||
+      paragraphs.length === 0 ||
+      !draft.visionTitle.trim() ||
+      !draft.visionText.trim() ||
+      !draft.missionTitle.trim() ||
+      missionPoints.length === 0
+    ) {
+      setError(
+        "Complete each heading and description, and include at least one paragraph and one mission point.",
+      );
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await update.mutateAsync({
+        id: section.id,
+        data: {
+          title: draft.title.trim(),
+          content: {
+            ...record(section.content),
+            eyebrow: draft.eyebrow.trim(),
+            paragraphs,
+            visionTitle: draft.visionTitle.trim(),
+            visionText: draft.visionText.trim(),
+            missionTitle: draft.missionTitle.trim(),
+            missionPoints,
+          },
+        },
+      });
+      await Promise.all([
+        client.invalidateQueries({
+          queryKey: getGetAdminCmsPageQueryKey("about"),
+        }),
+        client.invalidateQueries({
+          queryKey: getGetCmsPageQueryKey("about"),
+        }),
+      ]);
+      onFlash({ tone: "success", message: "Who We Are subsection saved." });
+    } catch (failure) {
+      setError(errorMessage(failure));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (page.isLoading) {
+    return (
+      <div className="mt-6 h-96 animate-pulse rounded-3xl bg-white" />
+    );
+  }
+
+  if (page.isError || !page.data) {
+    return (
+      <section className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-5">
+        <p className="font-bold text-red-800">
+          About subsections could not be loaded.
+        </p>
+        <button
+          type="button"
+          onClick={() => void page.refetch()}
+          className="mt-3 rounded-lg bg-white px-3 py-2 text-sm font-bold text-red-800"
+          data-testid="button-retry-about-subsections"
+        >
+          Try again
+        </button>
+      </section>
+    );
+  }
+
+  if (!section) {
+    return (
+      <section className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+        <p className="font-bold text-amber-900">
+          The Who We Are subsection is not available yet.
+        </p>
+        <p className="mt-1 text-sm leading-6 text-amber-800">
+          Restart the API server to create the default About subsection.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <form onSubmit={save} className="space-y-6">
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(11,52,114,.045)] sm:p-7">
+        <div className="mb-6">
+          <p className="eyebrow text-[#e3212b]">Public About page</p>
+          <h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">
+            Story and introduction
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-500">
+            Write a short introduction to Shastra and its approach to student
+            learning.
+          </p>
+        </div>
+        <div className="grid gap-5 md:grid-cols-2">
+          <Field
+            label="Eyebrow"
+            value={draft.eyebrow}
+            onChange={(value) => set("eyebrow", value)}
+            testId="input-about-who-eyebrow"
+            maxLength={100}
+          />
+          <Field
+            label="Section heading"
+            value={draft.title}
+            onChange={(value) => set("title", value)}
+            testId="input-about-who-title"
+            maxLength={120}
+          />
+          <div className="md:col-span-2">
+            <Field
+              label="Introduction paragraphs"
+              value={draft.paragraphs}
+              onChange={(value) => set("paragraphs", value)}
+              multiline
+              rows={8}
+              hint="Separate paragraphs with a blank line."
+              testId="textarea-about-who-paragraphs"
+              maxLength={5000}
+            />
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(11,52,114,.045)] sm:p-7">
+          <p className="eyebrow text-[#e3212b]">Vision</p>
+          <h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">
+            What we aspire to
+          </h2>
+          <div className="mt-5 space-y-5">
+            <Field
+              label="Vision heading"
+              value={draft.visionTitle}
+              onChange={(value) => set("visionTitle", value)}
+              testId="input-about-vision-title"
+              maxLength={100}
+            />
+            <Field
+              label="Vision statement"
+              value={draft.visionText}
+              onChange={(value) => set("visionText", value)}
+              multiline
+              rows={5}
+              testId="textarea-about-vision-text"
+              maxLength={1200}
+            />
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(11,52,114,.045)] sm:p-7">
+          <p className="eyebrow text-[#e3212b]">Mission</p>
+          <h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">
+            How we put it into practice
+          </h2>
+          <div className="mt-5 space-y-5">
+            <Field
+              label="Mission heading"
+              value={draft.missionTitle}
+              onChange={(value) => set("missionTitle", value)}
+              testId="input-about-mission-title"
+              maxLength={100}
+            />
+            <Field
+              label="Mission points"
+              value={draft.missionPoints}
+              onChange={(value) => set("missionPoints", value)}
+              multiline
+              rows={7}
+              hint="Enter one point per line."
+              testId="textarea-about-mission-points"
+              maxLength={2400}
+            />
+          </div>
+        </section>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {error ? (
+          <p className="text-sm font-semibold text-red-700" role="alert">
+            {error}
+          </p>
+        ) : (
+          <span />
+        )}
+        <button
+          type="submit"
+          disabled={isSaving}
+          className="focus-ring inline-flex items-center justify-center gap-2 rounded-xl bg-[#0b3472] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#082a5c] disabled:cursor-not-allowed disabled:opacity-60"
+          data-testid="button-save-about-who-we-are"
+        >
+          <Save className="h-4 w-4" />
+          {isSaving ? "Saving…" : "Save Who We Are"}
+        </button>
+      </div>
+    </form>
+  );
+}

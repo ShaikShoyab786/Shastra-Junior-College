@@ -6,6 +6,7 @@ import {
 } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import AboutHeroSection from "./about-hero-section";
+import { AboutWhoWeAreSection } from "./about-who-we-are-section";
 import { Footer, Header } from "./public-home";
 
 function AboutLoading() {
@@ -63,8 +64,10 @@ export default function AboutPage() {
     );
   }
 
-  const hero = page.data?.sections.find(
-    (section) => section.sectionKey === "hero",
+  const sections = page.data?.sections || [];
+  const hasAboutContent = sections.some(
+    (section) =>
+      section.sectionKey === "hero" || section.sectionKey === "who-we-are",
   );
 
   return (
@@ -89,11 +92,26 @@ export default function AboutPage() {
               Try again
             </button>
           </section>
-        ) : hero ? (
-          <AboutHeroSection
-            section={hero}
-            statistics={page.data?.aboutStatistics || []}
-          />
+        ) : hasAboutContent ? (
+          <>
+            {sections.map((section) => {
+              if (section.sectionKey === "hero") {
+                return (
+                  <AboutHeroSection
+                    key={section.id}
+                    section={section}
+                    statistics={page.data?.aboutStatistics || []}
+                  />
+                );
+              }
+              if (section.sectionKey === "who-we-are") {
+                return (
+                  <AboutWhoWeAreSection key={section.id} section={section} />
+                );
+              }
+              return null;
+            })}
+          </>
         ) : (
           <section
             className="mx-auto max-w-3xl px-5 py-20 text-center sm:px-8"

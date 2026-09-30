@@ -53,6 +53,7 @@ import type {
 import { Link } from "wouter";
 import AdminHomeEditor from "./admin-home-editor";
 import AdminAboutEditor from "./admin-about-editor";
+import AdminAboutWhoWeAreEditor from "./admin-about-who-we-are-editor";
 import AdminGalleryEditor from "./admin-gallery-editor";
 import AdminFacultyEditor from "./admin-faculty-editor";
 import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
@@ -73,6 +74,8 @@ type WorkspaceView =
   | "testimonials"
   | "identity"
   | "about"
+  | "about-hero"
+  | "about-who-we-are"
   | "results"
   | "faculty"
   | "courses"
@@ -294,6 +297,11 @@ function Shell({
   const [homeOpen, setHomeOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [pagesOpen, setPagesOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(
+    activeView === "about" ||
+      activeView === "about-hero" ||
+      activeView === "about-who-we-are",
+  );
   const homeSectionActive =
     activeView === "hero" ||
     activeView === "programs" ||
@@ -302,19 +310,31 @@ function Shell({
     activeView === "faculty-preview" ||
     activeView === "testimonials" ||
     activeView === "placement-records";
+  const aboutSectionActive =
+    activeView === "about" ||
+    activeView === "about-hero" ||
+    activeView === "about-who-we-are";
   const activePage =
     activeView === "dashboard"
       ? "Dashboard"
       : activeView === "identity"
         ? "Site settings"
-        : homeSectionActive
-          ? "Pages / Home"
-          : "Pages";
+        : aboutSectionActive
+          ? "Pages / About"
+          : homeSectionActive
+            ? "Pages / Home"
+            : "Pages";
   const activeTitle =
     activeView === "dashboard"
       ? "Dashboard"
       : activeView === "identity"
         ? "Site identity"
+        : activeView === "about"
+          ? "About · Sub sections"
+          : activeView === "about-hero"
+            ? "About · Hero"
+            : activeView === "about-who-we-are"
+              ? "About · Who We Are"
         : activeView === "hero"
           ? "Home · Hero"
           : activeView === "programs"
@@ -333,6 +353,13 @@ function Shell({
                         "Home";
 
   const go = (view: WorkspaceView) => {
+    if (
+      view === "about" ||
+      view === "about-hero" ||
+      view === "about-who-we-are"
+    ) {
+      setAboutOpen(true);
+    }
     onNavigate(view);
     setMobileNav(false);
   };
@@ -412,9 +439,87 @@ function Shell({
                     </div>
                   ) : null}
                 </div>
-                {pageItems.map((item) => (
-                  <NavRow key={item.key} icon={FolderOpen} label={item.label} nested active={activeView === item.key} onClick={() => go(item.key)} badge={item.note ? "Soon" : undefined} />
-                ))}
+                {pageItems.map((item) => {
+                  if (item.key === "about") {
+                    return (
+                      <div key={item.key}>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => go("about")}
+                            className={`flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${
+                              aboutSectionActive
+                                ? "bg-white/10 text-white"
+                                : "text-blue-100 hover:bg-white/10 hover:text-white"
+                            }`}
+                            data-testid="nav-about"
+                          >
+                            <FolderOpen className="h-4 w-4 shrink-0" />
+                            <span className="min-w-0 flex-1 truncate">
+                              About
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setAboutOpen((current) => !current)
+                            }
+                            aria-label="Toggle About subsections"
+                            aria-expanded={aboutOpen}
+                            className="rounded-lg p-2 text-blue-300 transition hover:bg-white/10 hover:text-white"
+                            data-testid="button-toggle-about-subsections"
+                          >
+                            {aboutOpen ? (
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            ) : (
+                              <ChevronRight className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+                        </div>
+                        {aboutOpen ? (
+                          <div
+                            id="nav-about-subsections"
+                            className="ml-3 mt-1 space-y-1 border-l border-white/10 pl-2"
+                          >
+                            <NavRow
+                              icon={FileText}
+                              label="Sub sections"
+                              nested
+                              active={activeView === "about"}
+                              onClick={() => go("about")}
+                            />
+                            <NavRow
+                              icon={FileText}
+                              label="Hero"
+                              nested
+                              active={activeView === "about-hero"}
+                              onClick={() => go("about-hero")}
+                            />
+                            <NavRow
+                              icon={FileText}
+                              label="Who We Are"
+                              nested
+                              active={activeView === "about-who-we-are"}
+                              onClick={() => go("about-who-we-are")}
+                            />
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <NavRow
+                      key={item.key}
+                      icon={FolderOpen}
+                      label={item.label}
+                      nested
+                      active={activeView === item.key}
+                      onClick={() => go(item.key)}
+                      badge={item.note ? "Soon" : undefined}
+                    />
+                  );
+                })}
               </div>
             ) : null}
           </div>
@@ -816,15 +921,103 @@ function AdminWorkspace() {
     body = (
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
         <PageIntro
-          eyebrow="Pages / About / Hero"
+          eyebrow="Pages / About / Sub sections"
+          title="Manage the About page."
+          description="Choose a subsection to edit. Your changes appear on the public About page."
+        />
+        <div className="grid gap-5 md:grid-cols-2">
+          {[
+            {
+              key: "about-hero" as const,
+              number: "01",
+              title: "Hero",
+              description:
+                "Edit the introduction, image, buttons, and Home Statistics shown in the About hero.",
+              action: "Edit hero subsection",
+            },
+            {
+              key: "about-who-we-are" as const,
+              number: "02",
+              title: "Who We Are",
+              description:
+                "Edit the college introduction, vision statement, and mission points.",
+              action: "Edit Who We Are subsection",
+            },
+          ].map((subsection) => (
+            <button
+              key={subsection.key}
+              type="button"
+              onClick={() => setActiveView(subsection.key)}
+              className="focus-ring group rounded-3xl border border-slate-200 bg-white p-6 text-left shadow-[0_10px_30px_rgba(11,52,114,.045)] transition hover:-translate-y-0.5 hover:border-[#0b3472]/25 hover:shadow-[0_16px_38px_rgba(11,52,114,.09)] sm:p-8"
+              data-testid={`button-open-${subsection.key}`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="eyebrow text-[#e3212b]">
+                  Subsection {subsection.number}
+                </span>
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f7f5ef] text-[#0b3472] transition group-hover:bg-[#0b3472] group-hover:text-white">
+                  <ChevronRight className="h-5 w-5" />
+                </span>
+              </div>
+              <h2 className="mt-6 font-display text-2xl font-extrabold text-[#0b3472] sm:text-3xl">
+                {subsection.title}
+              </h2>
+              <p className="mt-3 max-w-lg text-sm leading-6 text-slate-500">
+                {subsection.description}
+              </p>
+              <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#0b3472]">
+                {subsection.action}
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  } else if (activeView === "about-hero") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / About / Sub sections / Hero"
           title="Edit the About hero."
-          description="Update the public About page introduction, image, buttons, and select which existing Home Statistics records appear here."
+          description="Update the public introduction, image, buttons, and choose which existing Home Statistics records appear here."
+          actions={
+            <button
+              type="button"
+              onClick={() => setActiveView("about")}
+              className="focus-ring rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-[#0b3472] transition hover:border-[#0b3472]/30"
+              data-testid="button-back-about-subsections-hero"
+            >
+              All About subsections
+            </button>
+          }
         />
         <AdminAboutEditor
           home={home}
           onFlash={showFlash}
           onNavigate={() => setActiveView("statistics")}
         />
+      </div>
+    );
+  } else if (activeView === "about-who-we-are") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / About / Sub sections / Who We Are"
+          title="Edit Who We Are."
+          description="Shape the college introduction, vision, and mission shown after the About hero."
+          actions={
+            <button
+              type="button"
+              onClick={() => setActiveView("about")}
+              className="focus-ring rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-[#0b3472] transition hover:border-[#0b3472]/30"
+              data-testid="button-back-about-subsections-who-we-are"
+            >
+              All About subsections
+            </button>
+          }
+        />
+        <AdminAboutWhoWeAreEditor onFlash={showFlash} />
       </div>
     );
   } else if (

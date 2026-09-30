@@ -1169,6 +1169,47 @@ async function seedAboutPage(): Promise<void> {
       throw new Error("The default About hero could not be initialized.");
     }
 
+    const [whoWeAreSection] = await tx
+      .select({ id: contentSectionsTable.id })
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "about"),
+          eq(contentSectionsTable.sectionKey, "who-we-are"),
+        ),
+      )
+      .limit(1);
+
+    if (!whoWeAreSection) {
+      await tx
+        .insert(contentSectionsTable)
+        .values({
+          pageSlug: "about",
+          sectionKey: "who-we-are",
+          title: "Who We Are",
+          content: {
+            eyebrow: "LEARNING WITH PURPOSE",
+            paragraphs: [
+              "At Shastra Junior College, strong subject foundations and thoughtful guidance help students approach their next step with confidence.",
+              "Learning here is about more than completing a syllabus. We encourage curiosity, disciplined practice, and clear thinking in a supportive setting where every student can make steady progress.",
+            ],
+            visionTitle: "Our Vision",
+            visionText:
+              "To nurture knowledgeable, confident learners who approach the future with curiosity and purpose.",
+            missionTitle: "Our Mission",
+            missionPoints: [
+              "Make complex ideas clear through thoughtful teaching.",
+              "Support steady progress with academic guidance and mentoring.",
+              "Encourage curiosity, discipline, and independent thinking.",
+              "Help students prepare with confidence for their next steps.",
+            ],
+          } as CmsJson,
+          isVisible: true,
+          position: 1,
+        })
+        .onConflictDoNothing();
+    }
+
     const [statisticsSection] = await tx
       .select({ id: contentSectionsTable.id })
       .from(contentSectionsTable)
