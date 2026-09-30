@@ -1218,32 +1218,34 @@ async function seedAboutPage(): Promise<void> {
       const existingContent = isCmsRecord(whoWeAreSection.content)
         ? whoWeAreSection.content
         : {};
-      const imageUrl =
-        typeof existingContent.imageUrl === "string" &&
-        existingContent.imageUrl.trim()
-          ? existingContent.imageUrl
-          : "/about-classroom-demo.jpg";
-      const imageAlt =
-        typeof existingContent.imageAlt === "string" &&
-        existingContent.imageAlt.trim()
-          ? existingContent.imageAlt
-          : "A teacher guiding students as they learn together in a classroom.";
+      if (existingContent.imageRemoved !== true) {
+        const imageUrl =
+          typeof existingContent.imageUrl === "string" &&
+          existingContent.imageUrl.trim()
+            ? existingContent.imageUrl
+            : "/about-classroom-demo.jpg";
+        const imageAlt =
+          typeof existingContent.imageAlt === "string" &&
+          existingContent.imageAlt.trim()
+            ? existingContent.imageAlt
+            : "A teacher guiding students as they learn together in a classroom.";
 
-      if (
-        imageUrl !== existingContent.imageUrl ||
-        imageAlt !== existingContent.imageAlt
-      ) {
-        await tx
-          .update(contentSectionsTable)
-          .set({
-            content: {
-              ...existingContent,
-              imageUrl,
-              imageAlt,
-            } as CmsJson,
-            updatedAt: new Date(),
-          })
-          .where(eq(contentSectionsTable.id, whoWeAreSection.id));
+        if (
+          imageUrl !== existingContent.imageUrl ||
+          imageAlt !== existingContent.imageAlt
+        ) {
+          await tx
+            .update(contentSectionsTable)
+            .set({
+              content: {
+                ...existingContent,
+                imageUrl,
+                imageAlt,
+              } as CmsJson,
+              updatedAt: new Date(),
+            })
+            .where(eq(contentSectionsTable.id, whoWeAreSection.id));
+        }
       }
     }
 

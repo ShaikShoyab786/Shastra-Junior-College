@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ImagePlus, Save, X } from "lucide-react";
+import { ImagePlus, Save, Trash2, X } from "lucide-react";
 import {
   getGetAdminCmsPageQueryKey,
   getGetCmsPageQueryKey,
@@ -18,6 +18,7 @@ type WhoWeAreDraft = {
   paragraphs: string;
   imageUrl: string;
   imageAlt: string;
+  imageRemoved: boolean;
   visionTitle: string;
   visionText: string;
   missionTitle: string;
@@ -30,6 +31,7 @@ const emptyDraft: WhoWeAreDraft = {
   paragraphs: "",
   imageUrl: "",
   imageAlt: "",
+  imageRemoved: false,
   visionTitle: "",
   visionText: "",
   missionTitle: "",
@@ -60,6 +62,7 @@ function draftFrom(section: ContentSection): WhoWeAreDraft {
     paragraphs: textList(content.paragraphs).join("\n\n"),
     imageUrl: text(content.imageUrl),
     imageAlt: text(content.imageAlt),
+    imageRemoved: content.imageRemoved === true,
     visionTitle: text(content.visionTitle),
     visionText: text(content.visionText),
     missionTitle: text(content.missionTitle),
@@ -171,6 +174,9 @@ export default function AdminAboutWhoWeAreEditor({
 
   const set = (key: keyof WhoWeAreDraft, value: string) =>
     setDraft((current) => ({ ...current, [key]: value }));
+  const imageWillBePresent = Boolean(
+    selectedFile || (!draft.imageRemoved && draft.imageUrl.trim()),
+  );
 
   const save = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -190,7 +196,7 @@ export default function AdminAboutWhoWeAreEditor({
       !draft.title.trim() ||
       !draft.eyebrow.trim() ||
       paragraphs.length === 0 ||
-      !draft.imageAlt.trim() ||
+      (imageWillBePresent && !draft.imageAlt.trim()) ||
       !draft.visionTitle.trim() ||
       !draft.visionText.trim() ||
       !draft.missionTitle.trim() ||
@@ -201,14 +207,10 @@ export default function AdminAboutWhoWeAreEditor({
       );
       return;
     }
-    if (!draft.imageUrl.trim() && !selectedFile) {
-      setError("Choose an About image before saving.");
-      return;
-    }
 
     setIsSaving(true);
     try {
-      let imageUrl = draft.imageUrl.trim();
+      let imageUrl = draft.imageRemoved ? "" : draft.imageUrl.trim();
       if (selectedFile) {
         if (!["image/png", "image/jpeg", "image/webp"].includes(selectedFile.type)) {
           throw new Error("Use a PNG, JPEG, or WebP image.");
@@ -243,7 +245,8 @@ export default function AdminAboutWhoWeAreEditor({
             eyebrow: draft.eyebrow.trim(),
             paragraphs,
             imageUrl,
-            imageAlt: draft.imageAlt.trim(),
+            imageAlt: imageUrl ? draft.imageAlt.trim() : "",
+            imageRemoved: !imageUrl,
             visionTitle: draft.visionTitle.trim(),
             visionText: draft.visionText.trim(),
             missionTitle: draft.missionTitle.trim(),
@@ -259,7 +262,12 @@ export default function AdminAboutWhoWeAreEditor({
           queryKey: getGetCmsPageQueryKey("about"),
         }),
       ]);
-      setDraft((current) => ({ ...current, imageUrl }));
+      setDraft((current) => ({
+        ...current,
+        imageUrl,
+        imageAlt: imageUrl ? current.imageAlt.trim() : "",
+        imageRemoved: !imageUrl,
+      }));
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       onFlash({ tone: "success", message: "Who We Are subsection saved." });
@@ -347,81 +355,130 @@ export default function AdminAboutWhoWeAreEditor({
               maxLength={5000}
             />
           </div>
-          <div className="md:col-span-2 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.8fr)]">
-            <div className="space-y-4">
-              <Field
-                label="Image alt text"
-                value={draft.imageAlt}
-                onChange={(value) => set("imageAlt", value)}
-                hint="Describe the learning scene for screen readers."
-                testId="input-about-who-image-alt"
-                maxLength={500}
-              />
-              <div>
-                <label
-                  className="block text-sm font-semibold text-slate-700"
-                  htmlFor="about-who-we-are-image-upload"
-                >
-                  Replace classroom image
-                </label>
-                <input
-                  ref={fileInputRef}
-                  id="about-who-we-are-image-upload"
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  onChange={(event) =>
-                    setSelectedFile(event.currentTarget.files?.[0] || null)
-                  }
-                  disabled={isSaving}
-                  className="mt-1.5 block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[#0b3472]/5 file:px-3 file:py-2 file:text-sm file:font-bold file:text-[#0b3472] hover:file:bg-[#0b3472]/10 disabled:opacity-60"
-                  data-testid="input-about-who-image-upload"
-                />
-                <p className="mt-1 text-xs leading-5 text-slate-500">
-                  PNG, JPEG, or WebP; maximum 2 MB. The selected file uploads
-                  when you save this subsection.
-                </p>
-                <p className="mt-1 text-xs leading-5 text-slate-500">
-                  The current photo is demo artwork; replace it with an
-                  approved college image when available.
-                </p>
-                {selectedFile ? (
-                  <p className="mt-1 text-xs font-semibold text-[#0b3472]">
-                    New image selected: {selectedFile.name}
+          <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+            <div className="mb-4">
+              <h3 className="font-bold text-slate-800">Who We Are image</h3>
+              <p className="mt-1 text-sm leading-6 text-slate-500">
+                Replace or delete the image. Changes take effect when you save
+                this subsection.
+              </p>
+            </div>
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.8fr)]">
+              <div className="space-y-4">
+                {imageWillBePresent ? (
+                  <Field
+                    label="Image alt text"
+                    value={draft.imageAlt}
+                    onChange={(value) => set("imageAlt", value)}
+                    hint="Describe the learning scene for screen readers."
+                    testId="input-about-who-image-alt"
+                    maxLength={500}
+                  />
+                ) : (
+                  <p className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-500">
+                    Add an image to enter its alt text.
                   </p>
-                ) : null}
-                {selectedFile ? (
+                )}
+                <div>
+                  <label
+                    className="block text-sm font-semibold text-slate-700"
+                    htmlFor="about-who-we-are-image-upload"
+                  >
+                    Change or replace image
+                  </label>
+                  <input
+                    ref={fileInputRef}
+                    id="about-who-we-are-image-upload"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={(event) => {
+                      const file = event.currentTarget.files?.[0] || null;
+                      setSelectedFile(file);
+                      if (file) {
+                        setDraft((current) => ({
+                          ...current,
+                          imageRemoved: false,
+                        }));
+                      }
+                    }}
+                    disabled={isSaving}
+                    className="mt-1.5 block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[#0b3472]/5 file:px-3 file:py-2 file:text-sm file:font-bold file:text-[#0b3472] hover:file:bg-[#0b3472]/10 disabled:opacity-60"
+                    data-testid="input-about-who-image-upload"
+                  />
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    PNG, JPEG, or WebP; maximum 2 MB. The selected file uploads
+                    when you save.
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    The current photo is demo artwork; replace it with an
+                    approved college image when available.
+                  </p>
+                  {selectedFile ? (
+                    <p className="mt-1 text-xs font-semibold text-[#0b3472]">
+                      New image selected: {selectedFile.name}
+                    </p>
+                  ) : null}
+                  {selectedFile ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFile(null);
+                        if (fileInputRef.current) fileInputRef.current.value = "";
+                      }}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-bold text-slate-600 hover:bg-white"
+                      data-testid="button-clear-about-who-image"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      Clear selected image
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     onClick={() => {
                       setSelectedFile(null);
+                      setDraft((current) => ({
+                        ...current,
+                        imageUrl: "",
+                        imageAlt: "",
+                        imageRemoved: true,
+                      }));
                       if (fileInputRef.current) fileInputRef.current.value = "";
                     }}
-                    className="mt-2 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-bold text-slate-600 hover:bg-slate-100"
-                    data-testid="button-clear-about-who-image"
+                    disabled={isSaving || draft.imageRemoved}
+                    className="mt-3 inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    data-testid="button-delete-about-who-image"
                   >
-                    <X className="h-3.5 w-3.5" />
-                    Clear selected image
+                    <Trash2 className="h-4 w-4" />
+                    Delete image
                   </button>
-                ) : null}
-              </div>
-            </div>
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-[#e8edf4]">
-              {localPreviewUrl || draft.imageUrl ? (
-                <img
-                  src={
-                    localPreviewUrl ||
-                    (draft.imageUrl ? assetUrl(draft.imageUrl) : "")
-                  }
-                  alt={draft.imageAlt}
-                  className="aspect-[4/3] w-full object-cover"
-                  data-testid="img-admin-about-who-preview"
-                />
-              ) : (
-                <div className="flex aspect-[4/3] flex-col items-center justify-center gap-2 px-5 text-center text-sm text-slate-500">
-                  <ImagePlus className="h-6 w-6 text-[#0b3472]/40" />
-                  Select a classroom image to preview it here.
+                  {draft.imageRemoved ? (
+                    <p className="mt-2 text-xs font-medium text-red-700">
+                      Image removal is pending. Save Who We Are to confirm.
+                    </p>
+                  ) : null}
                 </div>
-              )}
+              </div>
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-[#e8edf4]">
+                {localPreviewUrl ||
+                (!draft.imageRemoved && draft.imageUrl) ? (
+                  <img
+                    src={
+                      localPreviewUrl ||
+                      (draft.imageUrl ? assetUrl(draft.imageUrl) : "")
+                    }
+                    alt={draft.imageAlt}
+                    className="aspect-[4/3] w-full object-cover"
+                    data-testid="img-admin-about-who-preview"
+                  />
+                ) : (
+                  <div className="flex aspect-[4/3] flex-col items-center justify-center gap-2 px-5 text-center text-sm text-slate-500">
+                    <ImagePlus className="h-6 w-6 text-[#0b3472]/40" />
+                    {draft.imageRemoved
+                      ? "This image will be removed when you save."
+                      : "No image is currently selected."}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

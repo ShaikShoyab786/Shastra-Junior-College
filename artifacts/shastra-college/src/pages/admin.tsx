@@ -940,7 +940,7 @@ function AdminWorkspace() {
               number: "02",
               title: "Who We Are",
               description:
-                "Edit the college introduction, vision statement, and mission points.",
+                "Edit the introduction, classroom image and alt text, vision statement, and mission points.",
               action: "Edit Who We Are subsection",
             },
           ].map((subsection) => (

@@ -179,12 +179,33 @@ router.get(
           ),
         )
         .limit(1);
+      const aboutSections = await db
+        .select({ content: contentSectionsTable.content })
+        .from(contentSectionsTable)
+        .where(eq(contentSectionsTable.pageSlug, "about"));
+      const aboutImageUrls = aboutSections
+        .map(({ content }) => {
+          if (
+            typeof content !== "object" ||
+            content === null ||
+            Array.isArray(content)
+          ) {
+            return undefined;
+          }
+          const imageUrl = (content as Record<string, unknown>).imageUrl;
+          return typeof imageUrl === "string" ? imageUrl : undefined;
+        })
+        .filter((imageUrl): imageUrl is string => imageUrl !== undefined);
+      const aboutImageMatches =
+        aboutImageUrls.includes(`/objects/${objectPath}`) ||
+        aboutImageUrls.includes(`/api/storage/objects/${objectPath}`);
 
       if (
         logoDoesNotMatch &&
         !galleryImage &&
         !placementRecordImage &&
-        !facultyPortrait
+        !facultyPortrait &&
+        !aboutImageMatches
       ) {
         res.status(404).json({ error: "Object not found." });
         return;

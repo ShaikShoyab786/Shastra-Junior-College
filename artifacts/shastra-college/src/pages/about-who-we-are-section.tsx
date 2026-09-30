@@ -6,6 +6,7 @@ type AboutWhoWeAreContent = {
   paragraphs?: unknown;
   imageUrl?: unknown;
   imageAlt?: unknown;
+  imageRemoved?: unknown;
   visionTitle?: unknown;
   visionText?: unknown;
   missionTitle?: unknown;
@@ -45,7 +46,8 @@ export function AboutWhoWeAreSection({
   const content = contentFrom(section);
   const eyebrow = textValue(content.eyebrow);
   const paragraphs = textList(content.paragraphs);
-  const imageUrl = textValue(content.imageUrl);
+  const imageRemoved = content.imageRemoved === true;
+  const imageUrl = imageRemoved ? "" : textValue(content.imageUrl);
   const imageAlt = textValue(content.imageAlt);
   const visionTitle = textValue(content.visionTitle);
   const visionText = textValue(content.visionText);
@@ -60,7 +62,13 @@ export function AboutWhoWeAreSection({
       data-testid={`section-about-who-we-are-${section.id}`}
     >
       <div className="relative mx-auto max-w-7xl">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:gap-x-20">
+        <div
+          className={`grid grid-cols-1 gap-12 ${
+            imageUrl
+              ? "lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:gap-x-20"
+              : "lg:grid-cols-1"
+          }`}
+        >
           <div className="min-w-0">
             <header className="reveal reveal-delay-1 lg:self-start">
               {eyebrow ? (
