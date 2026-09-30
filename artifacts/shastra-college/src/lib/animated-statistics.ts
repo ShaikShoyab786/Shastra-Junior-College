@@ -46,8 +46,10 @@ export function formatMetric(metric: StatisticMetric, value: number | null) {
   return `${metric.prefix}${formatted}${metric.suffix}`;
 }
 
-export function useAnimatedStatistics(items: ContentItem[]) {
-  const containerRef = useRef<HTMLElement | null>(null);
+export function useAnimatedStatistics<T extends HTMLElement>(
+  items: ContentItem[],
+) {
+  const containerRef = useRef<T | null>(null);
   const animatedRef = useRef(false);
   const metrics = useMemo(() => items.map(metricFor), [items]);
   const [counts, setCounts] = useState<Record<string, number>>({});

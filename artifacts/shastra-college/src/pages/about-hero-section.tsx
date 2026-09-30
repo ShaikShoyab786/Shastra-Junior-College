@@ -1,6 +1,10 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import type { ContentItem, ContentSection } from "@workspace/api-client-react";
+import {
+  formatMetric,
+  useAnimatedStatistics,
+} from "@/lib/animated-statistics";
 
 type AboutHeroContent = {
   eyebrow?: unknown;
@@ -84,17 +88,12 @@ function CtaLink({
   );
 }
 
-function statisticValue(item: ContentItem): string {
-  const prefix = textValue(item.content.prefix);
-  const value = textValue(item.content.value);
-  const suffix = textValue(item.content.suffix);
-  return `${prefix}${value}${suffix}`;
-}
-
 export function AboutHeroSection({
   section,
   statistics,
 }: AboutHeroSectionProps) {
+  const { containerRef: statisticsRef, metrics, counts } =
+    useAnimatedStatistics<HTMLDListElement>(statistics);
   const content = contentFrom(section);
   const eyebrow = textValue(content.eyebrow);
   const imageUrl = textValue(content.imageUrl);
@@ -178,29 +177,35 @@ export function AboutHeroSection({
         </figure>
 
         <dl
+          ref={statisticsRef}
           className="order-3 grid grid-cols-2 gap-x-5 gap-y-6 border-t border-[#0b3472]/15 pt-6 sm:grid-cols-3 lg:col-start-1 lg:row-start-2 lg:grid-cols-3 lg:gap-x-7 xl:grid-cols-4"
           data-testid={`list-about-hero-statistics-${section.id}`}
         >
-          {statistics.map((item) => (
-            <div
-              key={item.id}
-              className="flex flex-col"
-              data-testid={`stat-about-hero-${item.id}`}
-            >
-              <dt
-                className="order-2 mt-2 text-[0.68rem] font-bold uppercase leading-4 tracking-[0.12em] text-[#52647c]"
-                data-testid={`text-about-hero-stat-label-${item.id}`}
+          {statistics.map((item, index) => {
+            const metric = metrics[index];
+            const count =
+              metric.value === null ? null : counts[String(index)] ?? 0;
+            return (
+              <div
+                key={item.id}
+                className="flex flex-col"
+                data-testid={`stat-about-hero-${item.id}`}
               >
-                {item.title}
-              </dt>
-              <dd
-                className="order-1 m-0 whitespace-nowrap font-display text-[clamp(1.35rem,2.3vw,1.8rem)] font-extrabold leading-none tracking-[-0.045em] text-[#e3212b]"
-                data-testid={`text-about-hero-stat-value-${item.id}`}
-              >
-                {statisticValue(item)}
-              </dd>
-            </div>
-          ))}
+                <dt
+                  className="order-2 mt-2 text-[0.68rem] font-bold uppercase leading-4 tracking-[0.12em] text-[#52647c]"
+                  data-testid={`text-about-hero-stat-label-${item.id}`}
+                >
+                  {item.title}
+                </dt>
+                <dd
+                  className="order-1 m-0 whitespace-nowrap font-display text-[clamp(1.35rem,2.3vw,1.8rem)] font-extrabold leading-none tracking-[-0.045em] text-[#e3212b]"
+                  data-testid={`text-about-hero-stat-value-${item.id}`}
+                >
+                  {formatMetric(metric, count)}
+                </dd>
+              </div>
+            );
+          })}
         </dl>
       </div>
     </section>
