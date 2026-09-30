@@ -922,7 +922,13 @@ function StatisticsBar({
   );
 }
 
-function GalleryPreviewSection({ section }: { section: ContentSection }) {
+function GalleryPreviewSection({
+  section,
+  images,
+}: {
+  section: ContentSection;
+  images: ContentItem[];
+}) {
   const content = isRecord(section.content) ? section.content : {};
   return (
     <section
@@ -930,29 +936,67 @@ function GalleryPreviewSection({ section }: { section: ContentSection }) {
       aria-labelledby="homepage-gallery-title"
       data-testid="section-home-gallery-preview"
     >
-      <div className="mx-auto flex max-w-7xl flex-col justify-between gap-7 sm:flex-row sm:items-center">
-        <div className="max-w-2xl">
-          <p className="eyebrow text-[#e3212b]">
-            {stringValue(content, ["eyebrow"], "CAMPUS GALLERY")}
-          </p>
-          <h2
-            id="homepage-gallery-title"
-            className="mt-3 font-display text-3xl font-extrabold leading-tight tracking-tight text-[#0b3472] sm:text-4xl"
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-col justify-between gap-7 sm:flex-row sm:items-center">
+          <div className="max-w-2xl">
+            <p className="eyebrow text-[#e3212b]">
+              {stringValue(content, ["eyebrow"], "CAMPUS GALLERY")}
+            </p>
+            <h2
+              id="homepage-gallery-title"
+              className="mt-3 font-display text-3xl font-extrabold leading-tight tracking-tight text-[#0b3472] sm:text-4xl"
+            >
+              {section.title}
+            </h2>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+              {section.subtitle}
+            </p>
+          </div>
+          <Link
+            href="/gallery"
+            className="focus-ring inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#0b3472] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#e3212b]"
+            data-testid="link-home-gallery-all"
           >
-            {section.title}
-          </h2>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
-            {section.subtitle}
-          </p>
+            {stringValue(content, ["ctaLabel"], "View Gallery")}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
-        <Link
-          href="/gallery"
-          className="focus-ring inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#0b3472] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#e3212b]"
-          data-testid="link-home-gallery-all"
-        >
-          {stringValue(content, ["ctaLabel"], "View Gallery")}
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+        {images.length > 0 ? (
+          <div
+            className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5"
+            data-testid="grid-home-gallery-preview"
+          >
+            {images.slice(0, 6).map((image) => {
+              const imageContent = isRecord(image.content) ? image.content : {};
+              return (
+                <figure
+                  key={image.id}
+                  className="group overflow-hidden rounded-2xl border border-[#0b3472]/10 bg-white shadow-[0_10px_26px_rgba(11,52,114,.06)]"
+                  data-testid={`card-home-gallery-image-${image.id}`}
+                >
+                  <div className="aspect-[4/3] overflow-hidden bg-[#e8edf4]">
+                    <img
+                      src={collegeLogo(image.imageUrl)}
+                      alt={stringValue(imageContent, ["altText"], image.title)}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                      loading="lazy"
+                    />
+                  </div>
+                  <figcaption className="p-3 sm:p-4">
+                    <p className="font-display text-sm font-extrabold leading-5 text-[#0b3472] sm:text-base">
+                      {image.title}
+                    </p>
+                    {image.description ? (
+                      <p className="mt-1 text-xs leading-5 text-slate-500 sm:text-sm">
+                        {image.description}
+                      </p>
+                    ) : null}
+                  </figcaption>
+                </figure>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
     </section>
   );
@@ -1039,6 +1083,9 @@ function PageSections({ home }: { home: HomePage }) {
   const facultyPage = useGetCmsPage("faculty", {
     query: { queryKey: getGetCmsPageQueryKey("faculty") },
   });
+  const galleryPage = useGetCmsPage("gallery", {
+    query: { queryKey: getGetCmsPageQueryKey("gallery") },
+  });
   const sections = useMemo(() => {
     const visible = home.sections.filter((section) => section.isVisible);
     const byKey = new Map<string, ContentSection>();
@@ -1087,6 +1134,23 @@ function PageSections({ home }: { home: HomePage }) {
       section.sectionKey.toLowerCase() === "gallery-preview" &&
       section.isVisible,
   );
+  const galleryPageSection = galleryPage.data?.sections.find(
+    (section) => section.sectionKey.toLowerCase() === "gallery" && section.isVisible,
+  );
+  const galleryPreviewImages = useMemo(() => {
+    if (!galleryPageSection || !galleryPage.data) return [];
+    return galleryPage.data.items
+      .filter(
+        (item) =>
+          item.sectionId === galleryPageSection.id &&
+          item.itemType === "gallery-image" &&
+          item.isVisible &&
+          isRecord(item.content) &&
+          item.content.showOnHome === true,
+      )
+      .sort((a, b) => a.position - b.position)
+      .slice(0, 6);
+  }, [galleryPage.data, galleryPageSection]);
   const facultyPreviewSection = home.sections.find(
     (section) =>
       section.sectionKey.toLowerCase() === "faculty-preview" &&
@@ -1139,7 +1203,10 @@ function PageSections({ home }: { home: HomePage }) {
         return <StatisticsBar key={section.id} section={section} items={items} />;
       })}
       {galleryPreviewSection ? (
-        <GalleryPreviewSection section={galleryPreviewSection} />
+        <GalleryPreviewSection
+          section={galleryPreviewSection}
+          images={galleryPreviewImages}
+        />
       ) : null}
       {placementSection ? (
         <PlacementRecordsSection

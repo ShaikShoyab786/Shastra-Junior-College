@@ -193,6 +193,7 @@ function GalleryItemEditor({ sectionId, categories, initial, position, onFlash, 
   const [altText, setAltText] = useState(text(initialContent.altText, initial?.title || ""));
   const [imageUrl, setImageUrl] = useState(initial?.imageUrl || "");
   const [isDemo, setIsDemo] = useState(initialContent.isDemo === true);
+  const [showOnHome, setShowOnHome] = useState(initialContent.showOnHome === true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -210,6 +211,7 @@ function GalleryItemEditor({ sectionId, categories, initial, position, onFlash, 
     setAltText(text(content.altText, initial?.title || ""));
     setImageUrl(initial?.imageUrl || "");
     setIsDemo(content.isDemo === true);
+    setShowOnHome(content.showOnHome === true);
     setSelectedFile(null);
     setPreviewUrl("");
     setError("");
@@ -253,7 +255,7 @@ function GalleryItemEditor({ sectionId, categories, initial, position, onFlash, 
         category,
         altText: altText.trim(),
         isDemo,
-        showOnHome: initialContent.showOnHome === true,
+        showOnHome,
       },
       isVisible: initial?.isVisible ?? true,
       position: initial?.position ?? position,
@@ -282,7 +284,17 @@ function GalleryItemEditor({ sectionId, categories, initial, position, onFlash, 
         {selectedFile ? <button type="button" onClick={() => void upload()} disabled={uploading} className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[#0b3472]/20 px-3 py-2 text-xs font-bold text-[#0b3472] hover:bg-[#0b3472]/5 disabled:opacity-50" data-testid={`button-upload-gallery-${initial?.id || "new"}`}><Upload className="h-3.5 w-3.5" />{uploading ? "Uploading…" : "Upload image"}</button> : null}
       </div>
     </div>
-    <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-slate-700"><input type="checkbox" checked={isDemo} onChange={(event) => setIsDemo(event.target.checked)} className="h-4 w-4 accent-[#0b3472]" data-testid={`checkbox-gallery-demo-${initial?.id || "new"}`} /> Mark as demo image</label>
+    <div className="mt-4 space-y-3">
+      <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+        <input type="checkbox" checked={showOnHome} onChange={(event) => setShowOnHome(event.target.checked)} className="h-4 w-4 accent-[#0b3472]" data-testid={`checkbox-gallery-home-preview-${initial?.id || "new"}`} />
+        Show on Home Preview
+      </label>
+      <p className="text-xs leading-5 text-slate-500">Unchecking hides this image from Home only. It remains on the Gallery page while published.</p>
+      <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+        <input type="checkbox" checked={isDemo} onChange={(event) => setIsDemo(event.target.checked)} className="h-4 w-4 accent-[#0b3472]" data-testid={`checkbox-gallery-demo-${initial?.id || "new"}`} />
+        Mark as demo image
+      </label>
+    </div>
     {error ? <p className="mt-3 text-sm font-semibold text-red-700" role="alert" data-testid={`error-gallery-item-${initial?.id || "new"}`}>{error}</p> : null}
     <div className="mt-4 flex justify-end gap-2"><button type="button" onClick={onClose} className="rounded-xl px-3.5 py-2 text-sm font-bold text-slate-600 hover:bg-slate-200/70" data-testid={`button-cancel-gallery-${initial?.id || "new"}`}>Cancel</button><button type="submit" disabled={pending} className="inline-flex items-center gap-2 rounded-xl bg-[#0b3472] px-4 py-2 text-sm font-bold text-white disabled:opacity-50" data-testid={`button-save-gallery-${initial?.id || "new"}`}><Save className="h-4 w-4" />{pending ? "Saving…" : "Save image"}</button></div>
   </form>;
@@ -398,6 +410,9 @@ function GalleryItems({ section, items, onFlash }: { section: ContentSection; it
                     <p className="truncate font-bold text-[#0b3472]">{item.title}</p>
                     <p className="mt-1 text-xs text-slate-500">
                       {text(itemContent.category, "Campus")} · {item.isVisible ? "Shown publicly" : "Hidden"}
+                    </p>
+                    <p className="mt-1 text-xs font-semibold text-slate-400" data-testid={`text-gallery-home-preview-state-${item.id}`}>
+                      {itemContent.showOnHome === true ? "Shown on Home Preview" : "Not shown on Home Preview"}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-1">

@@ -1081,6 +1081,7 @@ export async function seedInitialHomeContent(): Promise<void> {
   });
 
   await seedFacultyAndGalleryPages();
+  await seedGalleryHomePreviewDefaults();
   await seedHomeTestimonials();
 }
 
@@ -1454,6 +1455,63 @@ async function seedFacultyAndGalleryPages(): Promise<void> {
         updatedAt: new Date(),
       })
       .where(eq(contentSectionsTable.id, facultySection.id));
+  });
+}
+
+async function seedGalleryHomePreviewDefaults(): Promise<void> {
+  await db.transaction(async (tx) => {
+    const [gallerySection] = await tx
+      .select()
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "gallery"),
+          eq(contentSectionsTable.sectionKey, "gallery"),
+        ),
+      )
+      .limit(1);
+
+    if (!gallerySection) return;
+
+    const sectionContent = isCmsRecord(gallerySection.content)
+      ? gallerySection.content
+      : {};
+    if (sectionContent.galleryHomePreviewSeedVersion === 1) return;
+
+    const galleryItems = await tx
+      .select()
+      .from(contentItemsTable)
+      .where(
+        and(
+          eq(contentItemsTable.sectionId, gallerySection.id),
+          eq(contentItemsTable.itemType, "gallery-image"),
+        ),
+      );
+
+    for (const item of galleryItems) {
+      if (!item.isVisible) continue;
+      const itemContent = isCmsRecord(item.content) ? item.content : {};
+      if (itemContent.showOnHome === true) continue;
+
+      await tx
+        .update(contentItemsTable)
+        .set({
+          content: { ...itemContent, showOnHome: true },
+          updatedAt: new Date(),
+        })
+        .where(eq(contentItemsTable.id, item.id));
+    }
+
+    await tx
+      .update(contentSectionsTable)
+      .set({
+        content: {
+          ...sectionContent,
+          galleryHomePreviewSeedVersion: 1,
+        },
+        updatedAt: new Date(),
+      })
+      .where(eq(contentSectionsTable.id, gallerySection.id));
   });
 }
 
