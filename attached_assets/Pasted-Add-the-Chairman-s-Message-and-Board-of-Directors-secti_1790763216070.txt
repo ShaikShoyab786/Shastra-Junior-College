@@ -1,0 +1,34 @@
+Add the Chairman’s Message and Board of Directors sections to the About page.
+
+SECTION ORDER
+1. Chairman’s Message
+2. Board of Directors
+
+Use the attached images for layout and interaction guidance only. Follow Shastra Junior College’s existing navy, red, and light-neutral theme.
+
+CHAIRMAN’S MESSAGE
+- Create an About → Chairman admin section, independent of the Faculty records.
+- Use a two-column layout: chairman photo on the left; eyebrow, heading, greeting, message, and signature details on the right.
+- Let Admin add, edit, upload/replace the photo, and delete the Chairman’s Message content, including the chairman’s name, title, message, and signature.
+- Store this content independently. Editing the About → Chairman record must not change a Faculty profile, or vice versa.
+- Seed it with polished demo content and a demo portrait. Do not show a public “demo” label.
+
+BOARD OF DIRECTORS
+- Add a Board of Directors section directly beneath Chairman’s Message.
+- Reuse existing Faculty records as the source for board cards and profile details; do not create duplicate board-profile records.
+- In Faculty admin settings, add an editable leadership role (such as Chairman, Board Director, Principal, or Faculty) and a “Show on About Board” checkbox.
+- Show published Faculty records with this checkbox enabled in the About Board of Directors section. Admin can check or uncheck the chairman, board directors, and principal to control visibility.
+- Board cards should show the faculty image, name, role, and a “View Profile” button. Clicking it should open the same profile card/modal used on the Faculty page, including social links when provided.
+- Do not use “Schedule Consultation” buttons. Hide social icons when no URL has been entered.
+
+DEMO PROFILES AND FACULTY ORDER
+- Seed editable demo profiles and distinct demo portraits for the chairman, board directors, and principal.
+- Also create corresponding Faculty records for these leaders so they appear in the Faculty gallery. These Faculty records are separate from the independent Chairman’s Message content.
+- Order the chairman, board directors, and principal before teaching faculty so the leadership profiles occupy the first row of the desktop Faculty gallery. Keep normal responsive wrapping on smaller screens.
+- Do not use generic numbered names or placeholder biographies. Make all profile information editable in Admin.
+
+ADMIN AND VALIDATION
+- Add About → Chairman and About → Board of Directors in the Admin Pages structure beneath About.
+- Keep leadership cards and the About board section synced to Faculty data. Persist all changes after refresh.
+- Confirm the Chairman’s Message is independently editable, board visibility follows the checkbox, View Profile opens the shared Faculty profile, and leadership profiles appear first in the Faculty gallery.
+- Do not change unrelated pages or authentication.
