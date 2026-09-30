@@ -27,9 +27,18 @@ import type { ContentItem, ContentItemInput, ContentSection, JsonObject } from "
 type RecordValue = Record<string, unknown>;
 type Flash = { tone: "success" | "error"; message: string } | null;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+const leadershipRoles = [
+  "Chairman",
+  "Board Director",
+  "Principal",
+  "Faculty",
+] as const;
+type LeadershipRole = (typeof leadershipRoles)[number];
 type ProfileForm = {
   name: string;
   professionalTitle: string;
+  leadershipRole: LeadershipRole;
+  showOnAboutBoard: boolean;
   shortDescription: string;
   qualifications: string;
   subjects: string;
@@ -50,6 +59,9 @@ function record(value: unknown): RecordValue {
 function text(value: unknown, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
+function isLeadershipProfile(item: ContentItem) {
+  return text(record(item.content).leadershipRole, "Faculty") !== "Faculty";
+}
 function errorMessage(error: unknown) {
   const candidate = error as { message?: string; status?: number; response?: { status?: number } };
   if (candidate?.status === 403 || candidate?.response?.status === 403) return "Your account is signed in, but it is not on the admin allowlist.";
@@ -66,9 +78,14 @@ function contentFor(item?: ContentItem): ProfileForm {
   const content = record(item?.content);
   const links = record(content.socialLinks);
   const subjects = Array.isArray(content.subjectsTaught) ? content.subjectsTaught.filter((subject): subject is string => typeof subject === "string") : [];
+  const savedRole = text(content.leadershipRole);
   return {
     name: item?.title || "",
     professionalTitle: text(content.professionalTitle),
+    leadershipRole: leadershipRoles.includes(savedRole as LeadershipRole)
+      ? (savedRole as LeadershipRole)
+      : "Faculty",
+    showOnAboutBoard: content.showOnAboutBoard === true,
     shortDescription: text(content.shortDescription, item?.description || ""),
     qualifications: text(content.qualifications),
     subjects: subjects.join(", "),
@@ -106,7 +123,8 @@ function ProfileFormEditor({ section, initial, position, onClose, onFlash }: { s
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
   useEffect(() => setForm(contentFor(initial)), [initial?.id]);
-  const set = (key: keyof ProfileForm, value: string | boolean) => setForm((current) => ({ ...current, [key]: value }));
+  const set = <Key extends keyof ProfileForm>(key: Key, value: ProfileForm[Key]) =>
+    setForm((current) => ({ ...current, [key]: value }));
 
   const uploadPortrait = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -138,7 +156,10 @@ function ProfileFormEditor({ section, initial, position, onClose, onFlash }: { s
       return;
     }
     const content: JsonObject = {
+      ...(initial?.content || {}),
       professionalTitle: form.professionalTitle.trim(),
+      leadershipRole: form.leadershipRole,
+      showOnAboutBoard: form.showOnAboutBoard,
       shortDescription: form.shortDescription.trim(),
       qualifications: form.qualifications.trim(),
       subjectsTaught: form.subjects.split(",").map((subject) => subject.trim()).filter(Boolean),
@@ -180,6 +201,23 @@ function ProfileFormEditor({ section, initial, position, onClose, onFlash }: { s
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <Input label="Name" value={form.name} onChange={(value) => set("name", value)} required testId="input-faculty-name" />
         <Input label="Professional title" value={form.professionalTitle} onChange={(value) => set("professionalTitle", value)} required placeholder="Senior lecturer" testId="input-faculty-title" />
+        <label className="block text-sm font-semibold text-slate-700">
+          Leadership role
+          <select
+            value={form.leadershipRole}
+            onChange={(event) =>
+              set("leadershipRole", event.currentTarget.value as LeadershipRole)
+            }
+            className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#0B3472]/50 focus:ring-4 focus:ring-[#0B3472]/10"
+            data-testid="select-faculty-leadership-role"
+          >
+            {leadershipRoles.map((role) => (
+              <option key={role} value={role}>
+                {role}
+              </option>
+            ))}
+          </select>
+        </label>
         <Input label="Short description" value={form.shortDescription} onChange={(value) => set("shortDescription", value)} multiline testId="input-faculty-short-description" />
         <Input label="Qualifications" value={form.qualifications} onChange={(value) => set("qualifications", value)} multiline testId="input-faculty-qualifications" />
         <Input label="Subjects taught" value={form.subjects} onChange={(value) => set("subjects", value)} placeholder="Mathematics, Statistics, Economics" testId="input-faculty-subjects" />
@@ -206,6 +244,7 @@ function ProfileFormEditor({ section, initial, position, onClose, onFlash }: { s
       <div className="mt-5 flex flex-wrap gap-5">
         <label className="flex items-center gap-2 text-sm font-semibold text-slate-700"><input type="checkbox" checked={form.isVisible} onChange={(event) => set("isVisible", event.target.checked)} className="h-4 w-4 accent-[#0B3472]" data-testid="checkbox-faculty-published" /> Published on Faculty page</label>
         <label className="flex items-center gap-2 text-sm font-semibold text-slate-700"><input type="checkbox" checked={form.showOnHome} onChange={(event) => set("showOnHome", event.target.checked)} className="h-4 w-4 accent-[#E3212B]" data-testid="checkbox-faculty-home-preview" /> Show on Home Preview</label>
+        <label className="flex items-center gap-2 text-sm font-semibold text-slate-700"><input type="checkbox" checked={form.showOnAboutBoard} onChange={(event) => set("showOnAboutBoard", event.target.checked)} className="h-4 w-4 accent-[#E3212B]" data-testid="checkbox-faculty-about-board" /> Show on About Board</label>
       </div>
       {error ? <p className="mt-4 text-sm font-semibold text-red-700" role="alert" data-testid="error-faculty-profile">{error}</p> : null}
       <div className="mt-5 flex justify-end gap-2">
@@ -239,7 +278,9 @@ export default function AdminFacultyEditor() {
   const [confirming, setConfirming] = useState<ContentItem | null>(null);
   const [flash, setFlash] = useState<Flash>(null);
   const section = query.data?.sections.find((candidate) => candidate.sectionKey === "faculty");
-  const items = useMemo(() => query.data?.items.filter((item) => item.sectionId === section?.id && item.itemType === "faculty-profile").sort((a, b) => a.position - b.position) || [], [query.data?.items, section?.id]);
+  const items = useMemo(() => query.data?.items.filter((item) => item.sectionId === section?.id && item.itemType === "faculty-profile").sort((a, b) => {
+    return Number(isLeadershipProfile(b)) - Number(isLeadershipProfile(a)) || a.position - b.position;
+  }) || [], [query.data?.items, section?.id]);
   const visibleCount = items.filter((item) => item.isVisible).length;
 
   const toggleSection = () => {
@@ -253,6 +294,7 @@ export default function AdminFacultyEditor() {
     const index = items.findIndex((candidate) => candidate.id === item.id);
     const target = items[index + direction];
     if (!target) return;
+    if (isLeadershipProfile(item) !== isLeadershipProfile(target)) return;
     try {
       await Promise.all([updateItem.mutateAsync({ id: item.id, data: { position: target.position } }), updateItem.mutateAsync({ id: target.id, data: { position: item.position } })]);
       invalidate(client);
@@ -276,7 +318,7 @@ export default function AdminFacultyEditor() {
           <button type="button" onClick={() => setEditing("new")} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0B3472] px-4 py-3 text-sm font-bold text-white hover:bg-[#082859]" data-testid="button-add-faculty"><Plus className="h-4 w-4" /> Add profile</button>
         </div>
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#0B3472]/10 bg-white p-4">
-          <div><p className="text-sm font-bold text-[#0B3472]">{visibleCount} of {items.length} profiles published</p><p className="mt-1 text-xs text-slate-500">Profiles follow the order shown below.</p></div>
+          <div><p className="text-sm font-bold text-[#0B3472]">{visibleCount} of {items.length} profiles published</p><p className="mt-1 text-xs text-slate-500">Leadership profiles appear first, followed by teaching faculty.</p></div>
           <button type="button" onClick={toggleSection} disabled={updateSection.isPending} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-[#0B3472] hover:bg-slate-50 disabled:opacity-50" data-testid="button-toggle-faculty-section">{section.isVisible ? <><EyeOff className="h-4 w-4" /> Hide Faculty page</> : <><Eye className="h-4 w-4" /> Publish Faculty page</>}</button>
         </div>
         {flash ? <div className={`mt-4 flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold ${flash.tone === "success" ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-800"}`} role="status" data-testid="status-admin-faculty-message"><span className="flex items-center gap-2">{flash.tone === "success" ? <Check className="h-4 w-4" /> : null}{flash.message}</span><button type="button" onClick={() => setFlash(null)} aria-label="Dismiss message" data-testid="button-dismiss-admin-faculty-message"><X className="h-4 w-4" /></button></div> : null}
@@ -286,10 +328,10 @@ export default function AdminFacultyEditor() {
             <div key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_5px_18px_rgba(11,52,114,.04)]" data-testid={`row-admin-faculty-${item.id}`}>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[#e7edf5]">{item.imageUrl ? <img src={assetUrl(item.imageUrl)} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center font-display text-2xl font-extrabold text-[#0B3472]/40">{item.title.charAt(0)}</div>}</div>
-                <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h2 className="font-display text-xl font-extrabold text-[#0B3472]">{item.title}</h2><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.12em] ${item.isVisible ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{item.isVisible ? "Published" : "Unpublished"}</span></div><p className="mt-1 text-sm text-slate-500">{text(record(item.content).professionalTitle, "Faculty member")}</p><p className="mt-2 text-xs font-semibold text-slate-400">{record(item.content).showOnHome === true ? "Shown on Home Preview" : "Not on Home Preview"}</p></div>
+                <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h2 className="font-display text-xl font-extrabold text-[#0B3472]">{item.title}</h2><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.12em] ${item.isVisible ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{item.isVisible ? "Published" : "Unpublished"}</span></div><p className="mt-1 text-sm text-slate-500">{text(record(item.content).professionalTitle, "Faculty member")}</p><p className="mt-2 text-xs font-semibold text-[#0B3472]/70">{text(record(item.content).leadershipRole, "Faculty")} · {record(item.content).showOnAboutBoard === true ? "On About Board" : "Not on About Board"}</p><p className="mt-1 text-xs font-semibold text-slate-400">{record(item.content).showOnHome === true ? "Shown on Home Preview" : "Not on Home Preview"}</p></div>
                 <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                  <button type="button" onClick={() => move(item, -1)} disabled={index === 0 || updateItem.isPending} className="rounded-lg border border-slate-200 p-2 text-[#0B3472] hover:bg-slate-50 disabled:opacity-30" aria-label={`Move ${item.title} up`} data-testid={`button-move-faculty-up-${item.id}`}><ArrowUp className="h-4 w-4" /></button>
-                  <button type="button" onClick={() => move(item, 1)} disabled={index === items.length - 1 || updateItem.isPending} className="rounded-lg border border-slate-200 p-2 text-[#0B3472] hover:bg-slate-50 disabled:opacity-30" aria-label={`Move ${item.title} down`} data-testid={`button-move-faculty-down-${item.id}`}><ArrowDown className="h-4 w-4" /></button>
+                   <button type="button" onClick={() => move(item, -1)} disabled={index === 0 || updateItem.isPending || isLeadershipProfile(items[index - 1] || item) !== isLeadershipProfile(item)} className="rounded-lg border border-slate-200 p-2 text-[#0B3472] hover:bg-slate-50 disabled:opacity-30" aria-label={`Move ${item.title} up`} data-testid={`button-move-faculty-up-${item.id}`}><ArrowUp className="h-4 w-4" /></button>
+                   <button type="button" onClick={() => move(item, 1)} disabled={index === items.length - 1 || updateItem.isPending || isLeadershipProfile(items[index + 1] || item) !== isLeadershipProfile(item)} className="rounded-lg border border-slate-200 p-2 text-[#0B3472] hover:bg-slate-50 disabled:opacity-30" aria-label={`Move ${item.title} down`} data-testid={`button-move-faculty-down-${item.id}`}><ArrowDown className="h-4 w-4" /></button>
                   <button type="button" onClick={() => toggleItem(item)} disabled={updateItem.isPending} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-[#0B3472] hover:bg-slate-50 disabled:opacity-50" data-testid={`button-toggle-faculty-${item.id}`}>{item.isVisible ? "Unpublish" : "Publish"}</button>
                   <button type="button" onClick={() => setEditing(item.id)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-[#0B3472] hover:bg-slate-50" data-testid={`button-edit-faculty-${item.id}`}>Edit</button>
                   <button type="button" onClick={() => setConfirming(item)} className="rounded-lg border border-red-200 p-2 text-red-700 hover:bg-red-50" aria-label={`Delete ${item.title}`} data-testid={`button-delete-faculty-${item.id}`}><Trash2 className="h-4 w-4" /></button>

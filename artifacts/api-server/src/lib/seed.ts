@@ -1249,6 +1249,91 @@ async function seedAboutPage(): Promise<void> {
       }
     }
 
+    let heroSectionContent = isCmsRecord(heroSection.content)
+      ? heroSection.content
+      : {};
+    if (heroSectionContent.aboutLeadershipSeedVersion !== 1) {
+      const [chairmanSection] = await tx
+        .select({ id: contentSectionsTable.id })
+        .from(contentSectionsTable)
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "about"),
+            eq(contentSectionsTable.sectionKey, "chairman-message"),
+          ),
+        )
+        .limit(1);
+      if (!chairmanSection) {
+        await tx
+          .insert(contentSectionsTable)
+          .values({
+            pageSlug: "about",
+            sectionKey: "chairman-message",
+            title: "A Message from Our Chairman",
+            subtitle: null,
+            content: {
+              eyebrow: "LEADERSHIP MESSAGE",
+              greeting:
+                "Dear Students, Parents, and Members of the Shastra Community,",
+              messageParagraphs: [
+                "Education is most powerful when strong foundations are matched with curiosity, discipline, and care. At Shastra Junior College, we work to make every student feel supported while challenging them to reach their full potential.",
+                "Our teachers and staff are committed to thoughtful learning, honest effort, and guidance that helps students make informed choices about the future. We value the trust families place in us and remain focused on helping every learner move forward with confidence.",
+                "I invite you to explore what we offer, meet the people who make the college community, and discover the possibilities that begin here.",
+              ],
+              imageUrl:
+                "/leadership-portraits/shastra-chairman-raghavendra-rao.jpg",
+              imageAlt:
+                "Portrait of Sri Raghavendra Rao, Chairman of Shastra Junior College.",
+              signatureClosing: "With best wishes,",
+              signatureName: "Sri Raghavendra Rao",
+              signatureTitle: "Chairman, Shastra Junior College",
+            } as CmsJson,
+            isVisible: true,
+            position: 2,
+          })
+          .onConflictDoNothing();
+      }
+
+      const [boardSection] = await tx
+        .select({ id: contentSectionsTable.id })
+        .from(contentSectionsTable)
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "about"),
+            eq(contentSectionsTable.sectionKey, "board-of-directors"),
+          ),
+        )
+        .limit(1);
+      if (!boardSection) {
+        await tx
+          .insert(contentSectionsTable)
+          .values({
+            pageSlug: "about",
+            sectionKey: "board-of-directors",
+            title: "Board of Directors",
+            subtitle:
+              "Guided by thoughtful leadership, dedicated to every learner.",
+            content: { eyebrow: "GOVERNANCE & LEADERSHIP" },
+            isVisible: true,
+            position: 3,
+          })
+          .onConflictDoNothing();
+      }
+
+      heroSectionContent = {
+        ...defaults,
+        ...heroSectionContent,
+        aboutLeadershipSeedVersion: 1,
+      };
+      await tx
+        .update(contentSectionsTable)
+        .set({
+          content: heroSectionContent as CmsJson,
+          updatedAt: new Date(),
+        })
+        .where(eq(contentSectionsTable.id, heroSection.id));
+    }
+
     const [statisticsSection] = await tx
       .select({ id: contentSectionsTable.id })
       .from(contentSectionsTable)
@@ -1264,9 +1349,7 @@ async function seedAboutPage(): Promise<void> {
       return;
     }
 
-    const sectionContent = isCmsRecord(heroSection.content)
-      ? heroSection.content
-      : {};
+    const sectionContent = heroSectionContent;
     if (sectionContent.aboutStatisticsSeedVersion === 1) {
       return;
     }
@@ -1351,6 +1434,61 @@ const facultyProfiles = [
     experience: "14 years",
     biography:
       "Mr. Arjun Sharma has taught biology for fourteen years, with a focus on making complex systems easier to observe and understand. He uses diagrams, guided inquiry, and discussion to help students connect foundational science to the living world around them.",
+  },
+] as const;
+
+const leadershipProfiles = [
+  {
+    name: "Sri Raghavendra Rao",
+    professionalTitle: "Founder & Chairman",
+    leadershipRole: "Chairman",
+    shortDescription:
+      "Believes that strong foundations and thoughtful guidance can open new paths for every student.",
+    imageUrl: "/leadership-portraits/shastra-chairman-raghavendra-rao.jpg",
+    qualifications: "B.Com., M.B.A.",
+    subjectsTaught: [],
+    experience: "29 years in education and institution leadership",
+    biography:
+      "Sri Raghavendra Rao founded Shastra Junior College with a commitment to accessible, purposeful education. He works with the college community to strengthen academic foundations, encourage responsible ambition, and help students make confident choices about their future.",
+  },
+  {
+    name: "Dr. Pranav Venkatesh",
+    professionalTitle: "Academic Director",
+    leadershipRole: "Board Director",
+    shortDescription:
+      "Guides academic planning with a focus on strong teaching and meaningful student progress.",
+    imageUrl: "/leadership-portraits/shastra-board-director-pranav-venkatesh.jpg",
+    qualifications: "Ph.D. Education, M.Sc. Physics",
+    subjectsTaught: [],
+    experience: "22 years in academic leadership",
+    biography:
+      "Dr. Pranav Venkatesh supports academic planning across the college. His work focuses on clear learning goals, thoughtful assessment, and practical support that helps students build confidence in their chosen subjects.",
+  },
+  {
+    name: "Ms. Anjali Deshpande",
+    professionalTitle: "Director of Careers & Student Development",
+    leadershipRole: "Board Director",
+    shortDescription:
+      "Champions student wellbeing, career exploration, and informed next-step decisions.",
+    imageUrl: "/leadership-portraits/shastra-board-director-anjali-deshpande.jpg",
+    qualifications: "M.A. Psychology, Postgraduate Diploma in Career Guidance",
+    subjectsTaught: [],
+    experience: "17 years in student guidance",
+    biography:
+      "Ms. Anjali Deshpande works with students and families as they explore future pathways. She advocates for a supportive college environment where every learner can ask questions, understand their options, and plan the next step with care.",
+  },
+  {
+    name: "Dr. Meena Iyer",
+    professionalTitle: "Principal · Shastra Junior College",
+    leadershipRole: "Principal",
+    shortDescription:
+      "Leads the college’s day-to-day academic life and supports a welcoming campus community.",
+    imageUrl: "/leadership-portraits/shastra-principal-meena-iyer.jpg",
+    qualifications: "Ph.D. Chemistry, M.Sc. Chemistry, M.Ed.",
+    subjectsTaught: [],
+    experience: "24 years in teaching and college leadership",
+    biography:
+      "Dr. Meena Iyer leads the academic and student life of Shastra Junior College. She works closely with teaching teams to foster a respectful campus, high expectations, and the consistent guidance that helps students thrive.",
   },
 ] as const;
 
@@ -1614,19 +1752,146 @@ async function seedFacultyAndGalleryPages(): Promise<void> {
     const facultyContent = isCmsRecord(facultySection.content)
       ? facultySection.content
       : {};
-    if (facultyContent.facultyProfilesSeedVersion === 2) return;
+    if (facultyContent.facultyProfilesSeedVersion === 3) return;
 
     const existingProfiles = await tx
-      .select({ title: contentItemsTable.title })
+      .select({
+        id: contentItemsTable.id,
+        title: contentItemsTable.title,
+        position: contentItemsTable.position,
+        content: contentItemsTable.content,
+      })
       .from(contentItemsTable)
       .where(
         and(
           eq(contentItemsTable.sectionId, facultySection.id),
           eq(contentItemsTable.itemType, "faculty-profile"),
         ),
-      );
+      )
+      .orderBy(asc(contentItemsTable.position), asc(contentItemsTable.createdAt));
     const existingNames = new Set(existingProfiles.map((item) => item.title));
-    const itemsToSeed = facultyProfiles
+    const seededLeadershipNames = new Set<string>(
+      leadershipProfiles.map((profile) => profile.name),
+    );
+    const legacyLeadershipProfiles = existingProfiles.filter((item) => {
+      if (seededLeadershipNames.has(item.title)) return false;
+      const content = isCmsRecord(item.content) ? item.content : {};
+      return (
+        typeof content.leadershipRole === "string" &&
+        content.leadershipRole !== "Faculty"
+      );
+    });
+    const existingTeachingProfiles = existingProfiles.filter((item) => {
+      if (seededLeadershipNames.has(item.title)) return false;
+      return !legacyLeadershipProfiles.some((leader) => leader.id === item.id);
+    });
+
+    for (const [index, profile] of leadershipProfiles.entries()) {
+      const existing = existingProfiles.find(
+        (item) => item.title === profile.name,
+      );
+      if (!existing) continue;
+      const content = isCmsRecord(existing.content) ? existing.content : {};
+      await tx
+        .update(contentItemsTable)
+        .set({
+          position: index,
+          content: {
+            ...content,
+            leadershipRole:
+              typeof content.leadershipRole === "string"
+                ? content.leadershipRole
+                : profile.leadershipRole,
+            showOnAboutBoard:
+              typeof content.showOnAboutBoard === "boolean"
+                ? content.showOnAboutBoard
+                : true,
+          } as CmsJson,
+          updatedAt: new Date(),
+        })
+        .where(eq(contentItemsTable.id, existing.id));
+    }
+
+    for (const [index, item] of legacyLeadershipProfiles.entries()) {
+      const content = isCmsRecord(item.content) ? item.content : {};
+      await tx
+        .update(contentItemsTable)
+        .set({
+          position: leadershipProfiles.length + index,
+          content: {
+            ...content,
+            leadershipRole:
+              typeof content.leadershipRole === "string"
+                ? content.leadershipRole
+                : "Faculty",
+            showOnAboutBoard:
+              typeof content.showOnAboutBoard === "boolean"
+                ? content.showOnAboutBoard
+                : false,
+          } as CmsJson,
+          updatedAt: new Date(),
+        })
+        .where(eq(contentItemsTable.id, item.id));
+    }
+
+    for (const [index, item] of existingTeachingProfiles.entries()) {
+      const content = isCmsRecord(item.content) ? item.content : {};
+      await tx
+        .update(contentItemsTable)
+        .set({
+          position:
+            leadershipProfiles.length +
+            legacyLeadershipProfiles.length +
+            index,
+          content: {
+            ...content,
+            leadershipRole:
+              typeof content.leadershipRole === "string"
+                ? content.leadershipRole
+                : "Faculty",
+            showOnAboutBoard:
+              typeof content.showOnAboutBoard === "boolean"
+                ? content.showOnAboutBoard
+                : false,
+          } as CmsJson,
+          updatedAt: new Date(),
+        })
+        .where(eq(contentItemsTable.id, item.id));
+    }
+
+    const leadershipItemsToSeed = leadershipProfiles
+      .filter((profile) => !existingNames.has(profile.name))
+      .map((profile) => ({
+        sectionId: facultySection.id,
+        itemType: "faculty-profile",
+        title: profile.name,
+        description: profile.shortDescription,
+        imageUrl: profile.imageUrl,
+        linkPath: null,
+        label: null,
+        content: {
+          professionalTitle: profile.professionalTitle,
+          leadershipRole: profile.leadershipRole,
+          shortDescription: profile.shortDescription,
+          qualifications: profile.qualifications,
+          subjectsTaught: [...profile.subjectsTaught],
+          experience: profile.experience,
+          biography: profile.biography,
+          socialLinks: {
+            linkedin: "",
+            facebook: "",
+            instagram: "",
+            website: "",
+          },
+          showOnHome: false,
+          showOnAboutBoard: true,
+        },
+        isVisible: true,
+        position: leadershipProfiles.findIndex(
+          (candidate) => candidate.name === profile.name,
+        ),
+      }));
+    const teachingItemsToSeed = facultyProfiles
       .filter((profile) => !existingNames.has(profile.name))
       .map((profile, index) => ({
         sectionId: facultySection.id,
@@ -1643,6 +1908,7 @@ async function seedFacultyAndGalleryPages(): Promise<void> {
           subjectsTaught: [...profile.subjectsTaught],
           experience: profile.experience,
           biography: profile.biography,
+          leadershipRole: "Faculty",
           socialLinks: {
             linkedin: "",
             facebook: "",
@@ -1650,17 +1916,25 @@ async function seedFacultyAndGalleryPages(): Promise<void> {
             website: "",
           },
           showOnHome: true,
+          showOnAboutBoard: false,
         },
         isVisible: true,
-        position: existingProfiles.length + index,
+        position:
+          leadershipProfiles.length +
+          legacyLeadershipProfiles.length +
+          existingTeachingProfiles.length +
+          index,
       }));
-    if (itemsToSeed.length) await tx.insert(contentItemsTable).values(itemsToSeed);
+    const itemsToSeed = [...leadershipItemsToSeed, ...teachingItemsToSeed];
+    if (itemsToSeed.length) {
+      await tx.insert(contentItemsTable).values(itemsToSeed);
+    }
     await tx
       .update(contentSectionsTable)
       .set({
         content: {
           ...facultyContent,
-          facultyProfilesSeedVersion: 2,
+          facultyProfilesSeedVersion: 3,
           eyebrow:
             typeof facultyContent.eyebrow === "string"
               ? facultyContent.eyebrow

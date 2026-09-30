@@ -7,6 +7,8 @@ import {
 import { Link } from "wouter";
 import AboutHeroSection from "./about-hero-section";
 import { AboutWhoWeAreSection } from "./about-who-we-are-section";
+import { AboutChairmanSection } from "./about-chairman-section";
+import { AboutBoardSection } from "./about-board-section";
 import { Footer, Header } from "./public-home";
 
 function AboutLoading() {
@@ -35,6 +37,9 @@ export default function AboutPage() {
   });
   const page = useGetCmsPage("about", {
     query: { queryKey: getGetCmsPageQueryKey("about") },
+  });
+  const faculty = useGetCmsPage("faculty", {
+    query: { queryKey: getGetCmsPageQueryKey("faculty") },
   });
 
   if (home.isLoading || page.isLoading) {
@@ -67,7 +72,10 @@ export default function AboutPage() {
   const sections = page.data?.sections || [];
   const hasAboutContent = sections.some(
     (section) =>
-      section.sectionKey === "hero" || section.sectionKey === "who-we-are",
+      section.sectionKey === "hero" ||
+      section.sectionKey === "who-we-are" ||
+      section.sectionKey === "chairman-message" ||
+      section.sectionKey === "board-of-directors",
   );
 
   return (
@@ -107,6 +115,23 @@ export default function AboutPage() {
               if (section.sectionKey === "who-we-are") {
                 return (
                   <AboutWhoWeAreSection key={section.id} section={section} />
+                );
+              }
+              if (section.sectionKey === "chairman-message") {
+                return (
+                  <AboutChairmanSection key={section.id} section={section} />
+                );
+              }
+              if (section.sectionKey === "board-of-directors") {
+                return (
+                  <AboutBoardSection
+                    key={section.id}
+                    section={section}
+                    faculty={faculty.data}
+                    facultyLoading={faculty.isLoading}
+                    facultyError={faculty.isError}
+                    onRetryFaculty={() => void faculty.refetch()}
+                  />
                 );
               }
               return null;

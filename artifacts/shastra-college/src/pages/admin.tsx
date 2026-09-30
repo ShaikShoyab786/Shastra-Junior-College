@@ -54,6 +54,8 @@ import { Link } from "wouter";
 import AdminHomeEditor from "./admin-home-editor";
 import AdminAboutEditor from "./admin-about-editor";
 import AdminAboutWhoWeAreEditor from "./admin-about-who-we-are-editor";
+import AdminAboutChairmanEditor from "./admin-about-chairman-editor";
+import AdminAboutBoardEditor from "./admin-about-board-editor";
 import AdminGalleryEditor from "./admin-gallery-editor";
 import AdminFacultyEditor from "./admin-faculty-editor";
 import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
@@ -76,6 +78,8 @@ type WorkspaceView =
   | "about"
   | "about-hero"
   | "about-who-we-are"
+  | "about-chairman"
+  | "about-board"
   | "results"
   | "faculty"
   | "courses"
@@ -300,7 +304,9 @@ function Shell({
   const [aboutOpen, setAboutOpen] = useState(
     activeView === "about" ||
       activeView === "about-hero" ||
-      activeView === "about-who-we-are",
+      activeView === "about-who-we-are" ||
+      activeView === "about-chairman" ||
+      activeView === "about-board",
   );
   const homeSectionActive =
     activeView === "hero" ||
@@ -313,7 +319,9 @@ function Shell({
   const aboutSectionActive =
     activeView === "about" ||
     activeView === "about-hero" ||
-    activeView === "about-who-we-are";
+    activeView === "about-who-we-are" ||
+    activeView === "about-chairman" ||
+    activeView === "about-board";
   const activePage =
     activeView === "dashboard"
       ? "Dashboard"
@@ -335,6 +343,10 @@ function Shell({
             ? "About · Hero"
             : activeView === "about-who-we-are"
               ? "About · Who We Are"
+              : activeView === "about-chairman"
+                ? "About · Chairman’s Message"
+                : activeView === "about-board"
+                  ? "About · Board of Directors"
         : activeView === "hero"
           ? "Home · Hero"
           : activeView === "programs"
@@ -356,7 +368,9 @@ function Shell({
     if (
       view === "about" ||
       view === "about-hero" ||
-      view === "about-who-we-are"
+      view === "about-who-we-are" ||
+      view === "about-chairman" ||
+      view === "about-board"
     ) {
       setAboutOpen(true);
     }
@@ -501,6 +515,20 @@ function Shell({
                               nested
                               active={activeView === "about-who-we-are"}
                               onClick={() => go("about-who-we-are")}
+                            />
+                            <NavRow
+                              icon={FileText}
+                              label="Chairman"
+                              nested
+                              active={activeView === "about-chairman"}
+                              onClick={() => go("about-chairman")}
+                            />
+                            <NavRow
+                              icon={FileText}
+                              label="Board of Directors"
+                              nested
+                              active={activeView === "about-board"}
+                              onClick={() => go("about-board")}
                             />
                           </div>
                         ) : null}
@@ -943,6 +971,22 @@ function AdminWorkspace() {
                 "Edit the introduction, classroom image and alt text, vision statement, and mission points.",
               action: "Edit Who We Are subsection",
             },
+            {
+              key: "about-chairman" as const,
+              number: "03",
+              title: "Chairman’s Message",
+              description:
+                "Write the independent leadership message, manage its portrait, and edit the chairman’s signature.",
+              action: "Edit Chairman’s Message",
+            },
+            {
+              key: "about-board" as const,
+              number: "04",
+              title: "Board of Directors",
+              description:
+                "Edit the About board heading and publication. Board members stay linked to Faculty profiles.",
+              action: "Edit Board of Directors",
+            },
           ].map((subsection) => (
             <button
               key={subsection.key}
@@ -1018,6 +1062,51 @@ function AdminWorkspace() {
           }
         />
         <AdminAboutWhoWeAreEditor onFlash={showFlash} />
+      </div>
+    );
+  } else if (activeView === "about-chairman") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / About / Chairman"
+          title="Edit the Chairman’s Message."
+          description="Manage this message independently from the matching Faculty profile."
+          actions={
+            <button
+              type="button"
+              onClick={() => setActiveView("about")}
+              className="focus-ring rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-[#0b3472] transition hover:border-[#0b3472]/30"
+              data-testid="button-back-about-chairman"
+            >
+              All About subsections
+            </button>
+          }
+        />
+        <AdminAboutChairmanEditor onFlash={showFlash} />
+      </div>
+    );
+  } else if (activeView === "about-board") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / About / Board of Directors"
+          title="Manage the About board."
+          description="Board cards use published Faculty records selected for About. No duplicate board profiles are stored."
+          actions={
+            <button
+              type="button"
+              onClick={() => setActiveView("about")}
+              className="focus-ring rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-[#0b3472] transition hover:border-[#0b3472]/30"
+              data-testid="button-back-about-board"
+            >
+              All About subsections
+            </button>
+          }
+        />
+        <AdminAboutBoardEditor
+          onFlash={showFlash}
+          onNavigate={() => setActiveView("faculty")}
+        />
       </div>
     );
   } else if (
