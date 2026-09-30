@@ -1,0 +1,35 @@
+Add the next two sections to the existing Courses page, and fix the pathway-creation flow in Admin.
+
+Use the attached images as layout references only. Keep the Shastra Junior College theme and existing stack: React + Vite, Express, PostgreSQL, and Drizzle. Do not introduce another ORM.
+
+COURSES PAGE SECTIONS
+Add these sections after Regular Pathways, in this order:
+
+1. BATCH DETAILS & SCHEDULE
+- Create a clean section with editable eyebrow, heading, and supporting text.
+- Use two clear panels on desktop: Upcoming Batches and Daily Schedule. Stack them neatly on mobile.
+- Batch cards can show title, status, start date, and target exam.
+- Schedule entries can show activity/subject and start/end time.
+- Seed realistic, complete starter entries—not generic “Sample Batch” or “Subject 1” placeholders. Use natural course-related names and descriptions; make every entry editable in Admin.
+- Do not copy dates or claims from the reference image.
+
+2. ADMISSIONS CTA
+- Add a polished closing CTA section beneath Batch Details & Schedule, with editable eyebrow, heading, supporting text, and concise benefit items.
+- Use a prominent “Talk with Admissions” button that navigates to the existing Contact page. Do not create an Admissions route or form.
+- Keep this section responsive and visually consistent with the rest of the site.
+
+ADMIN
+Under Admin → Pages → Courses → Explore Courses:
+- Add editable settings for Batch Details & Schedule and the Admissions CTA.
+- Allow admins to add, edit, delete, reorder, and show/hide batch and schedule entries. Persist all changes using the existing backend and Drizzle data patterns.
+- Keep future sections that have not been built marked “Coming Soon” in Admin only; do not add empty sections or “Coming Soon” text to the public Courses page.
+
+FIX “ADD PATHWAY”
+The current Add Pathway flow creates an “Untitled pathway” at the bottom, which is confusing. Fix it so:
+- Clicking “Add Pathway” immediately opens a clear editor for a new unsaved pathway and focuses the title field.
+- Do not insert a blank “Untitled pathway” into the saved list or database.
+- Saving validates required fields, persists the pathway, assigns its order, and makes the saved pathway easy to locate and edit.
+- Cancel discards the unsaved draft without creating a record.
+- Preserve existing valid pathways. If empty “Untitled pathway” records already exist, do not delete them automatically; flag them for review.
+
+Verify the new sections, Contact destination, mobile layout, Admin persistence, and pathway add/save/cancel flow.
