@@ -1,0 +1,43 @@
+Implement only the first two sections of each individual course detail page:
+
+1. Hero section
+2. Quick Course Highlights section
+
+Do not build the other course-page sections in this task. Do not redesign or change the Courses overview page or the Courses mega menu. Preserve the project’s existing routing, navigation, admin patterns, database, and site-wide theme. Inspect the project first and extend its current approach.
+
+Apply the same reusable page structure to these courses: MPC, BiPC, NEET, IIT-JEE, and Integrated. Each course must display its own content, managed independently in the admin dashboard. Use one shared template/component with course-specific saved data; don’t create five unrelated hardcoded page implementations.
+
+DESIGN DIRECTION
+
+I’ve attached two reference screenshots: one for a course hero and one for quick highlights. Use them only as visual inspiration for the kind of information and hierarchy these sections can contain. Do not copy their exact layout, styling, text, assets, branding, or colors. Use your own design decisions, while following this project’s existing colors, fonts, components, and brand identity.
+
+HERO SECTION
+
+Create a polished, responsive hero for each course. It may include:
+- An optional admissions/status label
+- Course title and short introductory description
+- Course details such as duration or study mode
+- Course-specific calls to action
+- An enquiry form, if the project already has a suitable enquiry flow
+
+Make the hero content and controls editable per course. Use the existing upload system for images. Enquiry forms and links must use the project’s actual existing functionality; do not add fake submissions or copy contact details from the reference.
+
+QUICK COURSE HIGHLIGHTS SECTION
+
+Create a concise overview section immediately after the hero. It should have an editable label, heading, introduction, and a repeatable set of highlight items. Each item should support fields such as a short category label, title, and description. Admins must be able to add, edit, remove, and reorder items for each course. Choose a visual presentation that fits the site; the numbered cards in the reference are optional inspiration, not a requirement.
+
+ADMIN AND DATA
+
+Manage these sections under the existing dashboard’s Courses area, within the relevant course’s editor—for example, “Courses → MPC → Sections → Hero” and “Quick Course Highlights.” Follow the project’s existing naming and navigation conventions.
+
+- Save all edits to the existing database so changes persist and appear on the correct public course page.
+- Keep each course’s content separate; editing one course must not change another.
+- Reuse the project’s existing database and media-upload patterns. Do not replace the database or store content only in frontend code.
+- Respect existing admin permissions.
+- Add clear field validation for required content and provide save feedback.
+- Use sensible fallbacks for optional images or fields. Don’t render broken images, empty highlight cards, or “undefined.”
+- Do not invent admissions dates, results, testimonials, or other factual claims. Use verified content already in the project; otherwise leave the relevant content editable and unpublished or clearly marked for admin completion.
+
+CHECK BEFORE FINISHING
+
+Verify all five course pages show the correct course-specific Hero and Quick Course Highlights content. Confirm admin edits persist and affect only the selected course, detail URLs still work on direct load and refresh, and both sections are responsive on mobile and desktop. Keep the work limited to these two sections.

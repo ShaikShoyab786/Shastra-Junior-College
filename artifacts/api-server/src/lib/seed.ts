@@ -295,8 +295,163 @@ export async function seedCoursesPageSections(): Promise<void> {
       .values(defaults.map((section) => ({ ...section, pageSlug: "courses" })))
       .onConflictDoNothing();
 
+    const seedMarkers = new Set(seedableMenu.__seedMarkers ?? []);
+    const courseDetailsSeedMarker = "course-detail-pages-v1";
+    if (!seedMarkers.has(courseDetailsSeedMarker)) {
+      const detailPages = [
+        {
+          slug: "mpc",
+          name: "MPC",
+          cardTitle: "MPC",
+          highlights: [
+            { category: "CORE SUBJECT", title: "Mathematics", description: "A core subject in the MPC pathway." },
+            { category: "CORE SUBJECT", title: "Physics", description: "A core subject in the MPC pathway." },
+            { category: "CORE SUBJECT", title: "Chemistry", description: "A core subject in the MPC pathway." },
+          ],
+        },
+        {
+          slug: "bipc",
+          name: "BiPC",
+          cardTitle: "BIPC",
+          highlights: [
+            { category: "CORE SUBJECT", title: "Biology", description: "A core subject in the BiPC pathway." },
+            { category: "CORE SUBJECT", title: "Physics", description: "A core subject in the BiPC pathway." },
+            { category: "CORE SUBJECT", title: "Chemistry", description: "A core subject in the BiPC pathway." },
+          ],
+        },
+        {
+          slug: "neet",
+          name: "NEET",
+          cardTitle: "BIPC+NEET",
+          highlights: [
+            { category: "CORE SUBJECT", title: "Biology", description: "A core subject in the NEET pathway." },
+            { category: "CORE SUBJECT", title: "Physics", description: "A core subject in the NEET pathway." },
+            { category: "CORE SUBJECT", title: "Chemistry", description: "A core subject in the NEET pathway." },
+            { category: "EXAM PATHWAY", title: "NEET", description: "Preparation for NEET is part of this course pathway." },
+          ],
+        },
+        {
+          slug: "iit-jee",
+          name: "IIT-JEE",
+          cardTitle: "MPC+IIT-JEE",
+          highlights: [
+            { category: "CORE SUBJECT", title: "Mathematics", description: "A core subject in the IIT-JEE pathway." },
+            { category: "CORE SUBJECT", title: "Physics", description: "A core subject in the IIT-JEE pathway." },
+            { category: "CORE SUBJECT", title: "Chemistry", description: "A core subject in the IIT-JEE pathway." },
+            { category: "EXAM PATHWAY", title: "IIT-JEE Main", description: "Preparation for IIT-JEE Main is part of this course pathway." },
+          ],
+        },
+        {
+          slug: "integrated",
+          name: "Integrated",
+          cardTitle: "",
+          highlights: [],
+        },
+      ] as const;
+      const detailSections: Array<SeedSection & { pageSlug: string }> = [];
+      const courseCards = seedableMenu.courseCards;
+
+      for (const [index, course] of detailPages.entries()) {
+        const courseCard = course.cardTitle
+          ? courseCards.find((card) => card.title.toLowerCase() === course.cardTitle.toLowerCase())
+          : undefined;
+        const description = courseCard?.description?.trim() ?? "";
+        const isReadyForPublication = course.slug !== "integrated" && Boolean(description);
+        detailSections.push(
+          {
+            pageSlug: "courses",
+            sectionKey: `course-${course.slug}-hero`,
+            title: course.name,
+            subtitle: description || null,
+            content: {
+              eyebrow: `${course.name.toUpperCase()} · COURSE DETAILS`,
+              statusLabel: "",
+              duration: "",
+              studyMode: "",
+              imageUrl: null,
+              imageAlt: "",
+              primaryCtaLabel: `Ask about ${course.name}`,
+              secondaryCtaLabel: "View all courses",
+            },
+            isVisible: isReadyForPublication,
+            position: 10 + index * 2,
+          },
+          {
+            pageSlug: "courses",
+            sectionKey: `course-${course.slug}-highlights`,
+            title: "Quick Course Highlights",
+            subtitle: description
+              ? `Review the subjects and pathway focus associated with ${course.name}.`
+              : null,
+            content: { eyebrow: "QUICK OVERVIEW" },
+            isVisible: isReadyForPublication,
+            position: 11 + index * 2,
+          },
+        );
+      }
+
+      await tx
+        .insert(contentSectionsTable)
+        .values(detailSections)
+        .onConflictDoNothing();
+
+      const detailSectionRows = await tx
+        .select({
+          id: contentSectionsTable.id,
+          sectionKey: contentSectionsTable.sectionKey,
+        })
+        .from(contentSectionsTable)
+        .where(eq(contentSectionsTable.pageSlug, "courses"));
+      const detailSectionIds = new Map(
+        detailSectionRows.map((section) => [section.sectionKey, section.id]),
+      );
+
+      for (const course of detailPages) {
+        const sectionId = detailSectionIds.get(`course-${course.slug}-highlights`);
+        if (!sectionId || course.highlights.length === 0) continue;
+        const [existingHighlight] = await tx
+          .select({ id: contentItemsTable.id })
+          .from(contentItemsTable)
+          .where(
+            and(
+              eq(contentItemsTable.sectionId, sectionId),
+              eq(contentItemsTable.itemType, "course-highlight"),
+            ),
+          )
+          .limit(1);
+        if (existingHighlight) continue;
+        await tx.insert(contentItemsTable).values(
+          course.highlights.map((highlight, position) => ({
+            sectionId,
+            itemType: "course-highlight",
+            title: highlight.title,
+            description: highlight.description,
+            imageUrl: null,
+            linkPath: null,
+            label: null,
+            content: { category: highlight.category },
+            isVisible: true,
+            position,
+          })),
+        );
+      }
+      seedMarkers.add(courseDetailsSeedMarker);
+    }
+
     const starterSeedMarker = "courses-batches-schedule-admissions-v1";
-    if (seedableMenu.__seedMarkers?.includes(starterSeedMarker)) {
+    if (seedMarkers.has(starterSeedMarker)) {
+      if (seedMarkers.size !== (seedableMenu.__seedMarkers?.length ?? 0)) {
+        await tx
+          .update(coursesMenuSettingsTable)
+          .set({
+            content: {
+              ...seedableMenu,
+              __seedMarkers: [...seedMarkers],
+            } as CoursesMenuContent,
+            updatedAt: new Date(),
+          })
+          .where(eq(coursesMenuSettingsTable.id, "primary"));
+      }
       return;
     }
 
@@ -502,14 +657,13 @@ export async function seedCoursesPageSections(): Promise<void> {
       }
     }
 
-    const markers = new Set(seedableMenu.__seedMarkers ?? []);
-    markers.add(starterSeedMarker);
+    seedMarkers.add(starterSeedMarker);
     await tx
       .update(coursesMenuSettingsTable)
       .set({
         content: {
           ...seedableMenu,
-          __seedMarkers: [...markers],
+          __seedMarkers: [...seedMarkers],
         } as CoursesMenuContent,
         updatedAt: new Date(),
       })
