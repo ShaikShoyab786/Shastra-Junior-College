@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowRight, BookOpen, CircleAlert, RefreshCw, Download, FileText, ChevronDown, BookOpenCheck, Target, Layers3, RefreshCw as UpdatesIcon } from "lucide-react";
+import { ArrowDownRight, ArrowRight, BookOpen, CircleAlert, RefreshCw, Download, FileText, ChevronDown, BookOpenCheck, Target, Layers3, RefreshCw as UpdatesIcon, Image as ImageIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import {
@@ -31,7 +31,11 @@ function textValue(content: Record<string, unknown>, key: string, fallback = "")
 }
 
 function assetUrl(value: string) {
-  return value.startsWith("/objects/") ? `/api/storage${value}` : value;
+  if (value.startsWith("/objects/")) return `/api/storage${value}`;
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+  return value.startsWith("/") && basePath && !value.startsWith(`${basePath}/`)
+    ? `${basePath}${value}`
+    : value;
 }
 
 function curriculumPdfUrl(value: string) {
@@ -349,6 +353,11 @@ const curriculumBenefits = [
 
 function CourseCurriculum({ course, section, items }: { course: CourseDetail; section: ContentSection; items: ContentItem[] }) {
   const content = recordValue(section.content);
+  const storedEyebrow = textValue(content, "eyebrow", "COURSE CURRICULUM").trim();
+  const eyebrow =
+    storedEyebrow.toLocaleUpperCase() === "CURRICULUM"
+      ? "COURSE CURRICULUM"
+      : storedEyebrow;
   const subjects = items
     .filter((item) => item.sectionId === section.id && item.itemType === "course-curriculum-subject" && item.isVisible)
     .sort((a, b) => a.position - b.position);
@@ -362,7 +371,7 @@ function CourseCurriculum({ course, section, items }: { course: CourseDetail; se
         <div>
           <div className="mb-7">
             <span className="inline-flex items-center gap-2 rounded-full border border-[#e3212b]/20 bg-[#e3212b]/[.07] px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[.15em] text-[#b71927]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#e3212b]" aria-hidden="true" /> {textValue(content, "eyebrow", "Curriculum")}
+              <span className="h-1.5 w-1.5 rounded-full bg-[#e3212b]" aria-hidden="true" /> {eyebrow || "COURSE CURRICULUM"}
             </span>
             <h2 className="mt-4 max-w-[18ch] font-display text-4xl font-extrabold leading-[1.04] tracking-[-.055em] text-[#0b3472] sm:text-5xl">{section.title}</h2>
             {section.subtitle ? <p className="mt-4 max-w-2xl text-sm leading-7 text-[#53657d] sm:text-base">{section.subtitle}</p> : null}
@@ -429,14 +438,120 @@ function CourseCurriculum({ course, section, items }: { course: CourseDetail; se
   );
 }
 
+function CourseGalleryPreview({
+  course,
+  section,
+  items,
+}: {
+  course: CourseDetail;
+  section: ContentSection;
+  items: ContentItem[];
+}) {
+  const images = useMemo(
+    () =>
+      items
+        .filter(
+          (item) =>
+            item.sectionId === section.id &&
+            item.itemType === "gallery-image" &&
+            item.isVisible &&
+            recordValue(item.content).showOnCoursePreview === true,
+        )
+        .sort((a, b) => a.position - b.position),
+    [items, section.id],
+  );
+
+  if (!images.length) return null;
+
+  const content = recordValue(section.content);
+  const title = textValue(
+    content,
+    "headline",
+    section.title || "Gallery Preview",
+  );
+  const description = textValue(
+    content,
+    "description",
+    section.subtitle || "",
+  );
+
+  return (
+    <section
+      id={courseSectionKey(course.slug, "gallery-preview")}
+      className="site-grid bg-[#f7f5ef] px-5 py-14 sm:px-8 sm:py-20"
+      data-testid={`section-course-gallery-preview-${course.slug}`}
+    >
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-col justify-between gap-5 border-b border-[#0b3472]/15 pb-7 md:flex-row md:items-end">
+          <div>
+            <p className="eyebrow text-[#e3212b]">GALLERY PREVIEW</p>
+            <h2 className="mt-3 font-display text-4xl font-extrabold tracking-[-.055em] text-[#0b3472] sm:text-5xl">
+              {title}
+            </h2>
+            {description ? (
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-[#53657d] sm:text-base">
+                {description}
+              </p>
+            ) : null}
+          </div>
+        </div>
+        <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {images.map((item) => {
+            const imageContent = recordValue(item.content);
+            const category = textValue(imageContent, "category", "Campus");
+            const altText = textValue(imageContent, "altText", item.title);
+
+            return (
+              <figure
+                key={item.id}
+                className="group overflow-hidden rounded-[1.5rem] border border-[#0b3472]/10 bg-white shadow-[0_10px_26px_rgba(11,52,114,.06)]"
+                data-testid={`card-course-gallery-image-${item.id}`}
+              >
+                <div className="aspect-[4/3] overflow-hidden bg-[#e8edf4]">
+                  {item.imageUrl ? (
+                    <img
+                      src={assetUrl(item.imageUrl)}
+                      alt={altText}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-[#0b3472]/35">
+                      <ImageIcon className="h-10 w-10" aria-hidden="true" />
+                    </div>
+                  )}
+                </div>
+                <figcaption className="p-5">
+                  <p className="eyebrow text-[#e3212b]">{category}</p>
+                  <h3 className="mt-2 font-display text-xl font-extrabold text-[#0b3472]">
+                    {item.title}
+                  </h3>
+                  {item.description ? (
+                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                      {item.description}
+                    </p>
+                  ) : null}
+                </figcaption>
+              </figure>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function PublicCourseDetailPage({ course }: { course: CourseDetail }) {
   const home = useGetHomePage({ query: { queryKey: getGetHomePageQueryKey() } });
   const cms = useGetCmsPage("courses", { query: { queryKey: getGetCmsPageQueryKey("courses") } });
   const faculty = useGetCmsPage("faculty", { query: { queryKey: getGetCmsPageQueryKey("faculty") } });
+  const gallery = useGetCmsPage("gallery", { query: { queryKey: getGetCmsPageQueryKey("gallery") } });
   const sections = useMemo(() => cms.data?.sections ?? [], [cms.data?.sections]);
   const hero = sections.find((section) => section.sectionKey === courseSectionKey(course.slug, "hero"));
   const highlights = sections.find((section) => section.sectionKey === courseSectionKey(course.slug, "highlights"));
   const curriculum = sections.find((section) => section.sectionKey === `course-${course.slug}-curriculum`);
+  const gallerySection = gallery.data?.sections.find(
+    (section) => section.sectionKey.toLocaleLowerCase() === "gallery",
+  );
 
   if (home.isLoading || cms.isLoading) return <CourseLoading />;
   if (home.isError || cms.isError || !home.data || !cms.data) {
@@ -458,6 +573,13 @@ export default function PublicCourseDetailPage({ course }: { course: CourseDetai
             </div>
           ) : null}
           {curriculum?.isVisible ? <CourseCurriculum course={course} section={curriculum} items={cms.data.items} /> : null}
+          {gallerySection && gallery.data ? (
+            <CourseGalleryPreview
+              course={course}
+              section={gallerySection}
+              items={gallery.data.items}
+            />
+          ) : null}
         </main>
       ) : <CourseNotPublished course={course} />}
       <Footer home={home.data} />

@@ -194,6 +194,9 @@ function GalleryItemEditor({ sectionId, categories, initial, position, onFlash, 
   const [imageUrl, setImageUrl] = useState(initial?.imageUrl || "");
   const [isDemo, setIsDemo] = useState(initialContent.isDemo === true);
   const [showOnHome, setShowOnHome] = useState(initialContent.showOnHome === true);
+  const [showOnCoursePreview, setShowOnCoursePreview] = useState(
+    initialContent.showOnCoursePreview === true,
+  );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -212,6 +215,7 @@ function GalleryItemEditor({ sectionId, categories, initial, position, onFlash, 
     setImageUrl(initial?.imageUrl || "");
     setIsDemo(content.isDemo === true);
     setShowOnHome(content.showOnHome === true);
+    setShowOnCoursePreview(content.showOnCoursePreview === true);
     setSelectedFile(null);
     setPreviewUrl("");
     setError("");
@@ -256,6 +260,7 @@ function GalleryItemEditor({ sectionId, categories, initial, position, onFlash, 
         altText: altText.trim(),
         isDemo,
         showOnHome,
+        showOnCoursePreview,
       },
       isVisible: initial?.isVisible ?? true,
       position: initial?.position ?? position,
@@ -290,6 +295,11 @@ function GalleryItemEditor({ sectionId, categories, initial, position, onFlash, 
         Show on Home Preview
       </label>
       <p className="text-xs leading-5 text-slate-500">Unchecking hides this image from Home only. It remains on the Gallery page while published.</p>
+      <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+        <input type="checkbox" checked={showOnCoursePreview} onChange={(event) => setShowOnCoursePreview(event.target.checked)} className="h-4 w-4 accent-[#0b3472]" data-testid={`checkbox-gallery-course-preview-${initial?.id || "new"}`} />
+        Show on Course Preview
+      </label>
+      <p className="text-xs leading-5 text-slate-500">Selected images appear on all course pages.</p>
       <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
         <input type="checkbox" checked={isDemo} onChange={(event) => setIsDemo(event.target.checked)} className="h-4 w-4 accent-[#0b3472]" data-testid={`checkbox-gallery-demo-${initial?.id || "new"}`} />
         Mark as demo image
@@ -413,6 +423,9 @@ function GalleryItems({ section, items, onFlash }: { section: ContentSection; it
                     </p>
                     <p className="mt-1 text-xs font-semibold text-slate-400" data-testid={`text-gallery-home-preview-state-${item.id}`}>
                       {itemContent.showOnHome === true ? "Shown on Home Preview" : "Not shown on Home Preview"}
+                    </p>
+                    <p className="mt-1 text-xs font-semibold text-slate-400" data-testid={`text-gallery-course-preview-state-${item.id}`}>
+                      {itemContent.showOnCoursePreview === true ? "Shown on Course Pages" : "Not shown on Course Pages"}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-1">
