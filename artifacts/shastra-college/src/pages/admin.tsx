@@ -12,6 +12,7 @@ import {
   Award,
   BookOpen,
   BookOpenCheck,
+  CalendarDays,
   Check,
   ChevronDown,
   ChevronRight,
@@ -75,6 +76,7 @@ import AdminKnowledgeHubPageEditor from "./admin-knowledge-hub-page-editor";
 import AdminArticleHubEditor from "./admin-article-hub-editor";
 import AdminVideoHubEditor from "./admin-video-hub-editor";
 import AdminStudyResourcesEditor from "./admin-study-resources-editor";
+import AdminExamUpdatesEditor from "./admin-exam-updates-editor";
 import AdminCoursesPageEditor from "./admin-courses-page-editor";
 import AdminCourseDetailEditor from "./admin-course-detail-editor";
 import { isValidSocialProfileUrl } from "@/lib/social-profiles";
@@ -108,6 +110,7 @@ type WorkspaceView =
   | "article-hub-editor"
   | "video-hub-editor"
   | "study-resources-editor"
+  | "exam-updates-editor"
   | "knowledge-hub-mega-menu"
   | "identity"
   | "courses-mega-menu"
@@ -365,13 +368,15 @@ function Shell({
     activeView === "knowledge-hub-settings" ||
       activeView === "article-hub-editor" ||
       activeView === "video-hub-editor" ||
-      activeView === "study-resources-editor",
+      activeView === "study-resources-editor" ||
+      activeView === "exam-updates-editor",
   );
   const [knowledgeHubOpen, setKnowledgeHubOpen] = useState(
     activeView === "knowledge-hub-settings" ||
       activeView === "article-hub-editor" ||
       activeView === "video-hub-editor" ||
-      activeView === "study-resources-editor",
+      activeView === "study-resources-editor" ||
+      activeView === "exam-updates-editor",
   );
   const [coursesOpen, setCoursesOpen] = useState(
     activeView === "courses" ||
@@ -430,7 +435,8 @@ function Shell({
         : activeView === "knowledge-hub-settings" ||
             activeView === "article-hub-editor" ||
             activeView === "video-hub-editor" ||
-            activeView === "study-resources-editor"
+            activeView === "study-resources-editor" ||
+            activeView === "exam-updates-editor"
           ? "Pages / Knowledge Hub"
           : activeView === "faqs"
             ? "Pages / FAQs"
@@ -507,6 +513,8 @@ function Shell({
                                 ? "Video Hub"
                                 : activeView === "study-resources-editor"
                                   ? "Study Resources"
+                                  : activeView === "exam-updates-editor"
+                                    ? "Exam Updates"
                       : pageItems.find((item) => item.key === activeView)?.label ||
                         "Home";
 
@@ -528,7 +536,8 @@ function Shell({
       view === "knowledge-hub-settings" ||
       view === "article-hub-editor" ||
       view === "video-hub-editor" ||
-      view === "study-resources-editor"
+      view === "study-resources-editor" ||
+      view === "exam-updates-editor"
     ) {
       setPagesOpen(true);
       setKnowledgeHubOpen(true);
@@ -866,7 +875,10 @@ function Shell({
                   if (item.key === "knowledge-hub-settings") {
                     const knowledgeHubActive =
                       activeView === "knowledge-hub-settings" ||
-                      activeView === "article-hub-editor";
+                      activeView === "article-hub-editor" ||
+                      activeView === "video-hub-editor" ||
+                      activeView === "study-resources-editor" ||
+                      activeView === "exam-updates-editor";
                     return (
                       <div key={item.key}>
                         <button
@@ -923,6 +935,13 @@ function Shell({
                               nested
                               active={activeView === "study-resources-editor"}
                               onClick={() => go("study-resources-editor")}
+                            />
+                            <NavRow
+                              icon={CalendarDays}
+                              label="Exam Updates"
+                              nested
+                              active={activeView === "exam-updates-editor"}
+                              onClick={() => go("exam-updates-editor")}
                             />
                           </div>
                         ) : null}
@@ -2044,6 +2063,17 @@ function AdminWorkspace() {
           description="Edit the page introduction, organize resource categories, and upload or publish PDF study documents."
         />
         <AdminStudyResourcesEditor onFlash={showFlash} />
+      </div>
+    );
+  } else if (activeView === "exam-updates-editor") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / Knowledge Hub / Exam Updates"
+          title="Manage exam notices and key dates."
+          description="Edit the page introduction, link official sources, and publish examination notices and calendar entries."
+        />
+        <AdminExamUpdatesEditor onFlash={showFlash} />
       </div>
     );
   } else if (activeView === "knowledge-hub-mega-menu") {

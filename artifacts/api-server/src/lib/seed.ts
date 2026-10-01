@@ -11,6 +11,9 @@ import {
   studyResourceCategoriesTable,
   studyResourceHubSettingsTable,
   studyResourcesTable,
+  examCalendarEntriesTable,
+  examUpdateHubSettingsTable,
+  examUpdateNoticesTable,
   videoCategoriesTable,
   videoHubSettingsTable,
   videosTable,
@@ -4920,5 +4923,103 @@ export async function seedStudyResources(): Promise<void> {
       .update(studyResourceHubSettingsTable)
       .set({ contentSeedVersion: seedVersion, updatedAt: new Date() })
       .where(eq(studyResourceHubSettingsTable.id, "primary"));
+  });
+}
+
+export async function seedExamUpdates(): Promise<void> {
+  const seedVersion = 1;
+  const sampleContent = [
+    {
+      examCode: "jee-main",
+      label: "JEE Main",
+      sourceUrl: "https://jeemain.nta.ac.in/",
+    },
+    {
+      examCode: "neet-ug",
+      label: "NEET UG",
+      sourceUrl: "https://neet.nta.nic.in/",
+    },
+    {
+      examCode: "intermediate",
+      label: "Intermediate",
+      sourceUrl: "https://bie.ap.gov.in/",
+    },
+    {
+      examCode: "ap-eapcet",
+      label: "AP EAPCET",
+      sourceUrl:
+        "https://cets.apsche.ap.gov.in/EAPCET/Eapcet/EAPCET_HomePage",
+    },
+    {
+      examCode: "other",
+      label: "Other examinations",
+      sourceUrl: "https://www.nta.ac.in/",
+    },
+  ];
+
+  await db.transaction(async (tx) => {
+    let [settings] = await tx
+      .select()
+      .from(examUpdateHubSettingsTable)
+      .where(eq(examUpdateHubSettingsTable.id, "primary"))
+      .for("update")
+      .limit(1);
+
+    if (!settings) {
+      await tx
+        .insert(examUpdateHubSettingsTable)
+        .values({
+          id: "primary",
+          eyebrow: "EXAM UPDATES",
+          title: "Exam updates and important dates",
+          introduction:
+            "Browse official notices and key dates for entrance and intermediate examinations.",
+        })
+        .onConflictDoNothing();
+      [settings] = await tx
+        .select()
+        .from(examUpdateHubSettingsTable)
+        .where(eq(examUpdateHubSettingsTable.id, "primary"))
+        .for("update")
+        .limit(1);
+    }
+
+    if (!settings) {
+      throw new Error("Exam Updates settings could not be initialized.");
+    }
+    if (settings.contentSeedVersion >= seedVersion) return;
+
+    await tx.insert(examUpdateNoticesTable).values(
+      sampleContent.map((item, position) => ({
+        examCode: item.examCode,
+        title: `Sample ${item.label} notice`,
+        summary: `Sample official-link entry for ${item.label}.`,
+        sourceUrl: item.sourceUrl,
+        publishedOn: null,
+        isSample: true,
+        isPublished: true,
+        position,
+      })),
+    );
+    await tx.insert(examCalendarEntriesTable).values(
+      sampleContent.map((item, position) => ({
+        examCode: item.examCode,
+        examCycle: "2027",
+        title: `${item.label} key dates`,
+        description: "Sample calendar entry.",
+        startDate: null,
+        endDate: null,
+        dateStatus: "to-be-announced",
+        sourceUrl: item.sourceUrl,
+        isSample: true,
+        isPublished: true,
+        position,
+      })),
+    );
+
+    await tx
+      .update(examUpdateHubSettingsTable)
+      .set({ contentSeedVersion: seedVersion, updatedAt: new Date() })
+      .where(eq(examUpdateHubSettingsTable.id, "primary"));
   });
 }

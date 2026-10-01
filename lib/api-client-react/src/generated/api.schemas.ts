@@ -578,6 +578,228 @@ export interface StudyResources {
   resources: StudyResource[];
 }
 
+export type ExamCode = typeof ExamCode[keyof typeof ExamCode];
+
+
+export const ExamCode = {
+  'jee-main': 'jee-main',
+  'neet-ug': 'neet-ug',
+  intermediate: 'intermediate',
+  'ap-eapcet': 'ap-eapcet',
+  other: 'other',
+} as const;
+
+export type ExamCalendarStatus = typeof ExamCalendarStatus[keyof typeof ExamCalendarStatus];
+
+
+export const ExamCalendarStatus = {
+  confirmed: 'confirmed',
+  tentative: 'tentative',
+  'to-be-announced': 'to-be-announced',
+  completed: 'completed',
+} as const;
+
+export interface ExamUpdateSettings {
+  /** @maxLength 100 */
+  eyebrow: string;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  title: string;
+  /** @maxLength 800 */
+  introduction: string;
+}
+
+export interface ExamUpdateSettingsUpdate {
+  /** @maxLength 100 */
+  eyebrow: string;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  title: string;
+  /** @maxLength 800 */
+  introduction: string;
+}
+
+export interface ExamUpdateNotice {
+  id: string;
+  examCode: ExamCode;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  title: string;
+  /** @maxLength 600 */
+  summary: string;
+  /** @maxLength 2048 */
+  sourceUrl: string;
+  /**
+     * @nullable
+     * @pattern ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+     */
+  publishedOn: string | null;
+  isSample: boolean;
+  isPublished: boolean;
+  /** @minimum 0 */
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExamUpdateNoticeInput {
+  examCode: ExamCode;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  title: string;
+  /** @maxLength 600 */
+  summary: string;
+  /** @maxLength 2048 */
+  sourceUrl: string;
+  /**
+     * @nullable
+     * @pattern ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+     */
+  publishedOn: string | null;
+  isSample: boolean;
+  isPublished: boolean;
+  /** @minimum 0 */
+  position: number;
+}
+
+export interface ExamUpdateNoticeUpdate {
+  examCode: ExamCode;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  title: string;
+  /** @maxLength 600 */
+  summary: string;
+  /** @maxLength 2048 */
+  sourceUrl: string;
+  /**
+     * @nullable
+     * @pattern ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+     */
+  publishedOn: string | null;
+  isSample: boolean;
+  isPublished: boolean;
+  /** @minimum 0 */
+  position: number;
+}
+
+export interface ExamCalendarEntry {
+  id: string;
+  examCode: ExamCode;
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  examCycle: string;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  title: string;
+  /** @maxLength 800 */
+  description: string;
+  /**
+     * @nullable
+     * @pattern ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+     */
+  startDate: string | null;
+  /**
+     * @nullable
+     * @pattern ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+     */
+  endDate: string | null;
+  dateStatus: ExamCalendarStatus;
+  /** @maxLength 2048 */
+  sourceUrl: string;
+  isSample: boolean;
+  isPublished: boolean;
+  /** @minimum 0 */
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExamCalendarEntryInput {
+  examCode: ExamCode;
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  examCycle: string;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  title: string;
+  /** @maxLength 800 */
+  description: string;
+  /**
+     * @nullable
+     * @pattern ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+     */
+  startDate: string | null;
+  /**
+     * @nullable
+     * @pattern ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+     */
+  endDate: string | null;
+  dateStatus: ExamCalendarStatus;
+  /** @maxLength 2048 */
+  sourceUrl: string;
+  isSample: boolean;
+  isPublished: boolean;
+  /** @minimum 0 */
+  position: number;
+}
+
+export interface ExamCalendarEntryUpdate {
+  examCode: ExamCode;
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  examCycle: string;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  title: string;
+  /** @maxLength 800 */
+  description: string;
+  /**
+     * @nullable
+     * @pattern ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+     */
+  startDate: string | null;
+  /**
+     * @nullable
+     * @pattern ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+     */
+  endDate: string | null;
+  dateStatus: ExamCalendarStatus;
+  /** @maxLength 2048 */
+  sourceUrl: string;
+  isSample: boolean;
+  isPublished: boolean;
+  /** @minimum 0 */
+  position: number;
+}
+
+export interface ExamUpdates {
+  settings: ExamUpdateSettings;
+  notices: ExamUpdateNotice[];
+  calendarEntries: ExamCalendarEntry[];
+}
+
 export interface HealthStatus {
   status: string;
 }

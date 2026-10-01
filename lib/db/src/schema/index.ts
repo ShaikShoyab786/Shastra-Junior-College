@@ -23,3 +23,4 @@ export * from "./knowledge-hub-menu";
 export * from "./article-hub";
 export * from "./video-hub";
 export * from "./study-resources";
+export * from "./exam-updates";

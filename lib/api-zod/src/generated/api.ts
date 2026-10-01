@@ -2376,6 +2376,434 @@ export const DeleteStudyResourceResponse = zod.void()
 
 
 /**
+ * @summary Get published Exam Updates content
+ */
+export const getExamUpdatesResponseSettingsEyebrowMax = 100;
+
+export const getExamUpdatesResponseSettingsTitleMax = 160;
+
+export const getExamUpdatesResponseSettingsIntroductionMax = 800;
+
+export const getExamUpdatesResponseNoticesItemTitleMax = 160;
+
+export const getExamUpdatesResponseNoticesItemSummaryMax = 600;
+
+export const getExamUpdatesResponseNoticesItemSourceUrlMax = 2048;
+
+export const getExamUpdatesResponseNoticesItemPublishedOnRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const getExamUpdatesResponseNoticesItemPositionMin = 0;
+
+export const getExamUpdatesResponseCalendarEntriesItemExamCycleMax = 80;
+
+export const getExamUpdatesResponseCalendarEntriesItemTitleMax = 160;
+
+export const getExamUpdatesResponseCalendarEntriesItemDescriptionMax = 800;
+
+export const getExamUpdatesResponseCalendarEntriesItemStartDateRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const getExamUpdatesResponseCalendarEntriesItemEndDateRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const getExamUpdatesResponseCalendarEntriesItemSourceUrlMax = 2048;
+
+export const getExamUpdatesResponseCalendarEntriesItemPositionMin = 0;
+
+
+
+export const GetExamUpdatesResponse = zod.object({
+  "settings": zod.object({
+  "eyebrow": zod.string().max(getExamUpdatesResponseSettingsEyebrowMax),
+  "title": zod.string().min(1).max(getExamUpdatesResponseSettingsTitleMax),
+  "introduction": zod.string().max(getExamUpdatesResponseSettingsIntroductionMax)
+}),
+  "notices": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "examCode": zod.enum(['jee-main', 'neet-ug', 'intermediate', 'ap-eapcet', 'other']),
+  "title": zod.string().min(1).max(getExamUpdatesResponseNoticesItemTitleMax),
+  "summary": zod.string().max(getExamUpdatesResponseNoticesItemSummaryMax),
+  "sourceUrl": zod.string().url().max(getExamUpdatesResponseNoticesItemSourceUrlMax),
+  "publishedOn": zod.string().regex(getExamUpdatesResponseNoticesItemPublishedOnRegExp).nullable(),
+  "isSample": zod.boolean(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int().min(getExamUpdatesResponseNoticesItemPositionMin),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "calendarEntries": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "examCode": zod.enum(['jee-main', 'neet-ug', 'intermediate', 'ap-eapcet', 'other']),
+  "examCycle": zod.string().min(1).max(getExamUpdatesResponseCalendarEntriesItemExamCycleMax),
+  "title": zod.string().min(1).max(getExamUpdatesResponseCalendarEntriesItemTitleMax),
+  "description": zod.string().max(getExamUpdatesResponseCalendarEntriesItemDescriptionMax),
+  "startDate": zod.string().regex(getExamUpdatesResponseCalendarEntriesItemStartDateRegExp).nullable(),
+  "endDate": zod.string().regex(getExamUpdatesResponseCalendarEntriesItemEndDateRegExp).nullable(),
+  "dateStatus": zod.enum(['confirmed', 'tentative', 'to-be-announced', 'completed']),
+  "sourceUrl": zod.string().url().max(getExamUpdatesResponseCalendarEntriesItemSourceUrlMax),
+  "isSample": zod.boolean(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int().min(getExamUpdatesResponseCalendarEntriesItemPositionMin),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Get all Exam Updates content for authorized staff
+ */
+export const getAdminExamUpdatesResponseSettingsEyebrowMax = 100;
+
+export const getAdminExamUpdatesResponseSettingsTitleMax = 160;
+
+export const getAdminExamUpdatesResponseSettingsIntroductionMax = 800;
+
+export const getAdminExamUpdatesResponseNoticesItemTitleMax = 160;
+
+export const getAdminExamUpdatesResponseNoticesItemSummaryMax = 600;
+
+export const getAdminExamUpdatesResponseNoticesItemSourceUrlMax = 2048;
+
+export const getAdminExamUpdatesResponseNoticesItemPublishedOnRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const getAdminExamUpdatesResponseNoticesItemPositionMin = 0;
+
+export const getAdminExamUpdatesResponseCalendarEntriesItemExamCycleMax = 80;
+
+export const getAdminExamUpdatesResponseCalendarEntriesItemTitleMax = 160;
+
+export const getAdminExamUpdatesResponseCalendarEntriesItemDescriptionMax = 800;
+
+export const getAdminExamUpdatesResponseCalendarEntriesItemStartDateRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const getAdminExamUpdatesResponseCalendarEntriesItemEndDateRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const getAdminExamUpdatesResponseCalendarEntriesItemSourceUrlMax = 2048;
+
+export const getAdminExamUpdatesResponseCalendarEntriesItemPositionMin = 0;
+
+
+
+export const GetAdminExamUpdatesResponse = zod.object({
+  "settings": zod.object({
+  "eyebrow": zod.string().max(getAdminExamUpdatesResponseSettingsEyebrowMax),
+  "title": zod.string().min(1).max(getAdminExamUpdatesResponseSettingsTitleMax),
+  "introduction": zod.string().max(getAdminExamUpdatesResponseSettingsIntroductionMax)
+}),
+  "notices": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "examCode": zod.enum(['jee-main', 'neet-ug', 'intermediate', 'ap-eapcet', 'other']),
+  "title": zod.string().min(1).max(getAdminExamUpdatesResponseNoticesItemTitleMax),
+  "summary": zod.string().max(getAdminExamUpdatesResponseNoticesItemSummaryMax),
+  "sourceUrl": zod.string().url().max(getAdminExamUpdatesResponseNoticesItemSourceUrlMax),
+  "publishedOn": zod.string().regex(getAdminExamUpdatesResponseNoticesItemPublishedOnRegExp).nullable(),
+  "isSample": zod.boolean(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int().min(getAdminExamUpdatesResponseNoticesItemPositionMin),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "calendarEntries": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "examCode": zod.enum(['jee-main', 'neet-ug', 'intermediate', 'ap-eapcet', 'other']),
+  "examCycle": zod.string().min(1).max(getAdminExamUpdatesResponseCalendarEntriesItemExamCycleMax),
+  "title": zod.string().min(1).max(getAdminExamUpdatesResponseCalendarEntriesItemTitleMax),
+  "description": zod.string().max(getAdminExamUpdatesResponseCalendarEntriesItemDescriptionMax),
+  "startDate": zod.string().regex(getAdminExamUpdatesResponseCalendarEntriesItemStartDateRegExp).nullable(),
+  "endDate": zod.string().regex(getAdminExamUpdatesResponseCalendarEntriesItemEndDateRegExp).nullable(),
+  "dateStatus": zod.enum(['confirmed', 'tentative', 'to-be-announced', 'completed']),
+  "sourceUrl": zod.string().url().max(getAdminExamUpdatesResponseCalendarEntriesItemSourceUrlMax),
+  "isSample": zod.boolean(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int().min(getAdminExamUpdatesResponseCalendarEntriesItemPositionMin),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Update Exam Updates page settings
+ */
+export const updateExamUpdateSettingsBodyEyebrowMax = 100;
+
+export const updateExamUpdateSettingsBodyTitleMax = 160;
+
+export const updateExamUpdateSettingsBodyIntroductionMax = 800;
+
+
+
+export const UpdateExamUpdateSettingsBody = zod.object({
+  "eyebrow": zod.string().max(updateExamUpdateSettingsBodyEyebrowMax),
+  "title": zod.string().min(1).max(updateExamUpdateSettingsBodyTitleMax),
+  "introduction": zod.string().max(updateExamUpdateSettingsBodyIntroductionMax)
+})
+
+export const updateExamUpdateSettingsResponseEyebrowMax = 100;
+
+export const updateExamUpdateSettingsResponseTitleMax = 160;
+
+export const updateExamUpdateSettingsResponseIntroductionMax = 800;
+
+
+
+export const UpdateExamUpdateSettingsResponse = zod.object({
+  "eyebrow": zod.string().max(updateExamUpdateSettingsResponseEyebrowMax),
+  "title": zod.string().min(1).max(updateExamUpdateSettingsResponseTitleMax),
+  "introduction": zod.string().max(updateExamUpdateSettingsResponseIntroductionMax)
+})
+
+
+/**
+ * @summary Create an Exam Update notice
+ */
+export const createExamUpdateNoticeBodyTitleMax = 160;
+
+export const createExamUpdateNoticeBodySummaryMax = 600;
+
+export const createExamUpdateNoticeBodySourceUrlMax = 2048;
+
+export const createExamUpdateNoticeBodyPublishedOnRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const createExamUpdateNoticeBodyPositionMin = 0;
+
+
+
+export const CreateExamUpdateNoticeBody = zod.object({
+  "examCode": zod.enum(['jee-main', 'neet-ug', 'intermediate', 'ap-eapcet', 'other']),
+  "title": zod.string().min(1).max(createExamUpdateNoticeBodyTitleMax),
+  "summary": zod.string().max(createExamUpdateNoticeBodySummaryMax),
+  "sourceUrl": zod.string().url().max(createExamUpdateNoticeBodySourceUrlMax),
+  "publishedOn": zod.string().regex(createExamUpdateNoticeBodyPublishedOnRegExp).nullable(),
+  "isSample": zod.boolean(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int().min(createExamUpdateNoticeBodyPositionMin)
+})
+
+export const createExamUpdateNoticeResponseTitleMax = 160;
+
+export const createExamUpdateNoticeResponseSummaryMax = 600;
+
+export const createExamUpdateNoticeResponseSourceUrlMax = 2048;
+
+export const createExamUpdateNoticeResponsePublishedOnRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const createExamUpdateNoticeResponsePositionMin = 0;
+
+
+
+export const CreateExamUpdateNoticeResponse = zod.object({
+  "id": zod.string().uuid(),
+  "examCode": zod.enum(['jee-main', 'neet-ug', 'intermediate', 'ap-eapcet', 'other']),
+  "title": zod.string().min(1).max(createExamUpdateNoticeResponseTitleMax),
+  "summary": zod.string().max(createExamUpdateNoticeResponseSummaryMax),
+  "sourceUrl": zod.string().url().max(createExamUpdateNoticeResponseSourceUrlMax),
+  "publishedOn": zod.string().regex(createExamUpdateNoticeResponsePublishedOnRegExp).nullable(),
+  "isSample": zod.boolean(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int().min(createExamUpdateNoticeResponsePositionMin),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update an Exam Update notice
+ */
+export const UpdateExamUpdateNoticeParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const updateExamUpdateNoticeBodyTitleMax = 160;
+
+export const updateExamUpdateNoticeBodySummaryMax = 600;
+
+export const updateExamUpdateNoticeBodySourceUrlMax = 2048;
+
+export const updateExamUpdateNoticeBodyPublishedOnRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const updateExamUpdateNoticeBodyPositionMin = 0;
+
+
+
+export const UpdateExamUpdateNoticeBody = zod.object({
+  "examCode": zod.enum(['jee-main', 'neet-ug', 'intermediate', 'ap-eapcet', 'other']),
+  "title": zod.string().min(1).max(updateExamUpdateNoticeBodyTitleMax),
+  "summary": zod.string().max(updateExamUpdateNoticeBodySummaryMax),
+  "sourceUrl": zod.string().url().max(updateExamUpdateNoticeBodySourceUrlMax),
+  "publishedOn": zod.string().regex(updateExamUpdateNoticeBodyPublishedOnRegExp).nullable(),
+  "isSample": zod.boolean(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int().min(updateExamUpdateNoticeBodyPositionMin)
+})
+
+export const updateExamUpdateNoticeResponseTitleMax = 160;
+
+export const updateExamUpdateNoticeResponseSummaryMax = 600;
+
+export const updateExamUpdateNoticeResponseSourceUrlMax = 2048;
+
+export const updateExamUpdateNoticeResponsePublishedOnRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const updateExamUpdateNoticeResponsePositionMin = 0;
+
+
+
+export const UpdateExamUpdateNoticeResponse = zod.object({
+  "id": zod.string().uuid(),
+  "examCode": zod.enum(['jee-main', 'neet-ug', 'intermediate', 'ap-eapcet', 'other']),
+  "title": zod.string().min(1).max(updateExamUpdateNoticeResponseTitleMax),
+  "summary": zod.string().max(updateExamUpdateNoticeResponseSummaryMax),
+  "sourceUrl": zod.string().url().max(updateExamUpdateNoticeResponseSourceUrlMax),
+  "publishedOn": zod.string().regex(updateExamUpdateNoticeResponsePublishedOnRegExp).nullable(),
+  "isSample": zod.boolean(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int().min(updateExamUpdateNoticeResponsePositionMin),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete an Exam Update notice
+ */
+export const DeleteExamUpdateNoticeParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const DeleteExamUpdateNoticeResponse = zod.void()
+
+
+/**
+ * @summary Create an exam calendar entry
+ */
+export const createExamCalendarEntryBodyExamCycleMax = 80;
+
+export const createExamCalendarEntryBodyTitleMax = 160;
+
+export const createExamCalendarEntryBodyDescriptionMax = 800;
+
+export const createExamCalendarEntryBodyStartDateRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const createExamCalendarEntryBodyEndDateRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const createExamCalendarEntryBodySourceUrlMax = 2048;
+
+export const createExamCalendarEntryBodyPositionMin = 0;
+
+
+
+export const CreateExamCalendarEntryBody = zod.object({
+  "examCode": zod.enum(['jee-main', 'neet-ug', 'intermediate', 'ap-eapcet', 'other']),
+  "examCycle": zod.string().min(1).max(createExamCalendarEntryBodyExamCycleMax),
+  "title": zod.string().min(1).max(createExamCalendarEntryBodyTitleMax),
+  "description": zod.string().max(createExamCalendarEntryBodyDescriptionMax),
+  "startDate": zod.string().regex(createExamCalendarEntryBodyStartDateRegExp).nullable(),
+  "endDate": zod.string().regex(createExamCalendarEntryBodyEndDateRegExp).nullable(),
+  "dateStatus": zod.enum(['confirmed', 'tentative', 'to-be-announced', 'completed']),
+  "sourceUrl": zod.string().url().max(createExamCalendarEntryBodySourceUrlMax),
+  "isSample": zod.boolean(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int().min(createExamCalendarEntryBodyPositionMin)
+})
+
+export const createExamCalendarEntryResponseExamCycleMax = 80;
+
+export const createExamCalendarEntryResponseTitleMax = 160;
+
+export const createExamCalendarEntryResponseDescriptionMax = 800;
+
+export const createExamCalendarEntryResponseStartDateRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const createExamCalendarEntryResponseEndDateRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const createExamCalendarEntryResponseSourceUrlMax = 2048;
+
+export const createExamCalendarEntryResponsePositionMin = 0;
+
+
+
+export const CreateExamCalendarEntryResponse = zod.object({
+  "id": zod.string().uuid(),
+  "examCode": zod.enum(['jee-main', 'neet-ug', 'intermediate', 'ap-eapcet', 'other']),
+  "examCycle": zod.string().min(1).max(createExamCalendarEntryResponseExamCycleMax),
+  "title": zod.string().min(1).max(createExamCalendarEntryResponseTitleMax),
+  "description": zod.string().max(createExamCalendarEntryResponseDescriptionMax),
+  "startDate": zod.string().regex(createExamCalendarEntryResponseStartDateRegExp).nullable(),
+  "endDate": zod.string().regex(createExamCalendarEntryResponseEndDateRegExp).nullable(),
+  "dateStatus": zod.enum(['confirmed', 'tentative', 'to-be-announced', 'completed']),
+  "sourceUrl": zod.string().url().max(createExamCalendarEntryResponseSourceUrlMax),
+  "isSample": zod.boolean(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int().min(createExamCalendarEntryResponsePositionMin),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update an exam calendar entry
+ */
+export const UpdateExamCalendarEntryParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const updateExamCalendarEntryBodyExamCycleMax = 80;
+
+export const updateExamCalendarEntryBodyTitleMax = 160;
+
+export const updateExamCalendarEntryBodyDescriptionMax = 800;
+
+export const updateExamCalendarEntryBodyStartDateRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const updateExamCalendarEntryBodyEndDateRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const updateExamCalendarEntryBodySourceUrlMax = 2048;
+
+export const updateExamCalendarEntryBodyPositionMin = 0;
+
+
+
+export const UpdateExamCalendarEntryBody = zod.object({
+  "examCode": zod.enum(['jee-main', 'neet-ug', 'intermediate', 'ap-eapcet', 'other']),
+  "examCycle": zod.string().min(1).max(updateExamCalendarEntryBodyExamCycleMax),
+  "title": zod.string().min(1).max(updateExamCalendarEntryBodyTitleMax),
+  "description": zod.string().max(updateExamCalendarEntryBodyDescriptionMax),
+  "startDate": zod.string().regex(updateExamCalendarEntryBodyStartDateRegExp).nullable(),
+  "endDate": zod.string().regex(updateExamCalendarEntryBodyEndDateRegExp).nullable(),
+  "dateStatus": zod.enum(['confirmed', 'tentative', 'to-be-announced', 'completed']),
+  "sourceUrl": zod.string().url().max(updateExamCalendarEntryBodySourceUrlMax),
+  "isSample": zod.boolean(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int().min(updateExamCalendarEntryBodyPositionMin)
+})
+
+export const updateExamCalendarEntryResponseExamCycleMax = 80;
+
+export const updateExamCalendarEntryResponseTitleMax = 160;
+
+export const updateExamCalendarEntryResponseDescriptionMax = 800;
+
+export const updateExamCalendarEntryResponseStartDateRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const updateExamCalendarEntryResponseEndDateRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+export const updateExamCalendarEntryResponseSourceUrlMax = 2048;
+
+export const updateExamCalendarEntryResponsePositionMin = 0;
+
+
+
+export const UpdateExamCalendarEntryResponse = zod.object({
+  "id": zod.string().uuid(),
+  "examCode": zod.enum(['jee-main', 'neet-ug', 'intermediate', 'ap-eapcet', 'other']),
+  "examCycle": zod.string().min(1).max(updateExamCalendarEntryResponseExamCycleMax),
+  "title": zod.string().min(1).max(updateExamCalendarEntryResponseTitleMax),
+  "description": zod.string().max(updateExamCalendarEntryResponseDescriptionMax),
+  "startDate": zod.string().regex(updateExamCalendarEntryResponseStartDateRegExp).nullable(),
+  "endDate": zod.string().regex(updateExamCalendarEntryResponseEndDateRegExp).nullable(),
+  "dateStatus": zod.enum(['confirmed', 'tentative', 'to-be-announced', 'completed']),
+  "sourceUrl": zod.string().url().max(updateExamCalendarEntryResponseSourceUrlMax),
+  "isSample": zod.boolean(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int().min(updateExamCalendarEntryResponsePositionMin),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete an exam calendar entry
+ */
+export const DeleteExamCalendarEntryParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const DeleteExamCalendarEntryResponse = zod.void()
+
+
+/**
  * Returns a presigned GCS URL for direct upload. The client sends JSON
  * metadata here, then uploads the file directly to the returned URL.
  * @summary Request a presigned URL for file upload

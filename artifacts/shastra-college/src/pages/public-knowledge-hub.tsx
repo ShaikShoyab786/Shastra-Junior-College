@@ -293,6 +293,15 @@ export default function KnowledgeHubPage() {
                           Browse study resources
                           <ArrowRight className="h-4 w-4" aria-hidden="true" />
                         </Link>
+                      ) : category.key === "exam-updates" ? (
+                        <Link
+                          href="/knowledge-hub/exam-updates"
+                          className="focus-ring mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-[#0b3472] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#082859]"
+                          data-testid="link-open-exam-updates"
+                        >
+                          View exam updates
+                          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                        </Link>
                       ) : null}
                     </div>
                   </section>

@@ -45,6 +45,15 @@ import type {
   EnquiryActionResult,
   EnquiryReceipt,
   ErrorEnvelope,
+  ExamCalendarEntry,
+  ExamCalendarEntryInput,
+  ExamCalendarEntryUpdate,
+  ExamUpdateNotice,
+  ExamUpdateNoticeInput,
+  ExamUpdateNoticeUpdate,
+  ExamUpdateSettings,
+  ExamUpdateSettingsUpdate,
+  ExamUpdates,
   HealthStatus,
   HomePage,
   KnowledgeHubMenuPatch,
@@ -3846,6 +3855,750 @@ export const useDeleteStudyResource = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getDeleteStudyResourceMutationOptions(options));
+    }
+
+export const getGetExamUpdatesUrl = () => {
+
+
+
+
+  return `/api/exam-updates`
+}
+
+/**
+ * @summary Get published Exam Updates content
+ */
+export const getExamUpdates = async ( options?: Parameters<typeof customFetch>[1]): Promise<ExamUpdates> => {
+
+  return customFetch<ExamUpdates>(getGetExamUpdatesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetExamUpdatesQueryKey = () => {
+    return [
+    `/api/exam-updates`
+    ] as const;
+    }
+
+
+export const getGetExamUpdatesQueryOptions = <TData = Awaited<ReturnType<typeof getExamUpdates>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getExamUpdates>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetExamUpdatesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getExamUpdates>>> = ({ signal }) => getExamUpdates({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getExamUpdates>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetExamUpdatesQueryResult = NonNullable<Awaited<ReturnType<typeof getExamUpdates>>>
+export type GetExamUpdatesQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get published Exam Updates content
+ */
+
+export function useGetExamUpdates<TData = Awaited<ReturnType<typeof getExamUpdates>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getExamUpdates>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetExamUpdatesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminExamUpdatesUrl = () => {
+
+
+
+
+  return `/api/admin/exam-updates`
+}
+
+/**
+ * @summary Get all Exam Updates content for authorized staff
+ */
+export const getAdminExamUpdates = async ( options?: Parameters<typeof customFetch>[1]): Promise<ExamUpdates> => {
+
+  return customFetch<ExamUpdates>(getGetAdminExamUpdatesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminExamUpdatesQueryKey = () => {
+    return [
+    `/api/admin/exam-updates`
+    ] as const;
+    }
+
+
+export const getGetAdminExamUpdatesQueryOptions = <TData = Awaited<ReturnType<typeof getAdminExamUpdates>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminExamUpdates>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminExamUpdatesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminExamUpdates>>> = ({ signal }) => getAdminExamUpdates({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminExamUpdates>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminExamUpdatesQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminExamUpdates>>>
+export type GetAdminExamUpdatesQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get all Exam Updates content for authorized staff
+ */
+
+export function useGetAdminExamUpdates<TData = Awaited<ReturnType<typeof getAdminExamUpdates>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminExamUpdates>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminExamUpdatesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateExamUpdateSettingsUrl = () => {
+
+
+
+
+  return `/api/admin/exam-updates/settings`
+}
+
+/**
+ * @summary Update Exam Updates page settings
+ */
+export const updateExamUpdateSettings = async (examUpdateSettingsUpdate: ExamUpdateSettingsUpdate, options?: Parameters<typeof customFetch>[1]): Promise<ExamUpdateSettings> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ExamUpdateSettings>(getUpdateExamUpdateSettingsUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(examUpdateSettingsUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateExamUpdateSettingsMutationKey = () => ['updateExamUpdateSettings'] as const;
+
+export const getUpdateExamUpdateSettingsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateExamUpdateSettings>>, TError,UpdateExamUpdateSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateExamUpdateSettings>>, TError,UpdateExamUpdateSettingsMutationVariables, TContext> => {
+
+const mutationKey = getUpdateExamUpdateSettingsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateExamUpdateSettings>>, UpdateExamUpdateSettingsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateExamUpdateSettings(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateExamUpdateSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateExamUpdateSettings>>>
+    export type UpdateExamUpdateSettingsMutationBody = BodyType<ExamUpdateSettingsUpdate>
+    export type UpdateExamUpdateSettingsMutationError = ErrorType<void>
+    export type UpdateExamUpdateSettingsMutationVariables = {data: BodyType<ExamUpdateSettingsUpdate>}
+
+    /**
+ * @summary Update Exam Updates page settings
+ */
+export const useUpdateExamUpdateSettings = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateExamUpdateSettings>>, TError,UpdateExamUpdateSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateExamUpdateSettings>>,
+        TError,
+        UpdateExamUpdateSettingsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateExamUpdateSettingsMutationOptions(options));
+    }
+
+export const getCreateExamUpdateNoticeUrl = () => {
+
+
+
+
+  return `/api/admin/exam-updates/notices`
+}
+
+/**
+ * @summary Create an Exam Update notice
+ */
+export const createExamUpdateNotice = async (examUpdateNoticeInput: ExamUpdateNoticeInput, options?: Parameters<typeof customFetch>[1]): Promise<ExamUpdateNotice> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ExamUpdateNotice>(getCreateExamUpdateNoticeUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(examUpdateNoticeInput)
+  }
+);}
+
+
+
+
+
+export const getCreateExamUpdateNoticeMutationKey = () => ['createExamUpdateNotice'] as const;
+
+export const getCreateExamUpdateNoticeMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createExamUpdateNotice>>, TError,CreateExamUpdateNoticeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createExamUpdateNotice>>, TError,CreateExamUpdateNoticeMutationVariables, TContext> => {
+
+const mutationKey = getCreateExamUpdateNoticeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createExamUpdateNotice>>, CreateExamUpdateNoticeMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createExamUpdateNotice(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateExamUpdateNoticeMutationResult = NonNullable<Awaited<ReturnType<typeof createExamUpdateNotice>>>
+    export type CreateExamUpdateNoticeMutationBody = BodyType<ExamUpdateNoticeInput>
+    export type CreateExamUpdateNoticeMutationError = ErrorType<void>
+    export type CreateExamUpdateNoticeMutationVariables = {data: BodyType<ExamUpdateNoticeInput>}
+
+    /**
+ * @summary Create an Exam Update notice
+ */
+export const useCreateExamUpdateNotice = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createExamUpdateNotice>>, TError,CreateExamUpdateNoticeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createExamUpdateNotice>>,
+        TError,
+        CreateExamUpdateNoticeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateExamUpdateNoticeMutationOptions(options));
+    }
+
+export const getUpdateExamUpdateNoticeUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/exam-updates/notices/${id}`
+}
+
+/**
+ * @summary Update an Exam Update notice
+ */
+export const updateExamUpdateNotice = async (id: string,
+    examUpdateNoticeUpdate: ExamUpdateNoticeUpdate, options?: Parameters<typeof customFetch>[1]): Promise<ExamUpdateNotice> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ExamUpdateNotice>(getUpdateExamUpdateNoticeUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(examUpdateNoticeUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateExamUpdateNoticeMutationKey = () => ['updateExamUpdateNotice'] as const;
+
+export const getUpdateExamUpdateNoticeMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateExamUpdateNotice>>, TError,UpdateExamUpdateNoticeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateExamUpdateNotice>>, TError,UpdateExamUpdateNoticeMutationVariables, TContext> => {
+
+const mutationKey = getUpdateExamUpdateNoticeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateExamUpdateNotice>>, UpdateExamUpdateNoticeMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateExamUpdateNotice(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateExamUpdateNoticeMutationResult = NonNullable<Awaited<ReturnType<typeof updateExamUpdateNotice>>>
+    export type UpdateExamUpdateNoticeMutationBody = BodyType<ExamUpdateNoticeUpdate>
+    export type UpdateExamUpdateNoticeMutationError = ErrorType<void>
+    export type UpdateExamUpdateNoticeMutationVariables = {id: string;data: BodyType<ExamUpdateNoticeUpdate>}
+
+    /**
+ * @summary Update an Exam Update notice
+ */
+export const useUpdateExamUpdateNotice = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateExamUpdateNotice>>, TError,UpdateExamUpdateNoticeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateExamUpdateNotice>>,
+        TError,
+        UpdateExamUpdateNoticeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateExamUpdateNoticeMutationOptions(options));
+    }
+
+export const getDeleteExamUpdateNoticeUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/exam-updates/notices/${id}`
+}
+
+/**
+ * @summary Delete an Exam Update notice
+ */
+export const deleteExamUpdateNotice = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteExamUpdateNoticeUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteExamUpdateNoticeMutationKey = () => ['deleteExamUpdateNotice'] as const;
+
+export const getDeleteExamUpdateNoticeMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteExamUpdateNotice>>, TError,DeleteExamUpdateNoticeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteExamUpdateNotice>>, TError,DeleteExamUpdateNoticeMutationVariables, TContext> => {
+
+const mutationKey = getDeleteExamUpdateNoticeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteExamUpdateNotice>>, DeleteExamUpdateNoticeMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteExamUpdateNotice(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteExamUpdateNoticeMutationResult = NonNullable<Awaited<ReturnType<typeof deleteExamUpdateNotice>>>
+
+    export type DeleteExamUpdateNoticeMutationError = ErrorType<void>
+    export type DeleteExamUpdateNoticeMutationVariables = {id: string}
+
+    /**
+ * @summary Delete an Exam Update notice
+ */
+export const useDeleteExamUpdateNotice = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteExamUpdateNotice>>, TError,DeleteExamUpdateNoticeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteExamUpdateNotice>>,
+        TError,
+        DeleteExamUpdateNoticeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteExamUpdateNoticeMutationOptions(options));
+    }
+
+export const getCreateExamCalendarEntryUrl = () => {
+
+
+
+
+  return `/api/admin/exam-updates/calendar`
+}
+
+/**
+ * @summary Create an exam calendar entry
+ */
+export const createExamCalendarEntry = async (examCalendarEntryInput: ExamCalendarEntryInput, options?: Parameters<typeof customFetch>[1]): Promise<ExamCalendarEntry> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ExamCalendarEntry>(getCreateExamCalendarEntryUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(examCalendarEntryInput)
+  }
+);}
+
+
+
+
+
+export const getCreateExamCalendarEntryMutationKey = () => ['createExamCalendarEntry'] as const;
+
+export const getCreateExamCalendarEntryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createExamCalendarEntry>>, TError,CreateExamCalendarEntryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createExamCalendarEntry>>, TError,CreateExamCalendarEntryMutationVariables, TContext> => {
+
+const mutationKey = getCreateExamCalendarEntryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createExamCalendarEntry>>, CreateExamCalendarEntryMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createExamCalendarEntry(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateExamCalendarEntryMutationResult = NonNullable<Awaited<ReturnType<typeof createExamCalendarEntry>>>
+    export type CreateExamCalendarEntryMutationBody = BodyType<ExamCalendarEntryInput>
+    export type CreateExamCalendarEntryMutationError = ErrorType<void>
+    export type CreateExamCalendarEntryMutationVariables = {data: BodyType<ExamCalendarEntryInput>}
+
+    /**
+ * @summary Create an exam calendar entry
+ */
+export const useCreateExamCalendarEntry = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createExamCalendarEntry>>, TError,CreateExamCalendarEntryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createExamCalendarEntry>>,
+        TError,
+        CreateExamCalendarEntryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateExamCalendarEntryMutationOptions(options));
+    }
+
+export const getUpdateExamCalendarEntryUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/exam-updates/calendar/${id}`
+}
+
+/**
+ * @summary Update an exam calendar entry
+ */
+export const updateExamCalendarEntry = async (id: string,
+    examCalendarEntryUpdate: ExamCalendarEntryUpdate, options?: Parameters<typeof customFetch>[1]): Promise<ExamCalendarEntry> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ExamCalendarEntry>(getUpdateExamCalendarEntryUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(examCalendarEntryUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateExamCalendarEntryMutationKey = () => ['updateExamCalendarEntry'] as const;
+
+export const getUpdateExamCalendarEntryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateExamCalendarEntry>>, TError,UpdateExamCalendarEntryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateExamCalendarEntry>>, TError,UpdateExamCalendarEntryMutationVariables, TContext> => {
+
+const mutationKey = getUpdateExamCalendarEntryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateExamCalendarEntry>>, UpdateExamCalendarEntryMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateExamCalendarEntry(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateExamCalendarEntryMutationResult = NonNullable<Awaited<ReturnType<typeof updateExamCalendarEntry>>>
+    export type UpdateExamCalendarEntryMutationBody = BodyType<ExamCalendarEntryUpdate>
+    export type UpdateExamCalendarEntryMutationError = ErrorType<void>
+    export type UpdateExamCalendarEntryMutationVariables = {id: string;data: BodyType<ExamCalendarEntryUpdate>}
+
+    /**
+ * @summary Update an exam calendar entry
+ */
+export const useUpdateExamCalendarEntry = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateExamCalendarEntry>>, TError,UpdateExamCalendarEntryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateExamCalendarEntry>>,
+        TError,
+        UpdateExamCalendarEntryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateExamCalendarEntryMutationOptions(options));
+    }
+
+export const getDeleteExamCalendarEntryUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/exam-updates/calendar/${id}`
+}
+
+/**
+ * @summary Delete an exam calendar entry
+ */
+export const deleteExamCalendarEntry = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteExamCalendarEntryUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteExamCalendarEntryMutationKey = () => ['deleteExamCalendarEntry'] as const;
+
+export const getDeleteExamCalendarEntryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteExamCalendarEntry>>, TError,DeleteExamCalendarEntryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteExamCalendarEntry>>, TError,DeleteExamCalendarEntryMutationVariables, TContext> => {
+
+const mutationKey = getDeleteExamCalendarEntryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteExamCalendarEntry>>, DeleteExamCalendarEntryMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteExamCalendarEntry(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteExamCalendarEntryMutationResult = NonNullable<Awaited<ReturnType<typeof deleteExamCalendarEntry>>>
+
+    export type DeleteExamCalendarEntryMutationError = ErrorType<void>
+    export type DeleteExamCalendarEntryMutationVariables = {id: string}
+
+    /**
+ * @summary Delete an exam calendar entry
+ */
+export const useDeleteExamCalendarEntry = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteExamCalendarEntry>>, TError,DeleteExamCalendarEntryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteExamCalendarEntry>>,
+        TError,
+        DeleteExamCalendarEntryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteExamCalendarEntryMutationOptions(options));
     }
 
 export const getRequestUploadUrlUrl = () => {
