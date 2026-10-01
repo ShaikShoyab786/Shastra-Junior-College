@@ -16,6 +16,7 @@ import { AboutCoursesPreviewSection } from "./about-courses-preview-section";
 import { Footer, Header } from "./public-home";
 import FaqSection from "../components/faq-section";
 import type { ContentSection } from "@workspace/api-client-react";
+import { themeVariables } from "../lib/theme-presets";
 
 type CmsRecord = Record<string, unknown>;
 
@@ -174,7 +175,11 @@ export default function AboutPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#f7f5ef]">
+    <div
+      className="min-h-[100dvh] bg-[#f7f5ef]"
+      data-college-theme
+      style={themeVariables(home.data.settings.primaryColor, home.data.settings.accentColor, home.data.settings.surfaceColor) as React.CSSProperties}
+    >
       <Header home={home.data} />
       <main>
         {page.isError ? (

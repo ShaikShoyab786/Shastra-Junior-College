@@ -12,6 +12,7 @@ import {
 import type { ContentItem, ContentSection, CoursesMenuCard } from "@workspace/api-client-react";
 import { Footer, Header } from "./public-home";
 import FaqSection from "../components/faq-section";
+import { themeVariables } from "../lib/theme-presets";
 
 function assetUrl(value: string | null | undefined) {
   if (!value) return "";
@@ -357,7 +358,7 @@ export function PublicCoursesPage() {
       )
     : [];
   return (
-    <div className="min-h-[100dvh] bg-[#f7f5ef]" data-college-theme style={{ "--college-primary": home.data.settings.primaryColor, "--college-accent": home.data.settings.accentColor } as React.CSSProperties}>
+    <div className="min-h-[100dvh] bg-[#f7f5ef]" data-college-theme style={themeVariables(home.data.settings.primaryColor, home.data.settings.accentColor, home.data.settings.surfaceColor) as React.CSSProperties}>
       <Header home={home.data} />
        <main>
          {hero ? <Hero section={hero} /> : null}

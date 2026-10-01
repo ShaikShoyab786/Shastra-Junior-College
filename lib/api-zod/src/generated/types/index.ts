@@ -40,6 +40,7 @@ export * from './publicEnquirySubmissionValues';
 export * from './siteSettings';
 export * from './siteSettingsUpdate';
 export * from './socialProfileLinks';
+export * from './themePreset';
 export * from './updateEnquiryStatus';
 export * from './uploadUrlRequest';
 export * from './uploadUrlResponse';

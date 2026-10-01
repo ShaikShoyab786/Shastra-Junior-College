@@ -21,6 +21,7 @@ import {
   isValidPublicEmail,
   readContactDetails,
 } from "../lib/contact-details";
+import { themeVariables } from "../lib/theme-presets";
 
 type Destination = "courses" | "knowledge-hub" | "contact";
 
@@ -420,8 +421,7 @@ function PublicDestinationPage({ destination }: { destination: Destination }) {
         data-college-theme
         style={
           {
-            "--college-primary": home.settings.primaryColor,
-            "--college-accent": home.settings.accentColor,
+            ...themeVariables(home.settings.primaryColor, home.settings.accentColor, home.settings.surfaceColor),
           } as React.CSSProperties
         }
       >
@@ -463,8 +463,7 @@ function PublicDestinationPage({ destination }: { destination: Destination }) {
       data-college-theme
       style={
         {
-          "--college-primary": home.settings.primaryColor,
-          "--college-accent": home.settings.accentColor,
+          ...themeVariables(home.settings.primaryColor, home.settings.accentColor, home.settings.surfaceColor),
         } as React.CSSProperties
       }
     >

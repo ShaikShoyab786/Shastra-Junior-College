@@ -198,6 +198,19 @@ export interface SocialProfileLinks {
   x?: string;
 }
 
+export type ThemePreset = typeof ThemePreset[keyof typeof ThemePreset];
+
+
+export const ThemePreset = {
+  'shastra-blue-red': 'shastra-blue-red',
+  'heritage-ink-gold': 'heritage-ink-gold',
+  'teal-copper': 'teal-copper',
+  'charcoal-saffron': 'charcoal-saffron',
+  'mulberry-rosewood': 'mulberry-rosewood',
+  'olive-parchment': 'olive-parchment',
+  custom: 'custom',
+} as const;
+
 export interface SiteSettings {
   id: string;
   collegeName: string;
@@ -207,10 +220,13 @@ export interface SiteSettings {
   navigation: NavigationLink[];
   footerNote: string;
   socialLinks: SocialProfileLinks;
+  themePreset: ThemePreset;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   primaryColor: string;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   accentColor: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  surfaceColor: string;
   updatedAt: string;
 }
 
@@ -236,6 +252,9 @@ export interface SiteSettingsUpdate {
   primaryColor?: string;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   accentColor?: string;
+  themePreset?: ThemePreset;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  surfaceColor?: string;
 }
 
 export type PublicEnquirySubmissionValues = {[key: string]: string};

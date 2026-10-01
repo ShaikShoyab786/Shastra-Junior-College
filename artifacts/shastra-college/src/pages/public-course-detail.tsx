@@ -32,6 +32,7 @@ import {
   DEFAULT_COURSE_TESTIMONIALS_SETTINGS,
   readCoursePageSectionSettings,
 } from "./course-page-section-settings";
+import { themeVariables } from "../lib/theme-presets";
 
 function recordValue(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -742,7 +743,7 @@ export default function PublicCourseDetailPage({ course }: { course: CourseDetai
   }
 
   return (
-    <div className="min-h-[100dvh] bg-[#f7f5ef]" data-college-theme style={{ "--college-primary": home.data.settings.primaryColor, "--college-accent": home.data.settings.accentColor } as React.CSSProperties}>
+    <div className="min-h-[100dvh] bg-[#f7f5ef]" data-college-theme style={themeVariables(home.data.settings.primaryColor, home.data.settings.accentColor, home.data.settings.surfaceColor) as React.CSSProperties}>
       <Header home={home.data} />
       {hero?.isVisible ? (
         <main>

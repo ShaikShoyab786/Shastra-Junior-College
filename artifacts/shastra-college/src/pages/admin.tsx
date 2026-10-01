@@ -40,6 +40,7 @@ import {
   getGetAdminCmsPageQueryKey,
   getGetAdminEnquiriesQueryKey,
   getGetAdminHomeQueryKey,
+  getGetCmsPageQueryKey,
   getGetHomePageQueryKey,
   useDeleteEnquiry,
   useGetAdminEnquiries,
@@ -55,6 +56,7 @@ import type {
   HomePage,
   SiteSettingsUpdate,
 } from "@workspace/api-client-react";
+import { DEFAULT_THEME, THEME_PRESETS, themeVariables, type PresetKey } from "@/lib/theme-presets";
 import { Link } from "wouter";
 import AdminHomeEditor from "./admin-home-editor";
 import AdminAboutEditor from "./admin-about-editor";
@@ -520,7 +522,15 @@ function Shell({
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[#f5f7fb] text-slate-900">
+    <div
+      className="min-h-[100dvh] bg-[#f5f7fb] text-slate-900"
+      data-college-theme
+      style={themeVariables(
+        home?.settings.primaryColor || THEME_PRESETS[DEFAULT_THEME].primary,
+        home?.settings.accentColor || THEME_PRESETS[DEFAULT_THEME].accent,
+        home?.settings.surfaceColor || THEME_PRESETS[DEFAULT_THEME].surface,
+      ) as React.CSSProperties}
+    >
       <aside className={`${mobileNav ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-50 flex w-[286px] flex-col bg-[#092c60] px-4 py-5 text-white transition-transform md:translate-x-0`}>
         <div className="flex items-center justify-between px-2">
           <Link href="/" className="focus-ring flex min-w-0 items-center gap-3" data-testid="link-admin-brand">
@@ -1101,12 +1111,27 @@ function IdentityView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flas
         tiktok: home.settings.socialLinks?.tiktok || "",
         x: home.settings.socialLinks?.x || "",
       },
+      themePreset: home.settings.themePreset || DEFAULT_THEME,
       primaryColor: home.settings.primaryColor,
       accentColor: home.settings.accentColor,
+      surfaceColor: home.settings.surfaceColor,
     });
   }, [home.settings]);
 
   const set = <K extends keyof SiteSettingsUpdate>(key: K, value: SiteSettingsUpdate[K]) => setForm((current) => ({ ...current, [key]: value }));
+  const setCustomColor = (key: "primaryColor" | "accentColor" | "surfaceColor", value: string) => {
+    setForm((current) => ({ ...current, [key]: value, themePreset: "custom" }));
+  };
+  const choosePreset = (preset: PresetKey) => {
+    const palette = THEME_PRESETS[preset];
+    setForm((current) => ({
+      ...current,
+      themePreset: preset,
+      primaryColor: palette.primary,
+      accentColor: palette.accent,
+      surfaceColor: palette.surface,
+    }));
+  };
   const setSocial = (key: keyof NonNullable<SiteSettingsUpdate["socialLinks"]>, value: string) => {
     setForm((current) => ({
       ...current,
@@ -1117,6 +1142,10 @@ function IdentityView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flas
     event.preventDefault();
     if (!form.collegeName?.trim()) {
       onFlash({ tone: "error", message: "College name is required." });
+      return;
+    }
+    if (![form.primaryColor, form.accentColor, form.surfaceColor].every((color) => typeof color === "string" && /^#[0-9A-Fa-f]{6}$/.test(color))) {
+      onFlash({ tone: "error", message: "Use a valid six-digit hex value for every palette color." });
       return;
     }
     for (const [platform, rawUrl] of Object.entries(form.socialLinks || {})) {
@@ -1130,7 +1159,16 @@ function IdentityView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flas
       }
     }
     updateSettings.mutate({ data: { ...form, collegeName: form.collegeName.trim(), headerTagline: form.headerTagline?.trim(), footerNote: form.footerNote?.trim(), socialLinks: Object.fromEntries(Object.entries(form.socialLinks || {}).map(([key, value]) => [key, typeof value === "string" ? value.trim() : ""])) as NonNullable<SiteSettingsUpdate["socialLinks"]> } }, {
-      onSuccess: () => { void Promise.all([client.invalidateQueries({ queryKey: getGetAdminHomeQueryKey() }), client.invalidateQueries({ queryKey: getGetHomePageQueryKey() })]); onFlash({ tone: "success", message: "Site identity saved." }); },
+      onSuccess: () => {
+        void Promise.all([
+          client.invalidateQueries({ queryKey: getGetAdminHomeQueryKey() }),
+          client.invalidateQueries({ queryKey: getGetHomePageQueryKey() }),
+          ...(["about", "faculty", "gallery", "courses", "contact"] as const).map((slug) =>
+            client.invalidateQueries({ queryKey: getGetCmsPageQueryKey(slug) }),
+          ),
+        ]);
+        onFlash({ tone: "success", message: "Site identity saved." });
+      },
       onError: (error) => onFlash({ tone: "error", message: errorMessage(error) }),
     });
   };
@@ -1162,7 +1200,103 @@ function IdentityView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flas
     { key: "tiktok", label: "TikTok" },
     { key: "x", label: "X" },
   ];
-  return <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10"><PageIntro eyebrow="Site settings / identity" title="Make the college unmistakable." description="These details appear in the header, footer, and browser-facing palette across the public site." /><form onSubmit={save} className="grid gap-6 lg:grid-cols-[1.2fr_.8fr]"><div className="space-y-6"><SectionCard><div><p className="eyebrow text-[#e3212b]">Public details</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">College identity</h2></div><div className="mt-6 space-y-5"><Field label="College name" value={form.collegeName || ""} onChange={(value) => set("collegeName", value)} placeholder="Displayed in the public header" testId="input-college-name" /><Field label="Header tagline" value={form.headerTagline || ""} onChange={(value) => set("headerTagline", value)} placeholder="A short line beneath the college name" testId="input-header-tagline" /><Field label="Footer note" value={form.footerNote || ""} onChange={(value) => set("footerNote", value)} placeholder="Displayed in the public footer" multiline testId="input-footer-note" /></div></SectionCard><SectionCard data-testid="section-footer-settings"><div><p className="eyebrow text-[#e3212b]">Footer settings</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Social profiles</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Add official HTTPS profile links to display their logos in the public footer. Leave a field blank to hide that profile.</p></div><div className="mt-6 grid gap-4 sm:grid-cols-2">{socialFields.map(({ key, label }) => (<Field key={key} label={`${label} profile URL`} value={form.socialLinks?.[key] || ""} onChange={(value) => setSocial(key, value)} placeholder={`Paste official ${label} profile URL`} type="url" testId={`input-social-${key}`} />))}</div></SectionCard><SectionCard><div><p className="eyebrow text-[#e3212b]">Brand palette</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Primary and accent colors</h2></div><div className="mt-6 grid gap-5 sm:grid-cols-2"><ColorField label="Primary color" value={form.primaryColor || "#0B3472"} onChange={(value) => set("primaryColor", value)} testId="input-primary-color" /><ColorField label="Accent color" value={form.accentColor || "#E3212B"} onChange={(value) => set("accentColor", value)} testId="input-accent-color" /></div><p className="mt-4 text-xs leading-5 text-slate-500">Use six-digit hex colors. These colors are used by the public navigation and calls to action.</p></SectionCard></div><div className="space-y-6"><SectionCard><div><p className="eyebrow text-[#e3212b]">Header mark</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">College logo</h2></div><div className="mt-6 flex min-h-[180px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-[#f7f9fc] p-6"><img src={logoPreview} alt="College logo preview" className="max-h-32 max-w-full object-contain" data-testid="img-logo-preview" /></div><div className="mt-4 rounded-2xl border border-slate-200 p-4"><label className="flex cursor-pointer items-center gap-3 text-sm font-bold text-[#0b3472]"><ImagePlus className="h-5 w-5" /><span>{selectedFile ? selectedFile.name : "Choose a new logo"}</span><input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => setSelectedFile(event.target.files?.[0] || null)} data-testid="input-logo-file" /></label><p className="mt-2 text-xs leading-5 text-slate-500">PNG, JPEG, or WebP. Maximum 2 MB.</p>{selectedFile ? <Button onClick={() => void upload()} disabled={uploading} testId="button-upload-logo" variant="outline"><Upload className="h-4 w-4" />{uploading ? "Uploading…" : "Upload logo"}</Button> : null}</div></SectionCard><SectionCard className="sticky top-[100px]"><div className="flex items-start gap-3"><Palette className="mt-0.5 h-5 w-5 text-[#e3212b]" /><div><p className="eyebrow text-[#e3212b]">Save changes</p><h2 className="mt-1 font-display text-xl font-extrabold text-[#0b3472]">Ready to publish?</h2><p className="mt-2 text-sm leading-6 text-slate-500">Saving updates the shared settings used by the public homepage.</p></div></div><Button type="submit" onClick={() => undefined} disabled={updateSettings.isPending || uploading} testId="button-save-identity" variant="primary"><Save className="h-4 w-4" />{updateSettings.isPending ? "Saving…" : "Save identity"}</Button></SectionCard></div></form></div>;
+  return (
+    <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+      <PageIntro eyebrow="Site settings / identity" title="Make the college unmistakable." description="These details appear in the header, footer, and browser-facing palette across the public site." />
+      <form onSubmit={save} className="grid gap-6 lg:grid-cols-[1.2fr_.8fr]">
+        <div className="space-y-6">
+          <SectionCard>
+            <div><p className="eyebrow text-[#e3212b]">Public details</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">College identity</h2></div>
+            <div className="mt-6 space-y-5">
+              <Field label="College name" value={form.collegeName || ""} onChange={(value) => set("collegeName", value)} placeholder="Displayed in the public header" testId="input-college-name" />
+              <Field label="Header tagline" value={form.headerTagline || ""} onChange={(value) => set("headerTagline", value)} placeholder="A short line beneath the college name" testId="input-header-tagline" />
+              <Field label="Footer note" value={form.footerNote || ""} onChange={(value) => set("footerNote", value)} placeholder="Displayed in the public footer" multiline testId="input-footer-note" />
+            </div>
+          </SectionCard>
+          <SectionCard data-testid="section-footer-settings">
+            <div><p className="eyebrow text-[#e3212b]">Footer settings</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Social profiles</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Add official HTTPS profile links to display their logos in the public footer. Leave a field blank to hide that profile.</p></div>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">{socialFields.map(({ key, label }) => (<Field key={key} label={`${label} profile URL`} value={form.socialLinks?.[key] || ""} onChange={(value) => setSocial(key, value)} placeholder={`Paste official ${label} profile URL`} type="url" testId={`input-social-${key}`} />))}</div>
+          </SectionCard>
+          <SectionCard data-testid="section-brand-palette">
+            <div>
+              <p className="eyebrow text-[#e3212b]">Brand palette</p>
+              <h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Choose a site palette</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Choose a starting point, then adjust individual colors below. Changes stay in this form until you save.</p>
+            </div>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-3" role="group" aria-label="Theme presets" data-testid="theme-preset-picker">
+              {(Object.entries(THEME_PRESETS) as Array<[PresetKey, (typeof THEME_PRESETS)[PresetKey]]>).map(([key, palette]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => choosePreset(key)}
+                  aria-pressed={form.themePreset === key}
+                  aria-label={`Use ${palette.label} theme`}
+                  className={`focus-ring min-h-[86px] rounded-xl border p-3 text-left transition ${
+                    form.themePreset === key
+                      ? "border-[#0b3472] bg-[#0b3472]/[.04] shadow-sm"
+                      : "border-slate-200 bg-white hover:border-[#0b3472]/35"
+                  }`}
+                  data-testid={`button-theme-preset-${key}`}
+                >
+                  <span className="flex items-center gap-1.5" aria-hidden="true">
+                    {[palette.primary, palette.accent, palette.surface].map((color) => (
+                      <span key={color} className="h-5 flex-1 rounded-md border border-black/10" style={{ backgroundColor: color }} />
+                    ))}
+                  </span>
+                  <span className="mt-2 flex items-center gap-2 text-xs font-extrabold text-slate-800">
+                    {palette.label}
+                    {key === DEFAULT_THEME ? (
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-600">
+                        Primary
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="mt-0.5 block text-[10px] text-slate-500">{palette.note}</span>
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => set("themePreset", "custom")}
+                aria-pressed={form.themePreset === "custom"}
+                aria-label="Use custom theme colors"
+                className={`focus-ring min-h-[86px] rounded-xl border p-3 text-left transition ${
+                  form.themePreset === "custom"
+                    ? "border-[#0b3472] bg-[#0b3472]/[.04] shadow-sm"
+                    : "border-slate-200 bg-white hover:border-[#0b3472]/35"
+                }`}
+                data-testid="button-theme-preset-custom"
+              >
+                <span className="flex items-center gap-1.5" aria-hidden="true">
+                  {[form.primaryColor || "#0B3472", form.accentColor || "#E3212B", form.surfaceColor || "#F7F5EF"].map((color) => (
+                    <span key={color} className="h-5 flex-1 rounded-md border border-black/10" style={{ backgroundColor: color }} />
+                  ))}
+                </span>
+                <span className="mt-2 block text-xs font-extrabold text-slate-800">Custom colors</span>
+                <span className="mt-0.5 block text-[10px] text-slate-500">Use your own three-color palette</span>
+              </button>
+            </div>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <ColorField label="Primary color" value={form.primaryColor || THEME_PRESETS[DEFAULT_THEME].primary} onChange={(value) => setCustomColor("primaryColor", value)} testId="input-primary-color" />
+              <ColorField label="Accent color" value={form.accentColor || THEME_PRESETS[DEFAULT_THEME].accent} onChange={(value) => setCustomColor("accentColor", value)} testId="input-accent-color" />
+              <ColorField label="Surface color" value={form.surfaceColor || THEME_PRESETS[DEFAULT_THEME].surface} onChange={(value) => setCustomColor("surfaceColor", value)} testId="input-surface-color" />
+            </div>
+            <p className="mt-4 text-xs leading-5 text-slate-500">Primary sets brand emphasis, accent sets calls to action, and surface colors page backgrounds. Use six-digit hex values.</p>
+          </SectionCard>
+        </div>
+        <div className="space-y-6">
+          <SectionCard>
+            <div><p className="eyebrow text-[#e3212b]">Header mark</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">College logo</h2></div>
+            <div className="mt-6 flex min-h-[180px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-[#f7f9fc] p-6"><img src={logoPreview} alt="College logo preview" className="max-h-32 max-w-full object-contain" data-testid="img-logo-preview" /></div>
+            <div className="mt-4 rounded-2xl border border-slate-200 p-4"><label className="flex cursor-pointer items-center gap-3 text-sm font-bold text-[#0b3472]"><ImagePlus className="h-5 w-5" /><span>{selectedFile ? selectedFile.name : "Choose a new logo"}</span><input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => setSelectedFile(event.target.files?.[0] || null)} data-testid="input-logo-file" /></label><p className="mt-2 text-xs leading-5 text-slate-500">PNG, JPEG, or WebP. Maximum 2 MB.</p>{selectedFile ? <Button onClick={() => void upload()} disabled={uploading} testId="button-upload-logo" variant="outline"><Upload className="h-4 w-4" />{uploading ? "Uploading…" : "Upload logo"}</Button> : null}</div>
+          </SectionCard>
+          <SectionCard className="sticky top-[100px]">
+            <div className="flex items-start gap-3"><Palette className="mt-0.5 h-5 w-5 text-[#e3212b]" /><div><p className="eyebrow text-[#e3212b]">Save changes</p><h2 className="mt-1 font-display text-xl font-extrabold text-[#0b3472]">Ready to publish?</h2><p className="mt-2 text-sm leading-6 text-slate-500">The selected palette is only a draft until you save. Saving updates the shared settings used across public pages and the staff workspace.</p></div></div>
+            <Button type="submit" onClick={() => undefined} disabled={updateSettings.isPending || uploading} testId="button-save-identity" variant="primary"><Save className="h-4 w-4" />{updateSettings.isPending ? "Saving…" : "Save identity"}</Button>
+          </SectionCard>
+        </div>
+      </form>
+    </div>
+  );
 }
 
 function ColorField({ label, value, onChange, testId }: { label: string; value: string; onChange: (value: string) => void; testId: string }) {

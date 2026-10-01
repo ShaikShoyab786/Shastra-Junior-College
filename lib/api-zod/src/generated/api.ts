@@ -38,6 +38,7 @@ export const getHomePageResponseSettingsSocialLinksXMax = 2048;
 
 export const getHomePageResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getHomePageResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getHomePageResponseSettingsSurfaceColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
 
 export const GetHomePageResponse = zod.object({
@@ -59,8 +60,10 @@ export const GetHomePageResponse = zod.object({
   "tiktok": zod.string().max(getHomePageResponseSettingsSocialLinksTiktokMax).optional(),
   "x": zod.string().max(getHomePageResponseSettingsSocialLinksXMax).optional()
 }),
+  "themePreset": zod.enum(['shastra-blue-red', 'heritage-ink-gold', 'teal-copper', 'charcoal-saffron', 'mulberry-rosewood', 'olive-parchment', 'custom']),
   "primaryColor": zod.string().regex(getHomePageResponseSettingsPrimaryColorRegExp),
   "accentColor": zod.string().regex(getHomePageResponseSettingsAccentColorRegExp),
+  "surfaceColor": zod.string().regex(getHomePageResponseSettingsSurfaceColorRegExp),
   "updatedAt": zod.coerce.date()
 }),
   "sections": zod.array(zod.object({
@@ -118,6 +121,7 @@ export const getCmsPageResponseSettingsSocialLinksXMax = 2048;
 
 export const getCmsPageResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getCmsPageResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getCmsPageResponseSettingsSurfaceColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
 
 export const GetCmsPageResponse = zod.object({
@@ -139,8 +143,10 @@ export const GetCmsPageResponse = zod.object({
   "tiktok": zod.string().max(getCmsPageResponseSettingsSocialLinksTiktokMax).optional(),
   "x": zod.string().max(getCmsPageResponseSettingsSocialLinksXMax).optional()
 }),
+  "themePreset": zod.enum(['shastra-blue-red', 'heritage-ink-gold', 'teal-copper', 'charcoal-saffron', 'mulberry-rosewood', 'olive-parchment', 'custom']),
   "primaryColor": zod.string().regex(getCmsPageResponseSettingsPrimaryColorRegExp),
   "accentColor": zod.string().regex(getCmsPageResponseSettingsAccentColorRegExp),
+  "surfaceColor": zod.string().regex(getCmsPageResponseSettingsSurfaceColorRegExp),
   "updatedAt": zod.coerce.date()
 }),
   "sections": zod.array(zod.object({
@@ -292,6 +298,7 @@ export const getAdminHomeResponseSettingsSocialLinksXMax = 2048;
 
 export const getAdminHomeResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getAdminHomeResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminHomeResponseSettingsSurfaceColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
 
 export const GetAdminHomeResponse = zod.object({
@@ -313,8 +320,10 @@ export const GetAdminHomeResponse = zod.object({
   "tiktok": zod.string().max(getAdminHomeResponseSettingsSocialLinksTiktokMax).optional(),
   "x": zod.string().max(getAdminHomeResponseSettingsSocialLinksXMax).optional()
 }),
+  "themePreset": zod.enum(['shastra-blue-red', 'heritage-ink-gold', 'teal-copper', 'charcoal-saffron', 'mulberry-rosewood', 'olive-parchment', 'custom']),
   "primaryColor": zod.string().regex(getAdminHomeResponseSettingsPrimaryColorRegExp),
   "accentColor": zod.string().regex(getAdminHomeResponseSettingsAccentColorRegExp),
+  "surfaceColor": zod.string().regex(getAdminHomeResponseSettingsSurfaceColorRegExp),
   "updatedAt": zod.coerce.date()
 }),
   "sections": zod.array(zod.object({
@@ -992,6 +1001,7 @@ export const getAdminCmsPageResponseSettingsSocialLinksXMax = 2048;
 
 export const getAdminCmsPageResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getAdminCmsPageResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminCmsPageResponseSettingsSurfaceColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
 
 export const GetAdminCmsPageResponse = zod.object({
@@ -1013,8 +1023,10 @@ export const GetAdminCmsPageResponse = zod.object({
   "tiktok": zod.string().max(getAdminCmsPageResponseSettingsSocialLinksTiktokMax).optional(),
   "x": zod.string().max(getAdminCmsPageResponseSettingsSocialLinksXMax).optional()
 }),
+  "themePreset": zod.enum(['shastra-blue-red', 'heritage-ink-gold', 'teal-copper', 'charcoal-saffron', 'mulberry-rosewood', 'olive-parchment', 'custom']),
   "primaryColor": zod.string().regex(getAdminCmsPageResponseSettingsPrimaryColorRegExp),
   "accentColor": zod.string().regex(getAdminCmsPageResponseSettingsAccentColorRegExp),
+  "surfaceColor": zod.string().regex(getAdminCmsPageResponseSettingsSurfaceColorRegExp),
   "updatedAt": zod.coerce.date()
 }),
   "sections": zod.array(zod.object({
@@ -1106,6 +1118,7 @@ export const updateSiteSettingsBodySocialLinksXMax = 2048;
 
 export const updateSiteSettingsBodyPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const updateSiteSettingsBodyAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateSiteSettingsBodySurfaceColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
 
 export const UpdateSiteSettingsBody = zod.object({
@@ -1126,7 +1139,9 @@ export const UpdateSiteSettingsBody = zod.object({
   "x": zod.string().max(updateSiteSettingsBodySocialLinksXMax).optional()
 }).optional(),
   "primaryColor": zod.string().regex(updateSiteSettingsBodyPrimaryColorRegExp).optional(),
-  "accentColor": zod.string().regex(updateSiteSettingsBodyAccentColorRegExp).optional()
+  "accentColor": zod.string().regex(updateSiteSettingsBodyAccentColorRegExp).optional(),
+  "themePreset": zod.enum(['shastra-blue-red', 'heritage-ink-gold', 'teal-copper', 'charcoal-saffron', 'mulberry-rosewood', 'olive-parchment', 'custom']).optional(),
+  "surfaceColor": zod.string().regex(updateSiteSettingsBodySurfaceColorRegExp).optional()
 })
 
 export const updateSiteSettingsResponseNavigationItemLabelMax = 80;
@@ -1147,6 +1162,7 @@ export const updateSiteSettingsResponseSocialLinksXMax = 2048;
 
 export const updateSiteSettingsResponsePrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const updateSiteSettingsResponseAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateSiteSettingsResponseSurfaceColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
 
 export const UpdateSiteSettingsResponse = zod.object({
@@ -1167,8 +1183,10 @@ export const UpdateSiteSettingsResponse = zod.object({
   "tiktok": zod.string().max(updateSiteSettingsResponseSocialLinksTiktokMax).optional(),
   "x": zod.string().max(updateSiteSettingsResponseSocialLinksXMax).optional()
 }),
+  "themePreset": zod.enum(['shastra-blue-red', 'heritage-ink-gold', 'teal-copper', 'charcoal-saffron', 'mulberry-rosewood', 'olive-parchment', 'custom']),
   "primaryColor": zod.string().regex(updateSiteSettingsResponsePrimaryColorRegExp),
   "accentColor": zod.string().regex(updateSiteSettingsResponseAccentColorRegExp),
+  "surfaceColor": zod.string().regex(updateSiteSettingsResponseSurfaceColorRegExp),
   "updatedAt": zod.coerce.date()
 })
 

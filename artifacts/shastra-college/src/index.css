@@ -137,6 +137,10 @@
   --shadow-2xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
+  --college-primary: #0b3472;
+  --college-accent: #e3212b;
+  --college-surface: #f7f5ef;
+  --college-accent-foreground: #ffffff;
 
   /* Automatically computed borders - intensity can be controlled by the user by the --opaque-button-border-intensity setting */
 
@@ -236,6 +240,10 @@
   --chart-3: 195 62% 58%;
   --chart-4: 39 88% 68%;
   --chart-5: 150 38% 58%;
+  --college-primary: #0b3472;
+  --college-accent: #e3212b;
+  --college-surface: #f7f5ef;
+  --college-accent-foreground: #ffffff;
 
   --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
   --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
@@ -272,13 +280,13 @@
   .font-display { font-family: var(--app-font-serif); }
   .font-telugu { font-family: 'Noto Sans Telugu', 'Nirmala UI', sans-serif; }
   .brand-name-red {
-    background: linear-gradient(180deg, #f04450 0%, #e3212b 55%, #bd1722 100%);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--college-accent) 78%, white) 0%, var(--college-accent) 55%, color-mix(in srgb, var(--college-accent) 78%, black) 100%);
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
   }
   .brand-name-blue {
-    background: linear-gradient(180deg, #356cc8 0%, #17478f 52%, #0b3472 100%);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--college-primary) 72%, white) 0%, color-mix(in srgb, var(--college-primary) 88%, white) 52%, var(--college-primary) 100%);
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
@@ -667,10 +675,18 @@ html { scroll-behavior: smooth; }
 }
 
 .statistics-value {
-  color: var(--college-accent, #e3212b);
+  color: var(--college-accent-text, var(--college-accent, #e3212b));
 }
 
 [data-college-theme] [class~="bg-[#0b3472]"],
+[data-college-theme] [class~="bg-[#0B3472]"],
+[data-college-theme] [class~="bg-[#092c60]"],
+[data-college-theme] [class~="bg-[#082a5c]"],
+[data-college-theme] [class~="bg-[#0b1b35]"],
+[data-college-theme] [class~="bg-[#082859]"],
+[data-college-theme] [class~="bg-[#092b5d]"],
+[data-college-theme] [class~="bg-[#092f70]"],
+[data-college-theme] [class~="bg-[#17478f]"],
 [data-college-theme] [class~="bg-[#082859]"] {
   background-color: var(--college-primary);
 }
@@ -683,12 +699,141 @@ html { scroll-behavior: smooth; }
   color: var(--college-primary);
 }
 
+[data-college-theme] [class~="text-[#0B3472]"] {
+  color: var(--college-primary);
+}
+
+[data-college-theme] [class~="text-[#0b3472]/25"],
+[data-college-theme] [class~="text-[#0b3472]/30"],
+[data-college-theme] [class~="text-[#0b3472]/35"],
+[data-college-theme] [class~="text-[#0b3472]/40"],
+[data-college-theme] [class~="text-[#0b3472]/65"],
+[data-college-theme] [class~="text-[#0b3472]/75"],
+[data-college-theme] [class~="text-[#0B3472]/70"] {
+  color: color-mix(in srgb, var(--college-primary) 35%, transparent);
+}
+
+[data-college-theme] [class~="text-[#092c60]"],
+[data-college-theme] [class~="text-[#082859]"],
+[data-college-theme] [class~="text-[#092f70]"],
+[data-college-theme] [class~="text-[#17478f]"] {
+  color: var(--college-primary);
+}
+
 [data-college-theme] [class~="text-[#e3212b]"] {
-  color: var(--college-accent);
+  color: var(--college-accent-text, var(--college-accent));
+}
+
+[data-college-theme] [class~="text-[#E3212B]"] {
+  color: var(--college-accent-text, var(--college-accent));
+}
+
+[data-college-theme] [class~="text-[#b71927]"],
+[data-college-theme] [class~="text-[#ba1824]"],
+[data-college-theme] [class~="text-[#c71927]"],
+[data-college-theme] [class~="text-[#c81c25]"],
+[data-college-theme] [class~="text-[#b56c19]"],
+[data-college-theme] [class~="text-[#c07823]"] {
+  color: var(--college-accent-text, var(--college-accent));
+}
+
+[data-college-theme] [class~="text-[#f3b9a7]"],
+[data-college-theme] [class~="text-[#ffc7a0]"],
+[data-college-theme] [class~="text-[#f6c1bb]"],
+[data-college-theme] [class~="text-[#f6b1ac]"],
+[data-college-theme] [class~="text-[#ffb3b6]"],
+[data-college-theme] [class~="text-[#ffc1bc]"],
+[data-college-theme] [class~="text-[#f3a0a0]"] {
+  color: color-mix(in srgb, var(--college-accent) 54%, white);
 }
 
 [data-college-theme] [class~="bg-[#e3212b]"] {
   background-color: var(--college-accent);
+  color: var(--college-accent-foreground);
+}
+
+[data-college-theme] [class~="bg-[#c71927]"] {
+  background-color: var(--college-accent);
+  color: var(--college-accent-foreground);
+}
+
+[data-college-theme] [class~="bg-[#E3212B]"],
+[data-college-theme] [class~="bg-[#c71e28]"] {
+  background-color: var(--college-accent);
+  color: var(--college-accent-foreground);
+}
+
+[data-college-theme] [class~="bg-[#e3212b]/10"],
+[data-college-theme] [class~="bg-[#e3212b]/[.07]"],
+[data-college-theme] [class~="bg-[#e3212b]/[.08]"] {
+  background-color: color-mix(in srgb, var(--college-accent) 10%, transparent);
+}
+
+[data-college-theme] [class~="bg-[#f7f5ef]"],
+[data-college-theme] [class~="bg-[#fbfaf6]"],
+[data-college-theme] [class~="bg-[#f5f7fb]"],
+[data-college-theme] [class~="bg-[#f2f3f8]"],
+[data-college-theme] [class~="bg-[#fff6f3]"] {
+  background-color: var(--college-surface);
+}
+
+[data-college-theme] [class~="bg-[#f7f5ef]/90"] {
+  background-color: color-mix(in srgb, var(--college-surface) 90%, transparent);
+}
+
+[data-college-theme] [class~="bg-[#f7f5ef]/95"] {
+  background-color: color-mix(in srgb, var(--college-surface) 95%, transparent);
+}
+
+[data-college-theme] [class~="bg-[#f5f8fc]"],
+[data-college-theme] [class~="bg-[#f4f7fb]"],
+[data-college-theme] [class~="bg-[#f8fafc]"],
+[data-college-theme] [class~="bg-[#f8f8f4]"],
+[data-college-theme] [class~="bg-[#f7f8fa]"],
+[data-college-theme] [class~="bg-[#f1f4f8]"],
+[data-college-theme] [class~="bg-[#f1f5fb]"],
+[data-college-theme] [class~="bg-[#f2f5fa]"],
+[data-college-theme] [class~="bg-[#f6f8fb]"],
+[data-college-theme] [class~="bg-[#f8f9fb]"],
+[data-college-theme] [class~="bg-[#f7f9fc]"] {
+  background-color: color-mix(in srgb, var(--college-surface) 92%, var(--college-primary));
+}
+
+[data-college-theme] [class~="bg-[#dce5f1]"],
+[data-college-theme] [class~="bg-[#e7edf5]"],
+[data-college-theme] [class~="bg-[#e8edf4]"],
+[data-college-theme] [class~="bg-[#e8eef7]"],
+[data-college-theme] [class~="bg-[#e9eef7]"],
+[data-college-theme] [class~="bg-[#eaf0f8]"],
+[data-college-theme] [class~="bg-[#dfe7f1]"],
+[data-college-theme] [class~="bg-[#e8eef8]"] {
+  background-color: color-mix(in srgb, var(--college-surface) 84%, var(--college-primary));
+}
+
+[data-college-theme] [class~="bg-[#efd2ca]"],
+[data-college-theme] [class~="bg-[#edcfd0]"],
+[data-college-theme] [class~="bg-[#e9d6d0]"],
+[data-college-theme] [class~="bg-[#e4e0d8]"],
+[data-college-theme] [class~="bg-[#e9e1d8]"],
+[data-college-theme] [class~="bg-[#fff8f7]"] {
+  background-color: color-mix(in srgb, var(--college-surface) 90%, var(--college-accent));
+}
+
+[data-college-theme] [class~="bg-[#0b3472]/5"],
+[data-college-theme] [class~="bg-[#0b3472]/10"],
+[data-college-theme] [class~="bg-[#0b3472]/[.07]"],
+[data-college-theme] [class~="bg-[#0b3472]/[.06]"],
+[data-college-theme] [class~="bg-[#0b3472]/[.05]"],
+[data-college-theme] [class~="bg-[#0b3472]/[.04]"] {
+  background-color: color-mix(in srgb, var(--college-primary) 8%, transparent);
+}
+
+[data-college-theme] [class~="border-[#0b3472]"],
+[data-college-theme] [class~="border-[#17478f]/35"],
+[data-college-theme] [class~="border-[#17478f]/20"],
+[data-college-theme] [class~="border-[#17478f]/15"],
+[data-college-theme] [class~="border-[#092c60]/20"] {
+  border-color: color-mix(in srgb, var(--college-primary) 28%, transparent);
 }
 
 [data-college-theme] [class~="border-[#0b3472]/10"] {
@@ -699,14 +844,123 @@ html { scroll-behavior: smooth; }
   border-color: color-mix(in srgb, var(--college-primary) 20%, transparent);
 }
 
+[data-college-theme] [class~="border-[#0b3472]/12"] {
+  border-color: color-mix(in srgb, var(--college-primary) 12%, transparent);
+}
+
+[data-college-theme] [class~="border-[#0b3472]/15"],
+[data-college-theme] [class~="border-[#0B3472]/15"] {
+  border-color: color-mix(in srgb, var(--college-primary) 15%, transparent);
+}
+
+[data-college-theme] [class~="border-[#0b3472]/25"] {
+  border-color: color-mix(in srgb, var(--college-primary) 25%, transparent);
+}
+
+[data-college-theme] [class~="border-[#0b3472]/30"],
+[data-college-theme] [class~="border-[#0B3472]/30"] {
+  border-color: color-mix(in srgb, var(--college-primary) 30%, transparent);
+}
+
+[data-college-theme] [class~="border-[#0b3472]/35"] {
+  border-color: color-mix(in srgb, var(--college-primary) 35%, transparent);
+}
+
+[data-college-theme] [class~="border-[#0b3472]/40"] {
+  border-color: color-mix(in srgb, var(--college-primary) 40%, transparent);
+}
+
+[data-college-theme] [class~="border-[#0b3472]/50"],
+[data-college-theme] [class~="border-[#0B3472]/50"] {
+  border-color: color-mix(in srgb, var(--college-primary) 50%, transparent);
+}
+
+[data-college-theme] [class~="border-[#0B3472]/10"] {
+  border-color: color-mix(in srgb, var(--college-primary) 10%, transparent);
+}
+
+[data-college-theme] [class~="border-[#0b3472]/[.06]"],
+[data-college-theme] [class~="border-[#0b3472]/[.045]"],
+[data-college-theme] [class~="border-[#0b3472]/[.08]"] {
+  border-color: color-mix(in srgb, var(--college-primary) 8%, transparent);
+}
+
 [data-college-theme] [class~="border-[#e3212b]"] {
   border-color: var(--college-accent);
 }
 
+[data-college-theme] [class~="border-[#e3212b]/10"],
+[data-college-theme] [class~="border-[#e3212b]/20"],
+[data-college-theme] [class~="border-[#e3212b]/25"],
+[data-college-theme] [class~="border-[#e3212b]/35"] {
+  border-color: color-mix(in srgb, var(--college-accent) 24%, transparent);
+}
+
 [data-college-theme] [class~="hover:text-[#e3212b]"]:hover {
-  color: var(--college-accent);
+  color: var(--college-accent-text, var(--college-accent));
+}
+
+[data-college-theme] [class~="hover:text-[#c81c25]"]:hover {
+  color: var(--college-accent-text, var(--college-accent));
+}
+
+[data-college-theme] [class~="hover:bg-[#e3212b]"]:hover {
+  background-color: var(--college-accent);
+  color: var(--college-accent-foreground);
 }
 
 [data-college-theme] [class~="hover:border-[#e3212b]"]:hover {
   border-color: var(--college-accent);
+}
+
+[data-college-theme] [class~="hover:bg-[#082859]"]:hover,
+[data-college-theme] [class~="hover:bg-[#092b5d]"]:hover {
+  background-color: color-mix(in srgb, var(--college-primary) 88%, black);
+}
+
+[data-college-theme] [class~="hover:bg-[#0b3472]/5"]:hover,
+[data-college-theme] [class~="hover:bg-[#0b3472]/10"]:hover,
+[data-college-theme] [class~="hover:bg-[#0b3472]/[.05]"]:hover,
+[data-college-theme] [class~="hover:bg-[#0b3472]/[.04]"]:hover {
+  background-color: color-mix(in srgb, var(--college-primary) 8%, transparent);
+}
+
+[data-college-theme] [class~="hover:bg-[#f4f7fb]"]:hover {
+  background-color: color-mix(in srgb, var(--college-surface) 88%, var(--college-primary));
+}
+
+[data-college-theme] [class~="hover:bg-[#c71927]"]:hover,
+[data-college-theme] [class~="hover:bg-[#c81c25]"]:hover,
+[data-college-theme] [class~="hover:bg-[#ad2d2a]"]:hover {
+  background-color: color-mix(in srgb, var(--college-accent) 86%, black);
+}
+
+[data-college-theme] [class~="focus-visible:outline-[#e3212b]"]:focus-visible,
+[data-college-theme] [class~="focus:border-[#e3212b]"]:focus {
+  outline-color: var(--college-accent);
+  border-color: var(--college-accent);
+}
+
+[data-college-theme] .statistics-band {
+  background-color: var(--college-primary);
+}
+
+[data-college-theme] .statistics-value {
+  color: var(--college-accent);
+}
+
+[data-college-theme] [class*="linear-gradient(135deg,#0b3472,#17478f"] {
+  background-image:
+    radial-gradient(circle at 85% 15%, color-mix(in srgb, var(--college-accent) 22%, transparent), transparent 28%),
+    linear-gradient(135deg, var(--college-primary), color-mix(in srgb, var(--college-primary) 75%, white));
+}
+
+[data-college-theme] [class*="linear-gradient(140deg,#092c60,#17478f"] {
+  background-image:
+    radial-gradient(circle at 78% 16%, color-mix(in srgb, var(--college-accent) 38%, transparent), transparent 27%),
+    linear-gradient(140deg, var(--college-primary), color-mix(in srgb, var(--college-primary) 75%, white));
+}
+
+[data-college-theme] {
+  background-color: var(--college-surface);
 }

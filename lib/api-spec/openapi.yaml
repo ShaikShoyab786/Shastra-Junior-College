@@ -854,6 +854,16 @@ components:
         x:
           type: string
           maxLength: 2048
+    ThemePreset:
+      type: string
+      enum:
+        - shastra-blue-red
+        - heritage-ink-gold
+        - teal-copper
+        - charcoal-saffron
+        - mulberry-rosewood
+        - olive-parchment
+        - custom
     SiteSettings:
       type: object
       properties:
@@ -873,10 +883,15 @@ components:
           type: string
         socialLinks:
           $ref: "#/components/schemas/SocialProfileLinks"
+        themePreset:
+          $ref: "#/components/schemas/ThemePreset"
         primaryColor:
           type: string
           pattern: "^#[0-9A-Fa-f]{6}$"
         accentColor:
+          type: string
+          pattern: "^#[0-9A-Fa-f]{6}$"
+        surfaceColor:
           type: string
           pattern: "^#[0-9A-Fa-f]{6}$"
         updatedAt:
@@ -890,8 +905,10 @@ components:
         - navigation
         - footerNote
         - socialLinks
+        - themePreset
         - primaryColor
         - accentColor
+        - surfaceColor
         - updatedAt
     SiteSettingsUpdate:
       type: object
@@ -920,6 +937,11 @@ components:
           type: string
           pattern: "^#[0-9A-Fa-f]{6}$"
         accentColor:
+          type: string
+          pattern: "^#[0-9A-Fa-f]{6}$"
+        themePreset:
+          $ref: "#/components/schemas/ThemePreset"
+        surfaceColor:
           type: string
           pattern: "^#[0-9A-Fa-f]{6}$"
       minProperties: 1

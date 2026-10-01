@@ -54,6 +54,7 @@ import {
   readContactDetails,
 } from "../lib/contact-details";
 import { isValidSocialProfileUrl } from "../lib/social-profiles";
+import { themeVariables } from "../lib/theme-presets";
 
 const logoPath = "/shastra-college-logo.png";
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -1385,8 +1386,7 @@ export default function PublicHomePage() {
       data-college-theme
       style={
         {
-          "--college-primary": query.data.settings.primaryColor,
-          "--college-accent": query.data.settings.accentColor,
+          ...themeVariables(query.data.settings.primaryColor, query.data.settings.accentColor, query.data.settings.surfaceColor),
         } as React.CSSProperties
       }
     >

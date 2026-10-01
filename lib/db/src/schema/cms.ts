@@ -15,6 +15,14 @@ export type NavigationLink = {
 };
 
 export type CmsJson = Record<string, unknown>;
+export type ThemePreset =
+  | "shastra-blue-red"
+  | "heritage-ink-gold"
+  | "teal-copper"
+  | "charcoal-saffron"
+  | "mulberry-rosewood"
+  | "olive-parchment"
+  | "custom";
 export type EnquiryAnswer = {
   name: string;
   label: string;
@@ -32,8 +40,13 @@ export const siteSettingsTable = pgTable("site_settings", {
     .$type<Record<string, string>>()
     .notNull()
     .default({}),
+  themePreset: text("theme_preset")
+    .$type<ThemePreset>()
+    .notNull()
+    .default("shastra-blue-red"),
   primaryColor: text("primary_color").notNull().default("#0B3472"),
   accentColor: text("accent_color").notNull().default("#E3212B"),
+  surfaceColor: text("surface_color").notNull().default("#F7F5EF"),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow()

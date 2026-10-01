@@ -11,6 +11,7 @@ import {
   profileData,
 } from "@/components/faculty-profile-modal";
 import { Footer, Header } from "./public-home";
+import { themeVariables } from "../lib/theme-presets";
 
 type RecordValue = Record<string, unknown>;
 
@@ -149,7 +150,7 @@ export default function FacultyPage() {
   if (query.isLoading) return <LoadingState />;
   if (query.isError || !query.data) return <ErrorState retry={() => query.refetch()} />;
   return (
-    <div className="min-h-[100dvh] overflow-hidden bg-[#f7f5ef]" data-college-theme style={{ "--college-primary": query.data.settings.primaryColor, "--college-accent": query.data.settings.accentColor } as Record<string, string>}>
+    <div className="min-h-[100dvh] overflow-hidden bg-[#f7f5ef]" data-college-theme style={themeVariables(query.data.settings.primaryColor, query.data.settings.accentColor, query.data.settings.surfaceColor) as React.CSSProperties}>
       <Header home={query.data} />
       <FacultyContent page={query.data} />
       <Footer home={query.data} />

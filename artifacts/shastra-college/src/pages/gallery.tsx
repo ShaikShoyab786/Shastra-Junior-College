@@ -11,6 +11,7 @@ import {
   normalizeGalleryCategory,
 } from "../lib/gallery-categories";
 import { Footer, Header } from "./public-home";
+import { themeVariables } from "../lib/theme-presets";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 type CmsRecord = Record<string, unknown>;
@@ -167,5 +168,5 @@ export default function GalleryPage() {
   });
   if (query.isLoading) return <GalleryLoading />;
   if (query.isError || !query.data) return <GalleryError retry={() => query.refetch()} />;
-  return <div className="min-h-[100dvh] overflow-hidden bg-[#f7f5ef]" data-college-theme style={{ "--college-primary": query.data.settings.primaryColor, "--college-accent": query.data.settings.accentColor } as React.CSSProperties}><Header home={query.data} /><GalleryContent home={query.data} /><Footer home={query.data} /></div>;
+  return <div className="min-h-[100dvh] overflow-hidden bg-[#f7f5ef]" data-college-theme style={themeVariables(query.data.settings.primaryColor, query.data.settings.accentColor, query.data.settings.surfaceColor) as React.CSSProperties}><Header home={query.data} /><GalleryContent home={query.data} /><Footer home={query.data} /></div>;
 }

@@ -7,6 +7,7 @@
  */
 import type { NavigationLink } from './navigationLink';
 import type { SocialProfileLinks } from './socialProfileLinks';
+import type { ThemePreset } from './themePreset';
 
 export interface SiteSettings {
   id: string;
@@ -17,9 +18,12 @@ export interface SiteSettings {
   navigation: NavigationLink[];
   footerNote: string;
   socialLinks: SocialProfileLinks;
+  themePreset: ThemePreset;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   primaryColor: string;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   accentColor: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  surfaceColor: string;
   updatedAt: Date;
 }

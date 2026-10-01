@@ -7,6 +7,7 @@
  */
 import type { NavigationLink } from './navigationLink';
 import type { SocialProfileLinks } from './socialProfileLinks';
+import type { ThemePreset } from './themePreset';
 
 export interface SiteSettingsUpdate {
   /**
@@ -30,4 +31,7 @@ export interface SiteSettingsUpdate {
   primaryColor?: string;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   accentColor?: string;
+  themePreset?: ThemePreset;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  surfaceColor?: string;
 }
