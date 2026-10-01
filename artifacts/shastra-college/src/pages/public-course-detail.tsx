@@ -494,6 +494,14 @@ function CourseGalleryPreview({
               </p>
             ) : null}
           </div>
+          <Link
+            href="/gallery"
+            className="focus-ring inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#0b3472] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#e3212b]"
+            data-testid={`link-course-gallery-all-${course.slug}`}
+          >
+            View Gallery
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
         </div>
         <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {images.map((item) => {
