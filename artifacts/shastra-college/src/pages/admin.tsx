@@ -73,6 +73,7 @@ import AdminCoursesEditor from "./admin-courses-editor";
 import AdminKnowledgeHubMenuEditor from "./admin-knowledge-hub-menu-editor";
 import AdminKnowledgeHubPageEditor from "./admin-knowledge-hub-page-editor";
 import AdminArticleHubEditor from "./admin-article-hub-editor";
+import AdminVideoHubEditor from "./admin-video-hub-editor";
 import AdminCoursesPageEditor from "./admin-courses-page-editor";
 import AdminCourseDetailEditor from "./admin-course-detail-editor";
 import { isValidSocialProfileUrl } from "@/lib/social-profiles";
@@ -104,6 +105,7 @@ type WorkspaceView =
   | "knowledge-hub-preview"
   | "knowledge-hub-settings"
   | "article-hub-editor"
+  | "video-hub-editor"
   | "knowledge-hub-mega-menu"
   | "identity"
   | "courses-mega-menu"
@@ -359,11 +361,13 @@ function Shell({
   );
   const [pagesOpen, setPagesOpen] = useState(
     activeView === "knowledge-hub-settings" ||
-      activeView === "article-hub-editor",
+      activeView === "article-hub-editor" ||
+      activeView === "video-hub-editor",
   );
   const [knowledgeHubOpen, setKnowledgeHubOpen] = useState(
     activeView === "knowledge-hub-settings" ||
-      activeView === "article-hub-editor",
+      activeView === "article-hub-editor" ||
+      activeView === "video-hub-editor",
   );
   const [coursesOpen, setCoursesOpen] = useState(
     activeView === "courses" ||
@@ -420,7 +424,8 @@ function Shell({
           activeView === "knowledge-hub-mega-menu"
         ? "Site settings"
         : activeView === "knowledge-hub-settings" ||
-            activeView === "article-hub-editor"
+            activeView === "article-hub-editor" ||
+            activeView === "video-hub-editor"
           ? "Pages / Knowledge Hub"
           : activeView === "faqs"
             ? "Pages / FAQs"
@@ -493,6 +498,8 @@ function Shell({
                             ? "Main Page"
                             : activeView === "article-hub-editor"
                               ? "Article Hub"
+                              : activeView === "video-hub-editor"
+                                ? "Video Hub"
                       : pageItems.find((item) => item.key === activeView)?.label ||
                         "Home";
 
@@ -893,6 +900,13 @@ function Shell({
                               nested
                               active={activeView === "article-hub-editor"}
                               onClick={() => go("article-hub-editor")}
+                            />
+                            <NavRow
+                              icon={FileText}
+                              label="Video Hub"
+                              nested
+                              active={activeView === "video-hub-editor"}
+                              onClick={() => go("video-hub-editor")}
                             />
                           </div>
                         ) : null}
@@ -1992,6 +2006,17 @@ function AdminWorkspace() {
           description="Edit the page introduction and hero, organize categories, and publish or update articles."
         />
         <AdminArticleHubEditor onFlash={showFlash} />
+      </div>
+    );
+  } else if (activeView === "video-hub-editor") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / Knowledge Hub / Video Hub"
+          title="Manage Video Hub content."
+          description="Edit the page introduction and hero, organize categories, and add or update YouTube videos."
+        />
+        <AdminVideoHubEditor onFlash={showFlash} />
       </div>
     );
   } else if (activeView === "knowledge-hub-mega-menu") {

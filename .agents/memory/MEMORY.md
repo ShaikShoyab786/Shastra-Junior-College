@@ -3,6 +3,6 @@
 - [Page-scoped CMS seeding](page-scoped-cms-seeding.md) — seed without restoring deletions; shared FAQ visibility follows page targets, not the Home FAQ heading.
 - [CMS media path handling](cms-image-path-inputs.md) — validate uploaded asset types and authorize each CMS media reference before public serving.
 - [About statistic visibility](about-statistics-visibility.md) — reuse Home statistic records; About selection must never change Home visibility.
-- [Headless CDP value serialization](headless-cdp-value-serialization.md) — with `returnByValue`, return primitives or plain objects from `Runtime.evaluate`, not DOM nodes.
+- [Headless CDP checks](headless-cdp-value-serialization.md) — return JSON-safe CDP values and preload session state when a fresh preview shows a one-time overlay.
 - [Course gallery preview](course-gallery-preview.md) — per-image Gallery toggle controls display on every course page, independent of Home Preview and faculty eligibility.
 - [Course enrollment process](course-enrollment-process.md) — keep course steps editable and grounded in the user's reference; don't invent fee, deadline, or document rules.

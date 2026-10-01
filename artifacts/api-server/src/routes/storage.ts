@@ -11,6 +11,8 @@ import {
   coursesMenuSettingsTable,
   articleHubSettingsTable,
   articlesTable,
+  videoHubSettingsTable,
+  videosTable,
   db,
   siteSettingsTable,
 } from "@workspace/db";
@@ -280,6 +282,29 @@ router.get(
           ),
         )
         .limit(1);
+      const [videoHubHeroImage] = await db
+        .select({ id: videoHubSettingsTable.id })
+        .from(videoHubSettingsTable)
+        .where(
+          or(
+            eq(videoHubSettingsTable.heroImageUrl, `/objects/${objectPath}`),
+            eq(
+              videoHubSettingsTable.heroImageUrl,
+              `/api/storage/objects/${objectPath}`,
+            ),
+          ),
+        )
+        .limit(1);
+      const [videoThumbnail] = await db
+        .select({ id: videosTable.id })
+        .from(videosTable)
+        .where(
+          or(
+            eq(videosTable.thumbnailUrl, `/objects/${objectPath}`),
+            eq(videosTable.thumbnailUrl, `/api/storage/objects/${objectPath}`),
+          ),
+        )
+        .limit(1);
 
       if (
         logoDoesNotMatch &&
@@ -291,7 +316,9 @@ router.get(
         !courseHeroImage &&
         !courseCurriculumPdf &&
         !articleHubHeroImage &&
-        !articleCoverImage
+        !articleCoverImage &&
+        !videoHubHeroImage &&
+        !videoThumbnail
       ) {
         res.status(404).json({ error: "Object not found." });
         return;

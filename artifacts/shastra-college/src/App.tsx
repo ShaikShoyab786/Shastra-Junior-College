@@ -20,6 +20,7 @@ import {
 import KnowledgeHubPage from '@/pages/public-knowledge-hub';
 import PublicArticleHubPage from '@/pages/public-article-hub';
 import PublicArticleDetailPage from '@/pages/public-article-detail';
+import PublicVideoHubPage from '@/pages/public-video-hub';
 import {
   Route,
   Switch,
@@ -131,6 +132,7 @@ function RoutedApp() {
           <Route path="/knowledge-hub" component={KnowledgeHubPage} />
           <Route path="/knowledge-hub/article-hub/:slug" component={PublicArticleDetailPage} />
           <Route path="/knowledge-hub/article-hub" component={PublicArticleHubPage} />
+          <Route path="/knowledge-hub/video-hub" component={PublicVideoHubPage} />
           <Route path="/contact" component={ContactPage} />
           <Route path="/admin" component={AdminPage} />
           <Route path="/sign-in/*?" component={SignInPage} />

@@ -601,6 +601,216 @@ paths:
           description: Sign-in required
         "403":
           description: The signed-in account is not an authorized admin
+  /video-hub:
+    get:
+      operationId: getVideoHub
+      tags: [home]
+      summary: Get published Video Hub content
+      responses:
+        "200":
+          description: Video Hub settings, categories, and published videos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoHub"
+        "503":
+          description: Video Hub content is not available
+  /admin/video-hub:
+    get:
+      operationId: getAdminVideoHub
+      tags: [admin]
+      summary: Get all Video Hub content for authorized staff
+      responses:
+        "200":
+          description: Video Hub settings, categories, and published or unpublished videos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoHub"
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+  /admin/video-hub/settings:
+    patch:
+      operationId: updateVideoHubSettings
+      tags: [admin]
+      summary: Update Video Hub heading and hero image
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoHubSettingsUpdate"
+      responses:
+        "200":
+          description: Updated Video Hub settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoHubSettings"
+        "400":
+          description: Invalid Video Hub settings
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+  /admin/video-hub/categories:
+    post:
+      operationId: createVideoCategory
+      tags: [admin]
+      summary: Create a Video Hub category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoCategoryInput"
+      responses:
+        "201":
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoCategory"
+        "400":
+          description: Invalid category
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+  /admin/video-hub/categories/{id}:
+    patch:
+      operationId: updateVideoCategory
+      tags: [admin]
+      summary: Update a Video Hub category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoCategoryUpdate"
+      responses:
+        "200":
+          description: Updated category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoCategory"
+        "400":
+          description: Invalid category
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+        "404":
+          description: Category not found
+    delete:
+      operationId: deleteVideoCategory
+      tags: [admin]
+      summary: Delete an unused Video Hub category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Category deleted
+        "400":
+          description: Category still contains videos
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+        "404":
+          description: Category not found
+  /admin/video-hub/videos:
+    post:
+      operationId: createVideo
+      tags: [admin]
+      summary: Create a Video Hub video
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoInput"
+      responses:
+        "201":
+          description: Created video
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+        "400":
+          description: Invalid video
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+  /admin/video-hub/videos/{id}:
+    patch:
+      operationId: updateVideo
+      tags: [admin]
+      summary: Update a Video Hub video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoUpdate"
+      responses:
+        "200":
+          description: Updated video
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+        "400":
+          description: Invalid video
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+        "404":
+          description: Video not found
+    delete:
+      operationId: deleteVideo
+      tags: [admin]
+      summary: Delete a Video Hub video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Video deleted
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+        "404":
+          description: Video not found
   /storage/uploads/request-url:
     post:
       tags: [Storage]
@@ -1133,6 +1343,246 @@ components:
         article:
           $ref: "#/components/schemas/Article"
       required: [article]
+    VideoHubSettings:
+      type: object
+      properties:
+        eyebrow:
+          type: string
+        title:
+          type: string
+        introduction:
+          type: string
+        heroImageUrl:
+          type: ["string", "null"]
+        heroImageAlt:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required: [eyebrow, title, introduction, heroImageUrl, heroImageAlt, updatedAt]
+    VideoHubSettingsUpdate:
+      type: object
+      properties:
+        eyebrow:
+          type: string
+          minLength: 1
+          maxLength: 120
+        title:
+          type: string
+          minLength: 1
+          maxLength: 180
+        introduction:
+          type: string
+          minLength: 1
+          maxLength: 1200
+        heroImageUrl:
+          type: ["string", "null"]
+          maxLength: 1000
+        heroImageAlt:
+          type: string
+          maxLength: 300
+    VideoCategory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        position:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, slug, name, description, position, createdAt, updatedAt]
+    VideoCategoryInput:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 100
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 500
+        position:
+          type: integer
+          minimum: 0
+      required: [slug, name, description, position]
+    VideoCategoryUpdate:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 100
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 500
+        position:
+          type: integer
+          minimum: 0
+    Video:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        categoryId:
+          type: string
+          format: uuid
+        categoryName:
+          type: string
+        categorySlug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        youtubeUrl:
+          type: string
+          format: uri
+        thumbnailUrl:
+          type: ["string", "null"]
+        thumbnailAlt:
+          type: string
+        publishedAt:
+          type: ["string", "null"]
+          format: date-time
+        isPublished:
+          type: boolean
+        isFeatured:
+          type: boolean
+        position:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - categoryId
+        - categoryName
+        - categorySlug
+        - title
+        - description
+        - youtubeUrl
+        - thumbnailUrl
+        - thumbnailAlt
+        - publishedAt
+        - isPublished
+        - isFeatured
+        - position
+        - createdAt
+        - updatedAt
+    VideoInput:
+      type: object
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 180
+        description:
+          type: string
+          maxLength: 1200
+        youtubeUrl:
+          type: string
+          format: uri
+          maxLength: 2048
+        thumbnailUrl:
+          type: ["string", "null"]
+          maxLength: 1000
+        thumbnailAlt:
+          type: string
+          maxLength: 300
+        publishedAt:
+          type: ["string", "null"]
+          format: date-time
+        isPublished:
+          type: boolean
+        isFeatured:
+          type: boolean
+        position:
+          type: integer
+          minimum: 0
+      required:
+        - categoryId
+        - title
+        - description
+        - youtubeUrl
+        - thumbnailUrl
+        - thumbnailAlt
+        - publishedAt
+        - isPublished
+        - isFeatured
+        - position
+    VideoUpdate:
+      type: object
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 180
+        description:
+          type: string
+          maxLength: 1200
+        youtubeUrl:
+          type: string
+          format: uri
+          maxLength: 2048
+        thumbnailUrl:
+          type: ["string", "null"]
+          maxLength: 1000
+        thumbnailAlt:
+          type: string
+          maxLength: 300
+        publishedAt:
+          type: ["string", "null"]
+          format: date-time
+        isPublished:
+          type: boolean
+        isFeatured:
+          type: boolean
+        position:
+          type: integer
+          minimum: 0
+    VideoHub:
+      type: object
+      properties:
+        settings:
+          $ref: "#/components/schemas/VideoHubSettings"
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/VideoCategory"
+        videos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
+      required: [settings, categories, videos]
     HealthStatus:
       type: object
       properties:

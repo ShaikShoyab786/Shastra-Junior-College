@@ -4,6 +4,7 @@ import {
   seedArticleHub,
   seedCoursesPageSections,
   seedInitialHomeContent,
+  seedVideoHub,
 } from "./lib/seed";
 
 const rawPort = process.env["PORT"];
@@ -24,6 +25,7 @@ async function start(): Promise<void> {
   await seedInitialHomeContent();
   await seedCoursesPageSections();
   await seedArticleHub();
+  await seedVideoHub();
 
   app.listen(port, (err) => {
     if (err) {

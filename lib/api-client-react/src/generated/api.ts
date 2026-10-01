@@ -54,7 +54,16 @@ import type {
   SiteSettingsUpdate,
   UpdateEnquiryStatus,
   UploadUrlRequest,
-  UploadUrlResponse
+  UploadUrlResponse,
+  Video,
+  VideoCategory,
+  VideoCategoryInput,
+  VideoCategoryUpdate,
+  VideoHub,
+  VideoHubSettings,
+  VideoHubSettingsUpdate,
+  VideoInput,
+  VideoUpdate
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -2340,6 +2349,750 @@ export const useUpdateSiteSettings = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getUpdateSiteSettingsMutationOptions(options));
+    }
+
+export const getGetVideoHubUrl = () => {
+
+
+
+
+  return `/api/video-hub`
+}
+
+/**
+ * @summary Get published Video Hub content
+ */
+export const getVideoHub = async ( options?: Parameters<typeof customFetch>[1]): Promise<VideoHub> => {
+
+  return customFetch<VideoHub>(getGetVideoHubUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetVideoHubQueryKey = () => {
+    return [
+    `/api/video-hub`
+    ] as const;
+    }
+
+
+export const getGetVideoHubQueryOptions = <TData = Awaited<ReturnType<typeof getVideoHub>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getVideoHub>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetVideoHubQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVideoHub>>> = ({ signal }) => getVideoHub({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getVideoHub>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetVideoHubQueryResult = NonNullable<Awaited<ReturnType<typeof getVideoHub>>>
+export type GetVideoHubQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get published Video Hub content
+ */
+
+export function useGetVideoHub<TData = Awaited<ReturnType<typeof getVideoHub>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getVideoHub>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetVideoHubQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminVideoHubUrl = () => {
+
+
+
+
+  return `/api/admin/video-hub`
+}
+
+/**
+ * @summary Get all Video Hub content for authorized staff
+ */
+export const getAdminVideoHub = async ( options?: Parameters<typeof customFetch>[1]): Promise<VideoHub> => {
+
+  return customFetch<VideoHub>(getGetAdminVideoHubUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminVideoHubQueryKey = () => {
+    return [
+    `/api/admin/video-hub`
+    ] as const;
+    }
+
+
+export const getGetAdminVideoHubQueryOptions = <TData = Awaited<ReturnType<typeof getAdminVideoHub>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminVideoHub>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminVideoHubQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminVideoHub>>> = ({ signal }) => getAdminVideoHub({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminVideoHub>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminVideoHubQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminVideoHub>>>
+export type GetAdminVideoHubQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get all Video Hub content for authorized staff
+ */
+
+export function useGetAdminVideoHub<TData = Awaited<ReturnType<typeof getAdminVideoHub>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminVideoHub>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminVideoHubQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateVideoHubSettingsUrl = () => {
+
+
+
+
+  return `/api/admin/video-hub/settings`
+}
+
+/**
+ * @summary Update Video Hub heading and hero image
+ */
+export const updateVideoHubSettings = async (videoHubSettingsUpdate: VideoHubSettingsUpdate, options?: Parameters<typeof customFetch>[1]): Promise<VideoHubSettings> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<VideoHubSettings>(getUpdateVideoHubSettingsUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(videoHubSettingsUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateVideoHubSettingsMutationKey = () => ['updateVideoHubSettings'] as const;
+
+export const getUpdateVideoHubSettingsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateVideoHubSettings>>, TError,UpdateVideoHubSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateVideoHubSettings>>, TError,UpdateVideoHubSettingsMutationVariables, TContext> => {
+
+const mutationKey = getUpdateVideoHubSettingsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateVideoHubSettings>>, UpdateVideoHubSettingsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateVideoHubSettings(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateVideoHubSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateVideoHubSettings>>>
+    export type UpdateVideoHubSettingsMutationBody = BodyType<VideoHubSettingsUpdate>
+    export type UpdateVideoHubSettingsMutationError = ErrorType<void>
+    export type UpdateVideoHubSettingsMutationVariables = {data: BodyType<VideoHubSettingsUpdate>}
+
+    /**
+ * @summary Update Video Hub heading and hero image
+ */
+export const useUpdateVideoHubSettings = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateVideoHubSettings>>, TError,UpdateVideoHubSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateVideoHubSettings>>,
+        TError,
+        UpdateVideoHubSettingsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateVideoHubSettingsMutationOptions(options));
+    }
+
+export const getCreateVideoCategoryUrl = () => {
+
+
+
+
+  return `/api/admin/video-hub/categories`
+}
+
+/**
+ * @summary Create a Video Hub category
+ */
+export const createVideoCategory = async (videoCategoryInput: VideoCategoryInput, options?: Parameters<typeof customFetch>[1]): Promise<VideoCategory> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<VideoCategory>(getCreateVideoCategoryUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(videoCategoryInput)
+  }
+);}
+
+
+
+
+
+export const getCreateVideoCategoryMutationKey = () => ['createVideoCategory'] as const;
+
+export const getCreateVideoCategoryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createVideoCategory>>, TError,CreateVideoCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createVideoCategory>>, TError,CreateVideoCategoryMutationVariables, TContext> => {
+
+const mutationKey = getCreateVideoCategoryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createVideoCategory>>, CreateVideoCategoryMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createVideoCategory(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateVideoCategoryMutationResult = NonNullable<Awaited<ReturnType<typeof createVideoCategory>>>
+    export type CreateVideoCategoryMutationBody = BodyType<VideoCategoryInput>
+    export type CreateVideoCategoryMutationError = ErrorType<void>
+    export type CreateVideoCategoryMutationVariables = {data: BodyType<VideoCategoryInput>}
+
+    /**
+ * @summary Create a Video Hub category
+ */
+export const useCreateVideoCategory = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createVideoCategory>>, TError,CreateVideoCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createVideoCategory>>,
+        TError,
+        CreateVideoCategoryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateVideoCategoryMutationOptions(options));
+    }
+
+export const getUpdateVideoCategoryUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/video-hub/categories/${id}`
+}
+
+/**
+ * @summary Update a Video Hub category
+ */
+export const updateVideoCategory = async (id: string,
+    videoCategoryUpdate: VideoCategoryUpdate, options?: Parameters<typeof customFetch>[1]): Promise<VideoCategory> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<VideoCategory>(getUpdateVideoCategoryUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(videoCategoryUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateVideoCategoryMutationKey = () => ['updateVideoCategory'] as const;
+
+export const getUpdateVideoCategoryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateVideoCategory>>, TError,UpdateVideoCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateVideoCategory>>, TError,UpdateVideoCategoryMutationVariables, TContext> => {
+
+const mutationKey = getUpdateVideoCategoryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateVideoCategory>>, UpdateVideoCategoryMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateVideoCategory(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateVideoCategoryMutationResult = NonNullable<Awaited<ReturnType<typeof updateVideoCategory>>>
+    export type UpdateVideoCategoryMutationBody = BodyType<VideoCategoryUpdate>
+    export type UpdateVideoCategoryMutationError = ErrorType<void>
+    export type UpdateVideoCategoryMutationVariables = {id: string;data: BodyType<VideoCategoryUpdate>}
+
+    /**
+ * @summary Update a Video Hub category
+ */
+export const useUpdateVideoCategory = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateVideoCategory>>, TError,UpdateVideoCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateVideoCategory>>,
+        TError,
+        UpdateVideoCategoryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateVideoCategoryMutationOptions(options));
+    }
+
+export const getDeleteVideoCategoryUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/video-hub/categories/${id}`
+}
+
+/**
+ * @summary Delete an unused Video Hub category
+ */
+export const deleteVideoCategory = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteVideoCategoryUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteVideoCategoryMutationKey = () => ['deleteVideoCategory'] as const;
+
+export const getDeleteVideoCategoryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVideoCategory>>, TError,DeleteVideoCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteVideoCategory>>, TError,DeleteVideoCategoryMutationVariables, TContext> => {
+
+const mutationKey = getDeleteVideoCategoryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteVideoCategory>>, DeleteVideoCategoryMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteVideoCategory(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteVideoCategoryMutationResult = NonNullable<Awaited<ReturnType<typeof deleteVideoCategory>>>
+
+    export type DeleteVideoCategoryMutationError = ErrorType<void>
+    export type DeleteVideoCategoryMutationVariables = {id: string}
+
+    /**
+ * @summary Delete an unused Video Hub category
+ */
+export const useDeleteVideoCategory = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVideoCategory>>, TError,DeleteVideoCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteVideoCategory>>,
+        TError,
+        DeleteVideoCategoryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteVideoCategoryMutationOptions(options));
+    }
+
+export const getCreateVideoUrl = () => {
+
+
+
+
+  return `/api/admin/video-hub/videos`
+}
+
+/**
+ * @summary Create a Video Hub video
+ */
+export const createVideo = async (videoInput: VideoInput, options?: Parameters<typeof customFetch>[1]): Promise<Video> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<Video>(getCreateVideoUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(videoInput)
+  }
+);}
+
+
+
+
+
+export const getCreateVideoMutationKey = () => ['createVideo'] as const;
+
+export const getCreateVideoMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createVideo>>, TError,CreateVideoMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createVideo>>, TError,CreateVideoMutationVariables, TContext> => {
+
+const mutationKey = getCreateVideoMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createVideo>>, CreateVideoMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createVideo(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateVideoMutationResult = NonNullable<Awaited<ReturnType<typeof createVideo>>>
+    export type CreateVideoMutationBody = BodyType<VideoInput>
+    export type CreateVideoMutationError = ErrorType<void>
+    export type CreateVideoMutationVariables = {data: BodyType<VideoInput>}
+
+    /**
+ * @summary Create a Video Hub video
+ */
+export const useCreateVideo = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createVideo>>, TError,CreateVideoMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createVideo>>,
+        TError,
+        CreateVideoMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateVideoMutationOptions(options));
+    }
+
+export const getUpdateVideoUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/video-hub/videos/${id}`
+}
+
+/**
+ * @summary Update a Video Hub video
+ */
+export const updateVideo = async (id: string,
+    videoUpdate: VideoUpdate, options?: Parameters<typeof customFetch>[1]): Promise<Video> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<Video>(getUpdateVideoUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(videoUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateVideoMutationKey = () => ['updateVideo'] as const;
+
+export const getUpdateVideoMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateVideo>>, TError,UpdateVideoMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateVideo>>, TError,UpdateVideoMutationVariables, TContext> => {
+
+const mutationKey = getUpdateVideoMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateVideo>>, UpdateVideoMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateVideo(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateVideoMutationResult = NonNullable<Awaited<ReturnType<typeof updateVideo>>>
+    export type UpdateVideoMutationBody = BodyType<VideoUpdate>
+    export type UpdateVideoMutationError = ErrorType<void>
+    export type UpdateVideoMutationVariables = {id: string;data: BodyType<VideoUpdate>}
+
+    /**
+ * @summary Update a Video Hub video
+ */
+export const useUpdateVideo = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateVideo>>, TError,UpdateVideoMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateVideo>>,
+        TError,
+        UpdateVideoMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateVideoMutationOptions(options));
+    }
+
+export const getDeleteVideoUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/video-hub/videos/${id}`
+}
+
+/**
+ * @summary Delete a Video Hub video
+ */
+export const deleteVideo = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteVideoUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteVideoMutationKey = () => ['deleteVideo'] as const;
+
+export const getDeleteVideoMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,DeleteVideoMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,DeleteVideoMutationVariables, TContext> => {
+
+const mutationKey = getDeleteVideoMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteVideo>>, DeleteVideoMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteVideo(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteVideoMutationResult = NonNullable<Awaited<ReturnType<typeof deleteVideo>>>
+
+    export type DeleteVideoMutationError = ErrorType<void>
+    export type DeleteVideoMutationVariables = {id: string}
+
+    /**
+ * @summary Delete a Video Hub video
+ */
+export const useDeleteVideo = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,DeleteVideoMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteVideo>>,
+        TError,
+        DeleteVideoMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteVideoMutationOptions(options));
     }
 
 export const getRequestUploadUrlUrl = () => {

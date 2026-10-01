@@ -200,6 +200,163 @@ export interface ArticleDetail {
   article: Article;
 }
 
+export interface VideoHubSettings {
+  eyebrow: string;
+  title: string;
+  introduction: string;
+  /** @nullable */
+  heroImageUrl: string | null;
+  heroImageAlt: string;
+  updatedAt: string;
+}
+
+export interface VideoHubSettingsUpdate {
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  eyebrow?: string;
+  /**
+     * @minLength 1
+     * @maxLength 180
+     */
+  title?: string;
+  /**
+     * @minLength 1
+     * @maxLength 1200
+     */
+  introduction?: string;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  heroImageUrl?: string | null;
+  /** @maxLength 300 */
+  heroImageAlt?: string;
+}
+
+export interface VideoCategory {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VideoCategoryInput {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  slug: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name: string;
+  /** @maxLength 500 */
+  description: string;
+  /** @minimum 0 */
+  position: number;
+}
+
+export interface VideoCategoryUpdate {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  slug?: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name?: string;
+  /** @maxLength 500 */
+  description?: string;
+  /** @minimum 0 */
+  position?: number;
+}
+
+export interface Video {
+  id: string;
+  categoryId: string;
+  categoryName: string;
+  categorySlug: string;
+  title: string;
+  description: string;
+  youtubeUrl: string;
+  /** @nullable */
+  thumbnailUrl: string | null;
+  thumbnailAlt: string;
+  /** @nullable */
+  publishedAt: string | null;
+  isPublished: boolean;
+  isFeatured: boolean;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VideoInput {
+  categoryId: string;
+  /**
+     * @minLength 1
+     * @maxLength 180
+     */
+  title: string;
+  /** @maxLength 1200 */
+  description: string;
+  /** @maxLength 2048 */
+  youtubeUrl: string;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  thumbnailUrl: string | null;
+  /** @maxLength 300 */
+  thumbnailAlt: string;
+  /** @nullable */
+  publishedAt: string | null;
+  isPublished: boolean;
+  isFeatured: boolean;
+  /** @minimum 0 */
+  position: number;
+}
+
+export interface VideoUpdate {
+  categoryId?: string;
+  /**
+     * @minLength 1
+     * @maxLength 180
+     */
+  title?: string;
+  /** @maxLength 1200 */
+  description?: string;
+  /** @maxLength 2048 */
+  youtubeUrl?: string;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  thumbnailUrl?: string | null;
+  /** @maxLength 300 */
+  thumbnailAlt?: string;
+  /** @nullable */
+  publishedAt?: string | null;
+  isPublished?: boolean;
+  isFeatured?: boolean;
+  /** @minimum 0 */
+  position?: number;
+}
+
+export interface VideoHub {
+  settings: VideoHubSettings;
+  categories: VideoCategory[];
+  videos: Video[];
+}
+
 export interface HealthStatus {
   status: string;
 }

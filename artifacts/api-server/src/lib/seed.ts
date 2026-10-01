@@ -8,6 +8,9 @@ import {
   articleHubSettingsTable,
   articlesTable,
   knowledgeHubMenuSettingsTable,
+  videoCategoriesTable,
+  videoHubSettingsTable,
+  videosTable,
   siteSettingsTable,
   type CmsJson,
   type CoursesMenuContent,
@@ -4462,5 +4465,212 @@ Keep the log brief enough to maintain. Its value comes from reviewing patterns a
       .update(articleHubSettingsTable)
       .set({ contentSeedVersion: articleHubSeedVersion, updatedAt: new Date() })
       .where(eq(articleHubSettingsTable.id, "primary"));
+  });
+}
+
+export async function seedVideoHub(): Promise<void> {
+  const videoHubSeedVersion = 2;
+  const categorySeeds = [
+    { slug: "physics", name: "Physics", description: "Motion, forces, and core physics concepts.", position: 0 },
+    { slug: "exam-preparation", name: "Exam Preparation", description: "Review lessons for focused exam revision.", position: 1 },
+    { slug: "chemistry", name: "Chemistry", description: "Atoms, bonding, and chemical calculations.", position: 2 },
+    { slug: "biology", name: "Biology", description: "Cells, organisms, and biological systems.", position: 3 },
+  ];
+  const videoSeeds = [
+    {
+      categorySlug: "physics",
+      title: "Speed, Velocity, and Acceleration | Physics of Motion Explained",
+      description: "An introduction to speed, velocity, and acceleration through the physics of motion.",
+      youtubeUrl: "https://www.youtube.com/watch?v=Jyiw6KkedDY",
+      thumbnail: "article-cover-physics.jpg",
+      thumbnailAlt: "Illustrated physics lesson thumbnail about motion.",
+      position: 0,
+      featured: true,
+    },
+    {
+      categorySlug: "exam-preparation",
+      title: "AP Physics 1: Newton's Laws and Forces Review",
+      description: "An exam-prep review covering Newton's laws and common force models.",
+      youtubeUrl: "https://www.youtube.com/watch?v=syJ6Bmmquh8",
+      thumbnail: "article-cover-exam.jpg",
+      thumbnailAlt: "Illustrated exam preparation thumbnail for physics.",
+      position: 1,
+      featured: false,
+    },
+    {
+      categorySlug: "physics",
+      title: "Physics for Beginners: Motion",
+      description: "A beginner-friendly introduction to motion and basic physics.",
+      youtubeUrl: "https://www.youtube.com/watch?v=wUgYa5YLBbM",
+      thumbnail: "article-cover-jee.jpg",
+      thumbnailAlt: "Illustrated beginner physics lesson thumbnail.",
+      position: 2,
+      featured: false,
+    },
+    {
+      categorySlug: "physics",
+      title: "College Physics: Motion and Forces",
+      description: "A college-level lecture introducing forces as a cause of motion.",
+      youtubeUrl: "https://www.youtube.com/watch?v=yYjGUXLoZWM",
+      thumbnail: "article-cover-physics.jpg",
+      thumbnailAlt: "Illustrated college physics lesson thumbnail.",
+      position: 3,
+      featured: false,
+    },
+    {
+      categorySlug: "physics",
+      title: "Forces: Basic Types and Effects on Motion",
+      description: "An overview of common types of force and their effects on motion.",
+      youtubeUrl: "https://www.youtube.com/watch?v=IFtLS4q-oFQ",
+      thumbnail: "article-cover-memory.jpg",
+      thumbnailAlt: "Illustrated physics lesson thumbnail about forces.",
+      position: 4,
+      featured: false,
+    },
+    {
+      categorySlug: "chemistry",
+      title: "How Do Atoms Bond?",
+      description: "A lesson about how atoms form bonds and build chemical structures.",
+      youtubeUrl: "https://www.youtube.com/watch?v=kNFLsrSpAtA",
+      thumbnail: "article-cover-chemistry.jpg",
+      thumbnailAlt: "Illustrated chemistry lesson thumbnail about atomic bonds.",
+      position: 5,
+      featured: false,
+    },
+    {
+      categorySlug: "chemistry",
+      title: "Covalent Bonding of Hydrogen, Oxygen, and Nitrogen",
+      description: "An introduction to covalent bonding using familiar elements.",
+      youtubeUrl: "https://www.youtube.com/watch?v=0HfN3CvXP2M",
+      thumbnail: "article-cover-chemistry.jpg",
+      thumbnailAlt: "Illustrated chemistry lesson thumbnail about covalent bonding.",
+      position: 6,
+      featured: false,
+    },
+    {
+      categorySlug: "chemistry",
+      title: "Parts of an Atom",
+      description: "A visual introduction to the particles that make up an atom.",
+      youtubeUrl: "https://www.youtube.com/watch?v=cpBb2bgFO6I",
+      thumbnail: "article-cover-career.jpg",
+      thumbnailAlt: "Illustrated chemistry lesson thumbnail about atoms.",
+      position: 7,
+      featured: false,
+    },
+    {
+      categorySlug: "biology",
+      title: "What Are Cells?",
+      description: "An overview of cells as the fundamental building blocks of living organisms.",
+      youtubeUrl: "https://www.youtube.com/watch?v=M1wdIdCOk-Y",
+      thumbnail: "article-cover-biology.jpg",
+      thumbnailAlt: "Illustrated biology lesson thumbnail about cells.",
+      position: 8,
+      featured: false,
+    },
+    {
+      categorySlug: "biology",
+      title: "What Are Viruses?",
+      description: "A short biology lesson introducing viruses as a type of microorganism.",
+      youtubeUrl: "https://www.youtube.com/watch?v=rWkNvIUthBI",
+      thumbnail: "article-cover-neet.jpg",
+      thumbnailAlt: "Illustrated biology lesson thumbnail about viruses.",
+      position: 9,
+      featured: false,
+    },
+  ];
+
+  await db.transaction(async (tx) => {
+    let [settings] = await tx
+      .select()
+      .from(videoHubSettingsTable)
+      .where(eq(videoHubSettingsTable.id, "primary"))
+      .for("update")
+      .limit(1);
+
+    if (!settings) {
+      await tx
+        .insert(videoHubSettingsTable)
+        .values({
+          id: "primary",
+          eyebrow: "THE SHASTRA VIDEO LIBRARY",
+          title: "Learn through clear, focused video lessons",
+          introduction:
+            "Watch subject explainers and revision videos selected to support your next step in learning.",
+          heroImageUrl: "/article-images/article-hub-hero.jpg",
+          heroImageAlt: "Student studying a science lesson in a bright classroom",
+        })
+        .onConflictDoNothing();
+      [settings] = await tx
+        .select()
+        .from(videoHubSettingsTable)
+        .where(eq(videoHubSettingsTable.id, "primary"))
+        .for("update")
+        .limit(1);
+    }
+
+    if (!settings) {
+      throw new Error("Video Hub settings could not be initialized.");
+    }
+    if (settings.contentSeedVersion >= videoHubSeedVersion) return;
+    if (settings.contentSeedVersion === 1) {
+      for (const video of videoSeeds) {
+        await tx
+          .update(videosTable)
+          .set({ thumbnailAlt: video.thumbnailAlt, updatedAt: new Date() })
+          .where(
+            and(
+              eq(videosTable.youtubeUrl, video.youtubeUrl),
+              eq(videosTable.thumbnailAlt, ""),
+            ),
+          );
+      }
+      await tx
+        .update(videoHubSettingsTable)
+        .set({
+          contentSeedVersion: videoHubSeedVersion,
+          updatedAt: new Date(),
+        })
+        .where(eq(videoHubSettingsTable.id, "primary"));
+      return;
+    }
+
+    await tx
+      .insert(videoCategoriesTable)
+      .values(categorySeeds)
+      .onConflictDoNothing();
+    const categories = await tx.select().from(videoCategoriesTable);
+    const categoryIds = new Map(categories.map((category) => [category.slug, category.id]));
+    const missingCategory = videoSeeds.find(
+      (video) => !categoryIds.has(video.categorySlug),
+    );
+    if (missingCategory) {
+      throw new Error(`Video Hub category "${missingCategory.categorySlug}" is missing.`);
+    }
+
+    await tx
+      .insert(videosTable)
+      .values(
+        videoSeeds.map((video) => ({
+          categoryId: categoryIds.get(video.categorySlug)!,
+          title: video.title,
+          description: video.description,
+          youtubeUrl: video.youtubeUrl,
+          thumbnailUrl: `/article-images/${video.thumbnail}`,
+          thumbnailAlt: video.thumbnailAlt,
+          publishedAt: null,
+          isPublished: true,
+          isFeatured: video.featured,
+          position: video.position,
+        })),
+      )
+      .onConflictDoNothing();
+
+    await tx
+      .update(videoHubSettingsTable)
+      .set({
+        contentSeedVersion: videoHubSeedVersion,
+        updatedAt: new Date(),
+      })
+      .where(eq(videoHubSettingsTable.id, "primary"));
   });
 }

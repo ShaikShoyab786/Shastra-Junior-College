@@ -21,3 +21,4 @@ export * from "./cms";
 export * from "./courses-menu";
 export * from "./knowledge-hub-menu";
 export * from "./article-hub";
+export * from "./video-hub";

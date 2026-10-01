@@ -1742,6 +1742,309 @@ export const UpdateSiteSettingsResponse = zod.object({
 
 
 /**
+ * @summary Get published Video Hub content
+ */
+export const GetVideoHubResponse = zod.object({
+  "settings": zod.object({
+  "eyebrow": zod.string(),
+  "title": zod.string(),
+  "introduction": zod.string(),
+  "heroImageUrl": zod.string().nullable(),
+  "heroImageAlt": zod.string(),
+  "updatedAt": zod.coerce.date()
+}),
+  "categories": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "videos": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "categoryId": zod.string().uuid(),
+  "categoryName": zod.string(),
+  "categorySlug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "youtubeUrl": zod.string().url(),
+  "thumbnailUrl": zod.string().nullable(),
+  "thumbnailAlt": zod.string(),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Get all Video Hub content for authorized staff
+ */
+export const GetAdminVideoHubResponse = zod.object({
+  "settings": zod.object({
+  "eyebrow": zod.string(),
+  "title": zod.string(),
+  "introduction": zod.string(),
+  "heroImageUrl": zod.string().nullable(),
+  "heroImageAlt": zod.string(),
+  "updatedAt": zod.coerce.date()
+}),
+  "categories": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "videos": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "categoryId": zod.string().uuid(),
+  "categoryName": zod.string(),
+  "categorySlug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "youtubeUrl": zod.string().url(),
+  "thumbnailUrl": zod.string().nullable(),
+  "thumbnailAlt": zod.string(),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Update Video Hub heading and hero image
+ */
+export const updateVideoHubSettingsBodyEyebrowMax = 120;
+
+export const updateVideoHubSettingsBodyTitleMax = 180;
+
+export const updateVideoHubSettingsBodyIntroductionMax = 1200;
+
+export const updateVideoHubSettingsBodyHeroImageUrlMax = 1000;
+
+export const updateVideoHubSettingsBodyHeroImageAltMax = 300;
+
+
+
+export const UpdateVideoHubSettingsBody = zod.object({
+  "eyebrow": zod.string().min(1).max(updateVideoHubSettingsBodyEyebrowMax).optional(),
+  "title": zod.string().min(1).max(updateVideoHubSettingsBodyTitleMax).optional(),
+  "introduction": zod.string().min(1).max(updateVideoHubSettingsBodyIntroductionMax).optional(),
+  "heroImageUrl": zod.string().max(updateVideoHubSettingsBodyHeroImageUrlMax).nullish(),
+  "heroImageAlt": zod.string().max(updateVideoHubSettingsBodyHeroImageAltMax).optional()
+})
+
+export const UpdateVideoHubSettingsResponse = zod.object({
+  "eyebrow": zod.string(),
+  "title": zod.string(),
+  "introduction": zod.string(),
+  "heroImageUrl": zod.string().nullable(),
+  "heroImageAlt": zod.string(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Create a Video Hub category
+ */
+export const createVideoCategoryBodySlugMax = 100;
+
+export const createVideoCategoryBodyNameMax = 120;
+
+export const createVideoCategoryBodyDescriptionMax = 500;
+
+export const createVideoCategoryBodyPositionMin = 0;
+
+
+
+export const CreateVideoCategoryBody = zod.object({
+  "slug": zod.string().min(1).max(createVideoCategoryBodySlugMax),
+  "name": zod.string().min(1).max(createVideoCategoryBodyNameMax),
+  "description": zod.string().max(createVideoCategoryBodyDescriptionMax),
+  "position": zod.number().int().min(createVideoCategoryBodyPositionMin)
+})
+
+export const CreateVideoCategoryResponse = zod.object({
+  "id": zod.string().uuid(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a Video Hub category
+ */
+export const UpdateVideoCategoryParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const updateVideoCategoryBodySlugMax = 100;
+
+export const updateVideoCategoryBodyNameMax = 120;
+
+export const updateVideoCategoryBodyDescriptionMax = 500;
+
+export const updateVideoCategoryBodyPositionMin = 0;
+
+
+
+export const UpdateVideoCategoryBody = zod.object({
+  "slug": zod.string().min(1).max(updateVideoCategoryBodySlugMax).optional(),
+  "name": zod.string().min(1).max(updateVideoCategoryBodyNameMax).optional(),
+  "description": zod.string().max(updateVideoCategoryBodyDescriptionMax).optional(),
+  "position": zod.number().int().min(updateVideoCategoryBodyPositionMin).optional()
+})
+
+export const UpdateVideoCategoryResponse = zod.object({
+  "id": zod.string().uuid(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete an unused Video Hub category
+ */
+export const DeleteVideoCategoryParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const DeleteVideoCategoryResponse = zod.void()
+
+
+/**
+ * @summary Create a Video Hub video
+ */
+export const createVideoBodyTitleMax = 180;
+
+export const createVideoBodyDescriptionMax = 1200;
+
+export const createVideoBodyYoutubeUrlMax = 2048;
+
+export const createVideoBodyThumbnailUrlMax = 1000;
+
+export const createVideoBodyThumbnailAltMax = 300;
+
+export const createVideoBodyPositionMin = 0;
+
+
+
+export const CreateVideoBody = zod.object({
+  "categoryId": zod.string().uuid(),
+  "title": zod.string().min(1).max(createVideoBodyTitleMax),
+  "description": zod.string().max(createVideoBodyDescriptionMax),
+  "youtubeUrl": zod.string().url().max(createVideoBodyYoutubeUrlMax),
+  "thumbnailUrl": zod.string().max(createVideoBodyThumbnailUrlMax).nullable(),
+  "thumbnailAlt": zod.string().max(createVideoBodyThumbnailAltMax),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "position": zod.number().int().min(createVideoBodyPositionMin)
+})
+
+export const CreateVideoResponse = zod.object({
+  "id": zod.string().uuid(),
+  "categoryId": zod.string().uuid(),
+  "categoryName": zod.string(),
+  "categorySlug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "youtubeUrl": zod.string().url(),
+  "thumbnailUrl": zod.string().nullable(),
+  "thumbnailAlt": zod.string(),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a Video Hub video
+ */
+export const UpdateVideoParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const updateVideoBodyTitleMax = 180;
+
+export const updateVideoBodyDescriptionMax = 1200;
+
+export const updateVideoBodyYoutubeUrlMax = 2048;
+
+export const updateVideoBodyThumbnailUrlMax = 1000;
+
+export const updateVideoBodyThumbnailAltMax = 300;
+
+export const updateVideoBodyPositionMin = 0;
+
+
+
+export const UpdateVideoBody = zod.object({
+  "categoryId": zod.string().uuid().optional(),
+  "title": zod.string().min(1).max(updateVideoBodyTitleMax).optional(),
+  "description": zod.string().max(updateVideoBodyDescriptionMax).optional(),
+  "youtubeUrl": zod.string().url().max(updateVideoBodyYoutubeUrlMax).optional(),
+  "thumbnailUrl": zod.string().max(updateVideoBodyThumbnailUrlMax).nullish(),
+  "thumbnailAlt": zod.string().max(updateVideoBodyThumbnailAltMax).optional(),
+  "publishedAt": zod.coerce.date().nullish(),
+  "isPublished": zod.boolean().optional(),
+  "isFeatured": zod.boolean().optional(),
+  "position": zod.number().int().min(updateVideoBodyPositionMin).optional()
+})
+
+export const UpdateVideoResponse = zod.object({
+  "id": zod.string().uuid(),
+  "categoryId": zod.string().uuid(),
+  "categoryName": zod.string(),
+  "categorySlug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "youtubeUrl": zod.string().url(),
+  "thumbnailUrl": zod.string().nullable(),
+  "thumbnailAlt": zod.string(),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a Video Hub video
+ */
+export const DeleteVideoParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const DeleteVideoResponse = zod.void()
+
+
+/**
  * Returns a presigned GCS URL for direct upload. The client sends JSON
  * metadata here, then uploads the file directly to the returned URL.
  * @summary Request a presigned URL for file upload
