@@ -1,5 +1,5 @@
 import { ArrowDownRight, ArrowRight, BookOpen, CircleAlert, RefreshCw, Download, FileText, ChevronDown, BookOpenCheck, Target, Layers3, RefreshCw as UpdatesIcon, Image as ImageIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
 import {
   getGetCmsPageQueryKey,
@@ -582,17 +582,44 @@ function CourseEnrollmentProcessSection({
   content: CourseEnrollmentProcessContent;
   logoUrl?: string | null;
 }) {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [hasEntered, setHasEntered] = useState(false);
+
+  useEffect(() => {
+    if (!content.isVisible || !content.steps.length) return;
+    const section = sectionRef.current;
+    if (!section) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setHasEntered(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasEntered(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -6% 0px" },
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [content.isVisible, content.steps.length]);
+
   if (!content.isVisible || !content.steps.length) return null;
 
   return (
     <section
+      ref={sectionRef}
       id={courseSectionKey(course.slug, "enrollment-process")}
-      className="site-grid bg-[#f2f3f8] px-5 py-14 sm:px-8 sm:py-20"
+      className="enrollment-process site-grid bg-[#f2f3f8] px-5 py-14 sm:px-8 sm:py-20"
+      data-enrollment-entered={hasEntered}
       aria-labelledby={`course-${course.slug}-enrollment-process-heading`}
       data-testid={`section-course-enrollment-process-${course.slug}`}
     >
       <div className="mx-auto w-full max-w-7xl">
-        <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+        <div className="enrollment-process-header mx-auto flex max-w-3xl flex-col items-center text-center">
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#0b3472]/10 bg-white p-2 shadow-sm">
             <img
               src={assetUrl(logoUrl || "/shastra-college-logo.png")}
@@ -617,23 +644,29 @@ function CourseEnrollmentProcessSection({
           {content.steps.map((step, index) => (
             <li
               key={step.id}
-              className="relative flex min-h-48 flex-col items-center rounded-2xl border border-[#0b3472]/10 bg-white px-4 py-5 text-center shadow-[0_10px_26px_rgba(11,52,114,.05)]"
+              className="enrollment-step-card group relative flex min-h-48 flex-col items-center rounded-2xl border border-[#0b3472]/10 bg-white px-4 py-5 text-center shadow-[0_10px_26px_rgba(11,52,114,.05)]"
               data-testid={`card-course-enrollment-step-${step.id}`}
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e3212b] text-sm font-extrabold text-white">
-                <span className="sr-only">Step </span>{index + 1}
-              </span>
-              <h3 className="mt-3 font-display text-base font-extrabold text-[#0b3472]">
-                {step.title}
-              </h3>
-              {step.description ? (
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  {step.description}
-                </p>
-              ) : null}
+              <div
+                className="enrollment-step-content flex h-full flex-col items-center"
+                style={{ animationDelay: `${index * 120}ms` }}
+              >
+                <span className="enrollment-step-number flex h-9 w-9 items-center justify-center rounded-full bg-[#e3212b] text-sm font-extrabold text-white">
+                  <span className="sr-only">Step </span>{index + 1}
+                </span>
+                <h3 className="mt-3 font-display text-base font-extrabold text-[#0b3472]">
+                  {step.title}
+                </h3>
+                {step.description ? (
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {step.description}
+                  </p>
+                ) : null}
+              </div>
               {index < content.steps.length - 1 ? (
                 <ArrowRight
-                  className="absolute -right-2 top-1/2 z-10 hidden h-4 w-4 -translate-y-1/2 rounded-full bg-[#f2f3f8] p-0.5 text-[#e3212b] lg:block"
+                  className="enrollment-process-arrow absolute -right-2 top-1/2 z-10 hidden h-4 w-4 -translate-y-1/2 rounded-full bg-[#f2f3f8] p-0.5 text-[#e3212b] lg:block"
+                  style={{ animationDelay: `${index * 380}ms` }}
                   aria-hidden="true"
                 />
               ) : null}

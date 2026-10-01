@@ -327,6 +327,100 @@ html { scroll-behavior: smooth; }
   }
 }
 
+.enrollment-process-header,
+.enrollment-step-content {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.enrollment-step-content {
+  filter: blur(4px);
+}
+
+.enrollment-process-arrow {
+  opacity: .45;
+}
+
+.enrollment-step-card {
+  transition:
+    transform 320ms cubic-bezier(.2, .8, .2, 1),
+    border-color 320ms ease,
+    box-shadow 320ms ease;
+}
+
+.enrollment-step-number {
+  transition:
+    transform 320ms cubic-bezier(.2, .8, .2, 1),
+    background-color 320ms ease;
+}
+
+.enrollment-process[data-enrollment-entered="true"] .enrollment-process-header {
+  animation: enrollment-header-in 680ms cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.enrollment-process[data-enrollment-entered="true"] .enrollment-step-content {
+  animation: enrollment-step-in 720ms cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.enrollment-process[data-enrollment-entered="true"] .enrollment-process-arrow {
+  animation: enrollment-arrow-glide 2.8s ease-in-out infinite;
+}
+
+@keyframes enrollment-header-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes enrollment-step-in {
+  from { opacity: 0; filter: blur(4px); transform: translateY(14px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+@keyframes enrollment-arrow-glide {
+  0%, 100% { opacity: .4; transform: translate(0, -50%); }
+  42%, 58% { opacity: 1; transform: translate(5px, -50%); }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .enrollment-step-card:hover {
+    transform: translateY(-5px);
+    border-color: rgb(11 52 114 / 24%);
+    box-shadow: 0 18px 38px rgb(11 52 114 / 12%);
+  }
+
+  .enrollment-step-card:hover .enrollment-step-number {
+    transform: scale(1.08);
+    background-color: #0b3472;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enrollment-process-header,
+  .enrollment-step-content {
+    animation: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .enrollment-process-arrow,
+  .enrollment-step-card,
+  .enrollment-step-number {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .enrollment-process-arrow {
+    opacity: .7 !important;
+    transform: translateY(-50%) !important;
+  }
+
+  .enrollment-step-card:hover,
+  .enrollment-step-number {
+    transform: none !important;
+  }
+}
+
 /**
  * Using the elevate system.
  * Automatic contrast adjustment.
