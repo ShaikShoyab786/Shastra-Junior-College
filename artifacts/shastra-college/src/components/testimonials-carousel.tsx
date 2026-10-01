@@ -275,7 +275,7 @@ export default function TestimonialsCarousel({
               return (
                 <article
                   key={key}
-                  className="grid min-w-full shrink-0 gap-8 p-7 sm:grid-cols-[auto_1fr] sm:items-center sm:p-10 lg:grid-cols-[180px_1fr_auto]"
+                  className="grid w-full min-w-0 shrink-0 gap-8 p-7 sm:w-auto sm:min-w-full sm:grid-cols-[auto_1fr] sm:items-center sm:p-10 lg:grid-cols-[180px_1fr_auto]"
                   aria-hidden={isClone || originalIndex !== activeItemIndex}
                   data-testid={
                     isClone
