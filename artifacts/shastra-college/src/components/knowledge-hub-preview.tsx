@@ -14,7 +14,7 @@ type PreviewCard = {
   Icon: typeof BookOpen;
 };
 
-const previewCards: PreviewCard[] = [
+const defaultPreviewCards: PreviewCard[] = [
   {
     title: "Study Guides",
     description: "Clear resources for focused preparation.",
@@ -47,6 +47,24 @@ function textValue(
   return typeof value === "string" && value.trim() ? value : fallback;
 }
 
+function readPreviewCards(value: unknown): PreviewCard[] {
+  const savedCards = Array.isArray(value) ? value : [];
+  return defaultPreviewCards.map((fallback, index) => {
+    const card = contentRecord(savedCards[index]);
+    return {
+      ...fallback,
+      title:
+        typeof card.title === "string" && card.title.trim()
+          ? card.title
+          : fallback.title,
+      description:
+        typeof card.description === "string"
+          ? card.description
+          : fallback.description,
+    };
+  });
+}
+
 export default function KnowledgeHubPreview({
   section,
 }: {
@@ -55,6 +73,7 @@ export default function KnowledgeHubPreview({
   const content = contentRecord(section.content);
   const eyebrow = textValue(content, "eyebrow", "KNOWLEDGE HUB");
   const ctaLabel = textValue(content, "ctaLabel", "Explore Knowledge Hub");
+  const previewCards = readPreviewCards(content.previewCards);
 
   return (
     <section
@@ -98,13 +117,7 @@ export default function KnowledgeHubPreview({
             className="pointer-events-none absolute -bottom-20 -right-12 h-56 w-56 rounded-full border border-white/10"
             aria-hidden="true"
           />
-          <div className="relative mb-5 flex items-center justify-between gap-4">
-            <div>
-              <p className="eyebrow text-blue-100/70">Explore and learn</p>
-              <h3 className="mt-2 font-display text-2xl font-extrabold text-white sm:text-3xl">
-                Find your next idea
-              </h3>
-            </div>
+          <div className="relative mb-5 flex justify-end">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-[#f6b1ac]">
               <Compass className="h-6 w-6" aria-hidden="true" />
             </span>
@@ -123,9 +136,11 @@ export default function KnowledgeHubPreview({
                 <span className="mt-5 font-display text-lg font-extrabold leading-tight text-white">
                   {title}
                 </span>
-                <span className="mt-2 text-xs leading-5 text-blue-100/70">
-                  {description}
-                </span>
+                {description ? (
+                  <span className="mt-2 text-xs leading-5 text-blue-100/70">
+                    {description}
+                  </span>
+                ) : null}
                 <ArrowRight
                   className="mt-auto hidden h-4 w-4 translate-y-1 text-[#f6b1ac] opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100 sm:block"
                   aria-hidden="true"

@@ -2238,6 +2238,7 @@ export async function seedInitialHomeContent(): Promise<void> {
   await seedFacultyAndGalleryPages();
   await seedGalleryHomePreviewDefaults();
   await seedHomeTestimonials();
+  await seedHomeKnowledgeHubPreview();
   await seedAboutPage();
 }
 
@@ -3321,6 +3322,40 @@ async function seedGalleryHomePreviewDefaults(): Promise<void> {
         updatedAt: new Date(),
       })
       .where(eq(contentSectionsTable.id, gallerySection.id));
+  });
+}
+
+async function seedHomeKnowledgeHubPreview(): Promise<void> {
+  await db.transaction(async (tx) => {
+    const [existingSection] = await tx
+      .select()
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "home"),
+          eq(contentSectionsTable.sectionKey, "knowledge-hub-preview"),
+        ),
+      )
+      .limit(1);
+
+    if (existingSection) return;
+
+    await tx
+      .insert(contentSectionsTable)
+      .values({
+        pageSlug: "home",
+        sectionKey: "knowledge-hub-preview",
+        title: "Explore the Knowledge Hub",
+        subtitle:
+          "Discover study guides, subject resources, and learning updates from Shastra.",
+        content: {
+          eyebrow: "LEARN · EXPLORE · GROW",
+          ctaLabel: "Explore Knowledge Hub",
+        },
+        isVisible: true,
+        position: 14,
+      })
+      .onConflictDoNothing();
   });
 }
 

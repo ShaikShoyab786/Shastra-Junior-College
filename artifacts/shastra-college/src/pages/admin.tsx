@@ -84,6 +84,8 @@ type WorkspaceView =
   | "gallery-preview"
   | "faculty-preview"
   | "testimonials"
+  | "knowledge-hub-preview"
+  | "knowledge-hub-settings"
   | "identity"
   | "courses-mega-menu"
   | "about"
@@ -344,6 +346,7 @@ function Shell({
     activeView === "gallery-preview" ||
     activeView === "faculty-preview" ||
     activeView === "testimonials" ||
+    activeView === "knowledge-hub-preview" ||
     activeView === "placement-records";
   const aboutSectionActive =
     activeView === "about" ||
@@ -358,6 +361,8 @@ function Shell({
       ? "Dashboard"
       : activeView === "identity" || activeView === "courses-mega-menu"
         ? "Site settings"
+        : activeView === "knowledge-hub-settings"
+          ? "Pages / Knowledge Hub"
         : aboutSectionActive
           ? "Pages / About"
           : homeSectionActive
@@ -409,6 +414,10 @@ function Shell({
                       ? "Home · Faculty Preview"
                       : activeView === "testimonials"
                         ? "Home · Testimonials"
+                        : activeView === "knowledge-hub-preview"
+                          ? "Home · Knowledge Hub Preview"
+                          : activeView === "knowledge-hub-settings"
+                            ? "Knowledge Hub settings"
                       : pageItems.find((item) => item.key === activeView)?.label ||
                         "Home";
 
@@ -565,6 +574,7 @@ function Shell({
                       <NavRow icon={ClipboardList} label="Placement Record" nested active={activeView === "placement-records"} onClick={() => go("placement-records")} />
                        <NavRow icon={UserRound} label="Faculty Preview" nested active={activeView === "faculty-preview"} onClick={() => go("faculty-preview")} />
                        <NavRow icon={ClipboardList} label="Testimonials" nested active={activeView === "testimonials"} onClick={() => go("testimonials")} />
+                        <NavRow icon={BookOpenCheck} label="Knowledge Hub Preview" nested active={activeView === "knowledge-hub-preview"} onClick={() => go("knowledge-hub-preview")} />
                     </div>
                   ) : null}
                 </div>
@@ -1355,7 +1365,8 @@ function AdminWorkspace() {
     activeView === "statistics" ||
     activeView === "faculty-preview" ||
     activeView === "gallery-preview" ||
-    activeView === "testimonials"
+    activeView === "testimonials" ||
+    activeView === "knowledge-hub-preview"
   ) {
     const sectionName =
       activeView === "programs"
@@ -1368,6 +1379,8 @@ function AdminWorkspace() {
               ? "Gallery Preview"
               : activeView === "testimonials"
                 ? "Testimonials"
+                : activeView === "knowledge-hub-preview"
+                  ? "Knowledge Hub Preview"
               : "Hero";
     body = (
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
@@ -1382,6 +1395,38 @@ function AdminWorkspace() {
           sectionKey={activeView}
           onNavigate={setActiveView}
         />
+      </div>
+    );
+  } else if (activeView === "knowledge-hub-settings") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / Knowledge Hub"
+          title="Knowledge Hub settings"
+          description="This is the temporary settings destination for the Knowledge Hub page. The full editor can be added here later."
+          actions={
+            <button
+              type="button"
+              onClick={() => setActiveView("knowledge-hub-preview")}
+              className="focus-ring rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-[#0b3472] transition hover:border-[#0b3472]/30"
+              data-testid="button-back-knowledge-hub-preview"
+            >
+              Back to Knowledge Hub Preview
+            </button>
+          }
+        />
+        <section
+          className="mt-6 max-w-3xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
+          data-testid="panel-knowledge-hub-settings-placeholder"
+        >
+          <p className="eyebrow text-[#e3212b]">Knowledge Hub</p>
+          <h2 className="mt-2 font-display text-2xl font-extrabold text-[#0b3472]">
+            Page settings
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            Full page controls will be added here later.
+          </p>
+        </section>
       </div>
     );
   } else if (activeView === "gallery") {

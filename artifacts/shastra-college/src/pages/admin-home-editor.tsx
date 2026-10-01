@@ -57,6 +57,37 @@ function text(value: unknown, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
 
+type KnowledgeHubPreviewCardCopy = {
+  title: string;
+  description: string;
+};
+
+const knowledgeHubPreviewCardDefaults: KnowledgeHubPreviewCardCopy[] = [
+  {
+    title: "Study Guides",
+    description: "Clear resources for focused preparation.",
+  },
+  {
+    title: "Subject Notes",
+    description: "Ideas and concepts to explore further.",
+  },
+  {
+    title: "Learning Updates",
+    description: "News and insights from the college.",
+  },
+];
+
+function readKnowledgeHubPreviewCards(value: unknown) {
+  const savedCards = Array.isArray(value) ? value : [];
+  return knowledgeHubPreviewCardDefaults.map((fallback, index) => {
+    const card = record(savedCards[index]);
+    return {
+      title: text(card.title, fallback.title),
+      description: text(card.description, fallback.description),
+    };
+  });
+}
+
 function getEnquiryForm(content: CmsRecord): EnquiryForm {
   const raw = record(content.enquiryForm);
   const fields = Array.isArray(raw.fields)
@@ -1115,11 +1146,15 @@ function ContentSectionPanel({
 function PreviewSettingsEditor({
   section,
   targetLabel,
+  manageLabel,
+  editableCards = false,
   onNavigate,
   onFlash,
 }: {
   section: ContentSection;
   targetLabel: string;
+  manageLabel?: string;
+  editableCards?: boolean;
   onNavigate: () => void;
   onFlash: (flash: Flash) => void;
 }) {
@@ -1129,8 +1164,17 @@ function PreviewSettingsEditor({
   const [eyebrow, setEyebrow] = useState(text(content.eyebrow));
   const [heading, setHeading] = useState(section.title);
   const [description, setDescription] = useState(section.subtitle ?? "");
-  const defaultLabel = targetLabel === "Faculty" ? "Meet Our Faculty" : "View Gallery";
+  const defaultLabel =
+    targetLabel === "Faculty"
+      ? "Meet Our Faculty"
+      : targetLabel === "Gallery"
+        ? "View Gallery"
+        : "Explore Knowledge Hub";
+  const navigationLabel = manageLabel ?? `Manage ${targetLabel}`;
   const [ctaLabel, setCtaLabel] = useState(text(content.ctaLabel, defaultLabel));
+  const [previewCards, setPreviewCards] = useState(() =>
+    readKnowledgeHubPreviewCards(content.previewCards),
+  );
 
   useEffect(() => {
     const nextContent = record(section.content);
@@ -1138,6 +1182,7 @@ function PreviewSettingsEditor({
     setHeading(section.title);
     setDescription(section.subtitle ?? "");
     setCtaLabel(text(nextContent.ctaLabel, defaultLabel));
+    setPreviewCards(readKnowledgeHubPreviewCards(nextContent.previewCards));
   }, [section.id, section.updatedAt]);
 
   async function save(event: FormEvent<HTMLFormElement>) {
@@ -1152,6 +1197,7 @@ function PreviewSettingsEditor({
             ...record(section.content),
             eyebrow: eyebrow.trim(),
             ctaLabel: ctaLabel.trim(),
+            ...(editableCards ? { previewCards } : {}),
           },
         },
       });
@@ -1180,7 +1226,7 @@ function PreviewSettingsEditor({
           className="focus-ring inline-flex items-center gap-2 rounded-xl border border-[#0B3472]/15 bg-white px-4 py-2.5 text-sm font-bold text-[#0B3472] transition hover:border-[#E3212B] hover:text-[#E3212B]"
           data-testid={`button-manage-${targetLabel.toLowerCase()}`}
         >
-          Manage {targetLabel}
+          {navigationLabel}
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>
@@ -1189,6 +1235,53 @@ function PreviewSettingsEditor({
         <Input label="Heading" value={heading} onChange={setHeading} required testId={`input-${section.sectionKey}-heading`} />
         <Input label="Description" value={description} onChange={setDescription} multiline testId={`input-${section.sectionKey}-description`} />
         <Input label="CTA label" value={ctaLabel} onChange={setCtaLabel} required testId={`input-${section.sectionKey}-cta-label`} />
+        {editableCards ? (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+            <h3 className="font-display text-lg font-extrabold text-[#0B3472]">
+              Preview tile text
+            </h3>
+            <div className="mt-4 grid gap-4 lg:grid-cols-3">
+              {previewCards.map((card, index) => (
+                <div
+                  key={index}
+                  className="space-y-3 rounded-xl border border-slate-200 bg-white p-4"
+                >
+                  <p className="eyebrow text-[#E3212B]">Tile {index + 1}</p>
+                  <Input
+                    label="Title"
+                    value={card.title}
+                    onChange={(value) =>
+                      setPreviewCards((current) =>
+                        current.map((entry, cardIndex) =>
+                          cardIndex === index
+                            ? { ...entry, title: value }
+                            : entry,
+                        ),
+                      )
+                    }
+                    required
+                    testId={`input-${section.sectionKey}-tile-${index + 1}-title`}
+                  />
+                  <Input
+                    label="Description"
+                    value={card.description}
+                    onChange={(value) =>
+                      setPreviewCards((current) =>
+                        current.map((entry, cardIndex) =>
+                          cardIndex === index
+                            ? { ...entry, description: value }
+                            : entry,
+                        ),
+                      )
+                    }
+                    multiline
+                    testId={`input-${section.sectionKey}-tile-${index + 1}-description`}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
         <div className="flex justify-end border-t border-slate-100 pt-4">
           <button
             type="submit"
@@ -1219,8 +1312,11 @@ export default function AdminHomeEditor({
     | "statistics"
     | "faculty-preview"
     | "gallery-preview"
-    | "testimonials";
-  onNavigate: (page: "faculty" | "gallery") => void;
+    | "testimonials"
+    | "knowledge-hub-preview";
+  onNavigate: (
+    page: "faculty" | "gallery" | "knowledge-hub-settings",
+  ) => void;
 }) {
   const sections = useMemo(
     () =>
@@ -1234,6 +1330,7 @@ export default function AdminHomeEditor({
   const statistics = sections.get("statistics");
   const facultyPreview = sections.get("faculty-preview");
   const galleryPreview = sections.get("gallery-preview");
+  const knowledgeHubPreview = sections.get("knowledge-hub-preview");
   const itemsBySection = (section?: ContentSection) =>
     section
       ? home.items.filter((item) => item.sectionId === section.id)
@@ -1297,6 +1394,19 @@ export default function AdminHomeEditor({
         />
       ) : sectionKey === "gallery-preview" ? (
         <MissingSection title="Gallery Preview" />
+      ) : null}
+
+      {sectionKey === "knowledge-hub-preview" && knowledgeHubPreview ? (
+        <PreviewSettingsEditor
+          section={knowledgeHubPreview}
+          targetLabel="Knowledge Hub"
+          manageLabel="Knowledge Hub settings"
+          editableCards
+          onNavigate={() => onNavigate("knowledge-hub-settings")}
+          onFlash={onFlash}
+        />
+      ) : sectionKey === "knowledge-hub-preview" ? (
+        <MissingSection title="Knowledge Hub Preview" />
       ) : null}
 
       {sectionKey === "testimonials" ? (
