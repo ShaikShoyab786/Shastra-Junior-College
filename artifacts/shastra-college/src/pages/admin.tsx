@@ -365,7 +365,7 @@ function Shell({
                 ? "Pages / Courses"
             : "Pages";
   const selectedCourse = COURSE_DETAILS.find((course) => course.adminView === activeView);
-  const [activeCourseSection, setActiveCourseSection] = useState<"hero" | "highlights">("hero");
+  const [activeCourseSection, setActiveCourseSection] = useState<"hero" | "highlights" | "faculty-preview">("hero");
   useEffect(() => {
     setActiveCourseSection("hero");
   }, [selectedCourse?.slug]);
@@ -451,7 +451,7 @@ function Shell({
     setMobileNav(false);
   };
 
-  const jumpToCourseSection = (section: "hero" | "highlights") => {
+  const jumpToCourseSection = (section: "hero" | "highlights" | "faculty-preview") => {
     if (!selectedCourse) return;
     setActiveCourseSection(section);
     document
@@ -692,6 +692,7 @@ function Shell({
                               <>
                                 <NavRow icon={FileText} label="Hero" nested active={activeCourseSection === "hero"} onClick={() => jumpToCourseSection("hero")} />
                                 <NavRow icon={FileText} label="Quick Course Highlights" nested active={activeCourseSection === "highlights"} onClick={() => jumpToCourseSection("highlights")} />
+                                <NavRow icon={FileText} label="Faculty Preview" nested active={activeCourseSection === "faculty-preview"} onClick={() => jumpToCourseSection("faculty-preview")} />
                               </>
                             ) : null}
                             <div className="my-2 border-t border-white/10" />

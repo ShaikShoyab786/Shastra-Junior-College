@@ -10,12 +10,46 @@ export const COURSE_DETAILS = [
 export type CourseDetail = (typeof COURSE_DETAILS)[number];
 export type CourseDetailSlug = CourseDetail["slug"];
 export type CourseDetailAdminView = CourseDetail["adminView"];
+export const COURSE_MENTOR_SUBJECTS = [
+  { value: "mathematics", label: "Mathematics" },
+  { value: "physics", label: "Physics" },
+  { value: "chemistry", label: "Chemistry" },
+  { value: "biology", label: "Biology" },
+  { value: "iit-jee", label: "IIT-JEE" },
+  { value: "neet", label: "NEET" },
+  { value: "eamcet", label: "EAMCET" },
+] as const;
+
+export type CourseMentorSubject =
+  (typeof COURSE_MENTOR_SUBJECTS)[number]["value"];
+
+const COURSE_MENTOR_SUBJECTS_BY_COURSE: Record<
+  CourseDetailSlug,
+  readonly CourseMentorSubject[]
+> = {
+  mpc: ["mathematics", "physics", "chemistry"],
+  bipc: ["biology", "physics", "chemistry"],
+  "iit-jee": ["mathematics", "physics", "chemistry", "iit-jee"],
+  neet: ["biology", "physics", "chemistry", "neet"],
+  "mpc-eamcet": ["mathematics", "physics", "chemistry", "eamcet"],
+  integrated: [],
+};
+
+export function getCourseMentorSubjectsForCourse(slug: CourseDetailSlug) {
+  return COURSE_MENTOR_SUBJECTS_BY_COURSE[slug];
+}
 
 export function courseSectionKey(
   slug: CourseDetailSlug,
-  section: "hero" | "highlights",
+  section: "hero" | "highlights" | "faculty-preview",
 ) {
-  return `course-${slug}-${section === "highlights" ? "highlights" : "hero"}`;
+  const suffix =
+    section === "highlights"
+      ? "highlights"
+      : section === "faculty-preview"
+        ? "faculty-preview"
+        : "hero";
+  return `course-${slug}-${suffix}`;
 }
 
 export function getCourseDetail(slug: string) {

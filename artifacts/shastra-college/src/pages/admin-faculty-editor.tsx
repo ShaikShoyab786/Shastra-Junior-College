@@ -23,6 +23,10 @@ import {
   useUpdateContentSection,
 } from "@workspace/api-client-react";
 import type { ContentItem, ContentItemInput, ContentSection, JsonObject } from "@workspace/api-client-react";
+import {
+  COURSE_MENTOR_SUBJECTS,
+  type CourseMentorSubject,
+} from "./course-detail-config";
 
 type RecordValue = Record<string, unknown>;
 type Flash = { tone: "success" | "error"; message: string } | null;
@@ -51,6 +55,8 @@ type ProfileForm = {
   imageUrl: string;
   isVisible: boolean;
   showOnHome: boolean;
+  courseMentorEligible: boolean;
+  courseMentorSubjects: CourseMentorSubject[];
 };
 
 function record(value: unknown): RecordValue {
@@ -78,6 +84,17 @@ function contentFor(item?: ContentItem): ProfileForm {
   const content = record(item?.content);
   const links = record(content.socialLinks);
   const subjects = Array.isArray(content.subjectsTaught) ? content.subjectsTaught.filter((subject): subject is string => typeof subject === "string") : [];
+  const courseMentorSubjects = Array.isArray(content.courseMentorSubjects)
+    ? Array.from(
+        new Set(
+          content.courseMentorSubjects.filter(
+            (subject): subject is CourseMentorSubject =>
+              typeof subject === "string" &&
+              COURSE_MENTOR_SUBJECTS.some((option) => option.value === subject),
+          ),
+        ),
+      )
+    : [];
   const savedRole = text(content.leadershipRole);
   return {
     name: item?.title || "",
@@ -98,6 +115,8 @@ function contentFor(item?: ContentItem): ProfileForm {
     imageUrl: item?.imageUrl || "",
     isVisible: item?.isVisible ?? true,
     showOnHome: content.showOnHome === true,
+    courseMentorEligible: content.courseMentorEligible === true,
+    courseMentorSubjects,
   };
 }
 function Input({ label, value, onChange, placeholder, multiline = false, type = "text", required = false, testId }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; multiline?: boolean; type?: string; required?: boolean; testId: string }) {
@@ -155,6 +174,10 @@ function ProfileFormEditor({ section, initial, position, onClose, onFlash }: { s
       setError("Add a name and professional title.");
       return;
     }
+    if (form.courseMentorEligible && form.courseMentorSubjects.length === 0) {
+      setError("Select at least one subject or exam for course mentor sections.");
+      return;
+    }
     const content: JsonObject = {
       ...(initial?.content || {}),
       professionalTitle: form.professionalTitle.trim(),
@@ -167,6 +190,8 @@ function ProfileFormEditor({ section, initial, position, onClose, onFlash }: { s
       biography: form.biography.trim(),
       socialLinks: { linkedin: form.linkedin.trim(), facebook: form.facebook.trim(), instagram: form.instagram.trim(), website: form.website.trim() },
       showOnHome: form.showOnHome,
+      courseMentorEligible: form.courseMentorEligible,
+      courseMentorSubjects: form.courseMentorSubjects,
     };
     const data: ContentItemInput = {
       sectionId: section.id,
@@ -241,6 +266,48 @@ function ProfileFormEditor({ section, initial, position, onClose, onFlash }: { s
           <Input label="Website URL" value={form.website} onChange={(value) => set("website", value)} type="url" testId="input-faculty-website" />
         </div>
       </div>
+      <section className="mt-5 rounded-2xl border border-[#0B3472]/20 bg-[#f5f8fc] p-4 sm:p-5" aria-labelledby="faculty-course-mentor-heading" data-testid="panel-faculty-course-mentor-eligibility">
+        <h4 id="faculty-course-mentor-heading" className="text-sm font-bold text-[#0B3472]">Course mentor eligibility</h4>
+        <p className="mt-1 text-xs leading-5 text-slate-600">A mentor appears on a course only when eligibility is enabled and at least one selected subject or exam matches that pathway.</p>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {COURSE_MENTOR_SUBJECTS.map((subject) => (
+            <label key={subject.value} className="flex min-h-11 items-center gap-3 rounded-xl border border-[#0B3472]/15 bg-white px-3 py-2 text-sm font-semibold text-slate-700">
+              <input
+                type="checkbox"
+                checked={form.courseMentorSubjects.includes(subject.value)}
+                onChange={(event) =>
+                  set(
+                    "courseMentorSubjects",
+                    event.currentTarget.checked
+                      ? [...form.courseMentorSubjects, subject.value]
+                      : form.courseMentorSubjects.filter(
+                          (selected) => selected !== subject.value,
+                        ),
+                  )
+                }
+                className="h-4 w-4 accent-[#E3212B]"
+                data-testid={`checkbox-faculty-course-subject-${subject.value}`}
+              />
+              {subject.label}
+            </label>
+          ))}
+        </div>
+        <label className="mt-4 flex items-start gap-3 text-sm font-semibold text-slate-700">
+          <input
+            type="checkbox"
+            checked={form.courseMentorEligible}
+            onChange={(event) =>
+              set("courseMentorEligible", event.currentTarget.checked)
+            }
+            className="mt-0.5 h-4 w-4 accent-[#E3212B]"
+            data-testid="checkbox-faculty-course-mentor-eligible"
+          />
+          <span>
+            Eligible for course mentor sections
+            <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">Independent from Faculty page visibility, Home Preview, and About Board selection.</span>
+          </span>
+        </label>
+      </section>
       <div className="mt-5 flex flex-wrap gap-5">
         <label className="flex items-center gap-2 text-sm font-semibold text-slate-700"><input type="checkbox" checked={form.isVisible} onChange={(event) => set("isVisible", event.target.checked)} className="h-4 w-4 accent-[#0B3472]" data-testid="checkbox-faculty-published" /> Published on Faculty page</label>
         <label className="flex items-center gap-2 text-sm font-semibold text-slate-700"><input type="checkbox" checked={form.showOnHome} onChange={(event) => set("showOnHome", event.target.checked)} className="h-4 w-4 accent-[#E3212B]" data-testid="checkbox-faculty-home-preview" /> Show on Home Preview</label>

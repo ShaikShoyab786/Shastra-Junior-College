@@ -130,6 +130,25 @@ function serializeItem(item: typeof contentItemsTable.$inferSelect) {
   };
 }
 
+function isCourseMentorProfile(item: typeof contentItemsTable.$inferSelect) {
+  if (item.itemType !== "faculty-profile") return false;
+  if (
+    typeof item.content !== "object" ||
+    item.content === null ||
+    Array.isArray(item.content)
+  ) {
+    return false;
+  }
+  const content = item.content as Record<string, unknown>;
+  return (
+    content.courseMentorEligible === true &&
+    Array.isArray(content.courseMentorSubjects) &&
+    content.courseMentorSubjects.some(
+      (subject) => typeof subject === "string" && subject.trim().length > 0,
+    )
+  );
+}
+
 async function loadCmsPage(pageSlug: ManagedPageSlug, includeHidden: boolean) {
   const [settings] = await db
     .select()
@@ -150,17 +169,33 @@ async function loadCmsPage(pageSlug: ManagedPageSlug, includeHidden: boolean) {
     ? allSections
     : allSections.filter((section) => section.isVisible);
   const visibleSectionIds = sections.map((section) => section.id);
+  const publicMentorSectionIds =
+    !includeHidden && pageSlug === "faculty"
+      ? allSections
+          .filter((section) => section.sectionKey === "faculty")
+          .map((section) => section.id)
+      : [];
+  const sectionIdsToLoad = includeHidden
+    ? allSections.map((section) => section.id)
+    : [...new Set([...visibleSectionIds, ...publicMentorSectionIds])];
   const allItems =
-    visibleSectionIds.length > 0
+    sectionIdsToLoad.length > 0
       ? await db
           .select()
           .from(contentItemsTable)
-          .where(inArray(contentItemsTable.sectionId, visibleSectionIds))
+          .where(inArray(contentItemsTable.sectionId, sectionIdsToLoad))
           .orderBy(asc(contentItemsTable.position), asc(contentItemsTable.createdAt))
       : [];
+  const visibleSectionIdSet = new Set(visibleSectionIds);
+  const publicMentorSectionIdSet = new Set(publicMentorSectionIds);
   const items = includeHidden
     ? allItems
-    : allItems.filter((item) => item.isVisible);
+    : allItems.filter(
+        (item) =>
+          (item.isVisible && visibleSectionIdSet.has(item.sectionId)) ||
+          (publicMentorSectionIdSet.has(item.sectionId) &&
+            isCourseMentorProfile(item)),
+      );
 
   return {
     settings: serializeSettings(settings),

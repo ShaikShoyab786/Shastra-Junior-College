@@ -9,7 +9,15 @@ import {
 } from "@workspace/api-client-react";
 import type { ContentItem, ContentSection } from "@workspace/api-client-react";
 import { Footer, Header } from "./public-home";
-import { courseSectionKey, type CourseDetail } from "./course-detail-config";
+import {
+  ProfileModal,
+  profileData,
+} from "@/components/faculty-profile-modal";
+import {
+  courseSectionKey,
+  getCourseMentorSubjectsForCourse,
+  type CourseDetail,
+} from "./course-detail-config";
 
 function recordValue(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -204,9 +212,122 @@ function CourseHighlights({
   );
 }
 
+function CourseFacultyPreview({
+  course,
+  items,
+}: {
+  course: CourseDetail;
+  items: ContentItem[];
+}) {
+  const [selected, setSelected] = useState<ContentItem | null>(null);
+  useEffect(() => setSelected(null), [course.slug]);
+  const profiles = useMemo(() => {
+    const matchingSubjects = new Set<string>(
+      getCourseMentorSubjectsForCourse(course.slug),
+    );
+    if (!matchingSubjects.size) return [];
+    return items
+      .filter((item) => {
+        if (item.itemType !== "faculty-profile") return false;
+        const content = recordValue(item.content);
+        const selectedSubjects = Array.isArray(content.courseMentorSubjects)
+          ? content.courseMentorSubjects.filter(
+              (subject): subject is string => typeof subject === "string",
+            )
+          : [];
+        return (
+          content.courseMentorEligible === true &&
+          selectedSubjects.some((subject) => matchingSubjects.has(subject))
+        );
+      })
+      .sort((a, b) => {
+        const aRole = textValue(recordValue(a.content), "leadershipRole", "Faculty");
+        const bRole = textValue(recordValue(b.content), "leadershipRole", "Faculty");
+        return Number(bRole !== "Faculty") - Number(aRole !== "Faculty") || a.position - b.position;
+      });
+  }, [course.slug, items]);
+
+  if (!profiles.length) return null;
+
+  return (
+    <>
+      <section
+        id={courseSectionKey(course.slug, "faculty-preview")}
+        className="bg-[#f7f5ef] px-5 py-14 sm:px-8 sm:py-20"
+        data-testid={`section-course-faculty-preview-${course.slug}`}
+      >
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col justify-between gap-5 border-b border-[#0b3472]/15 pb-7 md:flex-row md:items-end">
+            <div>
+              <p className="eyebrow text-[#e3212b]">FACULTY PREVIEW</p>
+              <h2 className="mt-3 font-display text-4xl font-extrabold tracking-[-.055em] text-[#0b3472] sm:text-5xl">
+                Meet your course mentors
+              </h2>
+            </div>
+            <p className="max-w-lg text-sm leading-6 text-[#53657d] sm:text-base">
+              Faculty selected for the subjects and exam pathway in {course.name}.
+            </p>
+          </div>
+          <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {profiles.map((item) => {
+              const profile = profileData(item);
+              return (
+                <article
+                  key={item.id}
+                  className="group overflow-hidden rounded-[1.5rem] border border-[#0b3472]/10 bg-white shadow-[0_12px_30px_rgba(11,52,114,.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(11,52,114,.12)]"
+                  data-testid={`card-course-faculty-${item.id}`}
+                >
+                  <button
+                    type="button"
+                    className="focus-ring block w-full text-left"
+                    onClick={() => setSelected(item)}
+                    data-testid={`button-open-course-faculty-${item.id}`}
+                  >
+                    <div className="relative aspect-[4/4.6] overflow-hidden bg-[#e7edf5]">
+                      {item.imageUrl ? (
+                        <img
+                          src={assetUrl(item.imageUrl)}
+                          alt=""
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-5xl font-display font-extrabold text-[#0b3472]/25">
+                          {item.title.charAt(0)}
+                        </div>
+                      )}
+                      <span className="absolute left-4 top-4 rounded-full bg-[#f7f5ef]/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.14em] text-[#0b3472]">
+                        {profile.professionalTitle}
+                      </span>
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-display text-2xl font-extrabold leading-tight text-[#0b3472]">
+                        {item.title}
+                      </h3>
+                      <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">
+                        {profile.shortDescription}
+                      </p>
+                      <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#e3212b]">
+                        View profile
+                      </span>
+                    </div>
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+      {selected ? (
+        <ProfileModal item={selected} onClose={() => setSelected(null)} />
+      ) : null}
+    </>
+  );
+}
+
 export default function PublicCourseDetailPage({ course }: { course: CourseDetail }) {
   const home = useGetHomePage({ query: { queryKey: getGetHomePageQueryKey() } });
   const cms = useGetCmsPage("courses", { query: { queryKey: getGetCmsPageQueryKey("courses") } });
+  const faculty = useGetCmsPage("faculty", { query: { queryKey: getGetCmsPageQueryKey("faculty") } });
   const sections = useMemo(() => cms.data?.sections ?? [], [cms.data?.sections]);
   const hero = sections.find((section) => section.sectionKey === courseSectionKey(course.slug, "hero"));
   const highlights = sections.find((section) => section.sectionKey === courseSectionKey(course.slug, "highlights"));
@@ -223,6 +344,13 @@ export default function PublicCourseDetailPage({ course }: { course: CourseDetai
         <main>
           <CourseHero course={course} section={hero} />
           {highlights?.isVisible ? <CourseHighlights course={course} section={highlights} items={cms.data.items} /> : null}
+          {faculty.data ? (
+            <CourseFacultyPreview course={course} items={faculty.data.items} />
+          ) : faculty.isError ? (
+            <div className="bg-[#f7f5ef] px-5 py-5 text-center text-sm text-slate-500" role="status" data-testid={`status-course-faculty-preview-${course.slug}`}>
+              Faculty previews are temporarily unavailable.
+            </div>
+          ) : null}
         </main>
       ) : <CourseNotPublished course={course} />}
       <Footer home={home.data} />

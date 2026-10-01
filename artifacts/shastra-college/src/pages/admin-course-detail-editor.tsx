@@ -17,7 +17,9 @@ import type { ContentItem, ContentItemInput, ContentSection } from "@workspace/a
 import { Link } from "wouter";
 import {
   COURSE_DETAILS,
+  COURSE_MENTOR_SUBJECTS,
   courseSectionKey,
+  getCourseMentorSubjectsForCourse,
   getCourseDetailForMenuCard,
   type CourseDetail,
 } from "./course-detail-config";
@@ -354,6 +356,9 @@ export default function AdminCourseDetailEditor({
   const deleteItem = useDeleteContentItem();
   const updateSection = useUpdateContentSection();
   const requestUpload = useRequestUploadUrl();
+  const facultyPage = useGetAdminCmsPage("faculty", {
+    query: { queryKey: getGetAdminCmsPageQueryKey("faculty") },
+  });
   const [hero, setHero] = useState<SectionDraft | null>(null);
   const [highlightsSection, setHighlightsSection] = useState<SectionDraft | null>(null);
   const [items, setItems] = useState<HighlightDraft[]>([]);
@@ -364,6 +369,37 @@ export default function AdminCourseDetailEditor({
 
   const heroSource = page.data?.sections.find((section) => section.sectionKey === courseSectionKey(course.slug, "hero"));
   const highlightsSource = page.data?.sections.find((section) => section.sectionKey === courseSectionKey(course.slug, "highlights"));
+  const facultySection = facultyPage.data?.sections.find((section) => section.sectionKey === "faculty");
+  const courseMentorSubjects = new Set<string>(
+    getCourseMentorSubjectsForCourse(course.slug),
+  );
+  const courseMentors = (facultyPage.data?.items ?? [])
+    .filter((item) => {
+      if (
+        item.sectionId !== facultySection?.id ||
+        item.itemType !== "faculty-profile"
+      ) {
+        return false;
+      }
+      const content = recordValue(item.content);
+      const assignedSubjects = Array.isArray(content.courseMentorSubjects)
+        ? content.courseMentorSubjects.filter(
+            (subject): subject is string => typeof subject === "string",
+          )
+        : [];
+      return (
+        content.courseMentorEligible === true &&
+        assignedSubjects.some((subject) => courseMentorSubjects.has(subject))
+      );
+    })
+    .sort((a, b) => {
+      const aRole = stringValue(recordValue(a.content), "leadershipRole") || "Faculty";
+      const bRole = stringValue(recordValue(b.content), "leadershipRole") || "Faculty";
+      return Number(bRole !== "Faculty") - Number(aRole !== "Faculty") || a.position - b.position;
+    });
+  const mentorSubjectLabels = new Map<string, string>(
+    COURSE_MENTOR_SUBJECTS.map((subject) => [subject.value, subject.label]),
+  );
 
   useEffect(() => {
     if (!page.data || !heroSource || !highlightsSource || hydratedCourse === course.slug) return;
@@ -579,6 +615,56 @@ export default function AdminCourseDetailEditor({
         <div className="mt-5 border-t border-slate-100 pt-4">
           <SectionToggle label="Publish Quick Course Highlights" checked={highlightsSection.isVisible} onChange={(value) => setHighlightsSection((current) => current ? { ...current, isVisible: value } : current)} testId={`checkbox-course-${course.slug}-highlights-visible`} />
         </div>
+      </Panel>
+
+      <Panel id={courseSectionKey(course.slug, "faculty-preview")} eyebrow={`${course.name} / Section 3`} title="Faculty Preview" testId={`panel-admin-course-${course.slug}-faculty-preview`}>
+        <p className="text-sm leading-6 text-slate-600">
+          This section uses existing Faculty profiles. Eligibility and subject matches are managed in Faculty settings, independently from Faculty page and Home Preview visibility.
+        </p>
+        {facultyPage.isLoading ? (
+          <div className="mt-4 h-20 animate-pulse rounded-2xl bg-slate-100" aria-busy="true" />
+        ) : facultyPage.isError ? (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3" role="alert">
+            <p className="text-sm font-semibold text-red-800">Faculty profiles could not be loaded.</p>
+            <button type="button" onClick={() => void facultyPage.refetch()} className="rounded-lg bg-[#0b3472] px-3 py-2 text-xs font-bold text-white">Try again</button>
+          </div>
+        ) : courseMentors.length ? (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {courseMentors.map((mentor) => {
+              const content = recordValue(mentor.content);
+              const assignedSubjects = Array.isArray(content.courseMentorSubjects)
+                ? content.courseMentorSubjects.filter(
+                    (subject): subject is string => typeof subject === "string",
+                  )
+                : [];
+              const matchingLabels = assignedSubjects
+                .filter((subject) => courseMentorSubjects.has(subject))
+                .map((subject) => mentorSubjectLabels.get(subject))
+                .filter((label): label is string => Boolean(label));
+              return (
+                <article key={mentor.id} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3" data-testid={`row-course-faculty-preview-${mentor.id}`}>
+                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[#e7edf5]">
+                    {mentor.imageUrl ? (
+                      <img src={mentor.imageUrl.startsWith("/objects/") ? `/api/storage${mentor.imageUrl}` : mentor.imageUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center font-display text-xl font-extrabold text-[#0b3472]/40">{mentor.title.charAt(0)}</div>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate font-bold text-[#0b3472]">{mentor.title}</p>
+                    <p className="mt-0.5 truncate text-xs text-slate-500">{stringValue(content, "professionalTitle") || "Faculty member"}</p>
+                    <p className="mt-1 text-[11px] font-semibold text-slate-500">{matchingLabels.join(" · ")}</p>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-6 text-center">
+            <p className="font-semibold text-[#0b3472]">No faculty profiles match this pathway yet.</p>
+            <p className="mt-1 text-sm text-slate-500">Enable course mentor eligibility and choose matching subjects in Faculty settings.</p>
+          </div>
+        )}
       </Panel>
 
       {error ? <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800" role="alert" data-testid={`error-admin-course-${course.slug}`}>{error}</p> : null}
