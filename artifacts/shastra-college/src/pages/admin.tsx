@@ -137,7 +137,6 @@ const pageItems: Array<{
   { key: "faqs", label: "FAQs", icon: CircleHelp },
   { key: "courses", label: "Courses", icon: BookOpenCheck },
   { key: "knowledge-hub-settings", label: "Knowledge Hub", icon: BookOpenCheck },
-  { key: "article-hub-editor", label: "Article Hub", icon: FileText },
   { key: "contact", label: "Contact", icon: FileText },
 ];
 
@@ -362,6 +361,10 @@ function Shell({
     activeView === "knowledge-hub-settings" ||
       activeView === "article-hub-editor",
   );
+  const [knowledgeHubOpen, setKnowledgeHubOpen] = useState(
+    activeView === "knowledge-hub-settings" ||
+      activeView === "article-hub-editor",
+  );
   const [coursesOpen, setCoursesOpen] = useState(
     activeView === "courses" ||
       activeView === "courses-explore" ||
@@ -487,7 +490,7 @@ function Shell({
                           : activeView === "home-faqs"
                             ? "Home · FAQs"
                           : activeView === "knowledge-hub-settings"
-                            ? "Knowledge Hub settings"
+                            ? "Main Page"
                             : activeView === "article-hub-editor"
                               ? "Article Hub"
                       : pageItems.find((item) => item.key === activeView)?.label ||
@@ -512,6 +515,7 @@ function Shell({
       view === "article-hub-editor"
     ) {
       setPagesOpen(true);
+      setKnowledgeHubOpen(true);
     }
     if (
       view === "about" ||
@@ -837,6 +841,59 @@ function Shell({
                             ) : null}
                             <div className="my-2 border-t border-white/10" />
                             <NavRow icon={BookOpen} label="Explore Courses" nested active={activeView === "courses-explore"} onClick={() => go("courses-explore")} />
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  }
+
+                  if (item.key === "knowledge-hub-settings") {
+                    const knowledgeHubActive =
+                      activeView === "knowledge-hub-settings" ||
+                      activeView === "article-hub-editor";
+                    return (
+                      <div key={item.key}>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setKnowledgeHubOpen((current) => !current)
+                          }
+                          aria-expanded={knowledgeHubOpen}
+                          aria-controls="nav-knowledge-hub-subsections"
+                          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${
+                            knowledgeHubActive
+                              ? "bg-white/10 text-white"
+                              : "text-blue-100 hover:bg-white/10 hover:text-white"
+                          }`}
+                          data-testid="button-toggle-knowledge-hub-subsections"
+                        >
+                          <item.icon className="h-4 w-4 shrink-0" />
+                          <span className="min-w-0 flex-1">Knowledge Hub</span>
+                          {knowledgeHubOpen ? (
+                            <ChevronDown className="h-3.5 w-3.5 text-blue-300" />
+                          ) : (
+                            <ChevronRight className="h-3.5 w-3.5 text-blue-300" />
+                          )}
+                        </button>
+                        {knowledgeHubOpen ? (
+                          <div
+                            id="nav-knowledge-hub-subsections"
+                            className="ml-3 mt-1 space-y-1 border-l border-white/10 pl-2"
+                          >
+                            <NavRow
+                              icon={BookOpenCheck}
+                              label="Main Page"
+                              nested
+                              active={activeView === "knowledge-hub-settings"}
+                              onClick={() => go("knowledge-hub-settings")}
+                            />
+                            <NavRow
+                              icon={FileText}
+                              label="Article Hub"
+                              nested
+                              active={activeView === "article-hub-editor"}
+                              onClick={() => go("article-hub-editor")}
+                            />
                           </div>
                         ) : null}
                       </div>
