@@ -9,6 +9,8 @@ import { useClerk, useUser, Show } from "@clerk/react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
+  Award,
+  BookOpen,
   BookOpenCheck,
   Check,
   ChevronDown,
@@ -24,6 +26,7 @@ import {
   Link2,
   LogOut,
   Menu,
+  MessageSquareQuote,
   Palette,
   Save,
   Settings2,
@@ -64,6 +67,7 @@ import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
 import AdminCoursesEditor from "./admin-courses-editor";
 import AdminCoursesPageEditor from "./admin-courses-page-editor";
 import AdminCourseDetailEditor from "./admin-course-detail-editor";
+import AdminFaqEditor from "./admin-faq-editor";
 import {
   COURSE_DETAILS,
   courseSectionKey,
@@ -95,19 +99,23 @@ type WorkspaceView =
   | "about-board"
   | "about-institutional-strengths"
   | "about-core-values"
-  | "results"
+  | "faqs"
   | "faculty"
   | "courses"
   | "courses-explore"
   | CourseDetailAdminView
   | "gallery";
 
-const pageItems: Array<{ key: WorkspaceView; label: string; note?: string }> = [
-  { key: "about", label: "About" },
-  { key: "faculty", label: "Faculty" },
-  { key: "gallery", label: "Gallery" },
-  { key: "results", label: "Results", note: "Coming soon" },
-  { key: "courses", label: "Courses" },
+const pageItems: Array<{
+  key: WorkspaceView;
+  label: string;
+  icon: typeof LayoutDashboard;
+}> = [
+  { key: "about", label: "About", icon: FolderOpen },
+  { key: "faculty", label: "Faculty", icon: UserRound },
+  { key: "gallery", label: "Gallery", icon: ImagePlus },
+  { key: "faqs", label: "FAQs", icon: CircleHelp },
+  { key: "courses", label: "Courses", icon: BookOpenCheck },
 ];
 
 function errorMessage(error: unknown) {
@@ -288,7 +296,7 @@ function NavRow({
     <button
       onClick={onClick}
       className={`focus-ring flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold transition ${
-        nested ? "pl-10" : ""
+        nested ? "pl-3" : ""
       } ${
         active
           ? "bg-white text-[#0b3472] shadow-[0_4px_12px_rgba(0,0,0,.08)]"
@@ -363,6 +371,8 @@ function Shell({
         ? "Site settings"
         : activeView === "knowledge-hub-settings"
           ? "Pages / Knowledge Hub"
+          : activeView === "faqs"
+            ? "Pages / FAQs"
         : aboutSectionActive
           ? "Pages / About"
           : homeSectionActive
@@ -571,9 +581,9 @@ function Shell({
                       <NavRow icon={Link2} label="Pathways" nested active={activeView === "programs"} onClick={() => go("programs")} />
                       <NavRow icon={ClipboardList} label="Statistics" nested active={activeView === "statistics"} onClick={() => go("statistics")} />
                        <NavRow icon={ImagePlus} label="Gallery Preview" nested active={activeView === "gallery-preview"} onClick={() => go("gallery-preview")} />
-                      <NavRow icon={ClipboardList} label="Placement Record" nested active={activeView === "placement-records"} onClick={() => go("placement-records")} />
+                      <NavRow icon={Award} label="Placement Record" nested active={activeView === "placement-records"} onClick={() => go("placement-records")} />
                        <NavRow icon={UserRound} label="Faculty Preview" nested active={activeView === "faculty-preview"} onClick={() => go("faculty-preview")} />
-                       <NavRow icon={ClipboardList} label="Testimonials" nested active={activeView === "testimonials"} onClick={() => go("testimonials")} />
+                        <NavRow icon={MessageSquareQuote} label="Testimonials" nested active={activeView === "testimonials"} onClick={() => go("testimonials")} />
                         <NavRow icon={BookOpenCheck} label="Knowledge Hub Preview" nested active={activeView === "knowledge-hub-preview"} onClick={() => go("knowledge-hub-preview")} />
                     </div>
                   ) : null}
@@ -593,7 +603,7 @@ function Shell({
                             }`}
                             data-testid="nav-about"
                           >
-                            <FolderOpen className="h-4 w-4 shrink-0" />
+                            <item.icon className="h-4 w-4 shrink-0" />
                             <span className="min-w-0 flex-1 truncate">
                               About
                             </span>
@@ -621,7 +631,7 @@ function Shell({
                             className="ml-3 mt-1 space-y-1 border-l border-white/10 pl-2"
                           >
                             <NavRow
-                              icon={FileText}
+                              icon={FolderOpen}
                               label="Sub sections"
                               nested
                               active={activeView === "about"}
@@ -635,35 +645,35 @@ function Shell({
                               onClick={() => go("about-hero")}
                             />
                             <NavRow
-                              icon={FileText}
+                              icon={UserRound}
                               label="Who We Are"
                               nested
                               active={activeView === "about-who-we-are"}
                               onClick={() => go("about-who-we-are")}
                             />
                             <NavRow
-                              icon={FileText}
+                              icon={UserRound}
                               label="Chairman"
                               nested
                               active={activeView === "about-chairman"}
                               onClick={() => go("about-chairman")}
                             />
                             <NavRow
-                              icon={FileText}
+                              icon={BookOpen}
                               label="Board of Directors"
                               nested
                               active={activeView === "about-board"}
                               onClick={() => go("about-board")}
                             />
                             <NavRow
-                              icon={FileText}
+                              icon={Award}
                               label="Institutional Strengths"
                               nested
                               active={activeView === "about-institutional-strengths"}
                               onClick={() => go("about-institutional-strengths")}
                             />
                             <NavRow
-                              icon={FileText}
+                              icon={Check}
                               label="Core Values"
                               nested
                               active={activeView === "about-core-values"}
@@ -689,7 +699,7 @@ function Shell({
                             }`}
                             data-testid="nav-courses-page"
                           >
-                            <FolderOpen className="h-4 w-4 shrink-0" />
+                            <item.icon className="h-4 w-4 shrink-0" />
                             <span className="min-w-0 flex-1 truncate">Courses</span>
                           </button>
                           <button type="button" onClick={() => setCoursesOpen((current) => !current)} aria-label="Toggle Courses subsections" aria-expanded={coursesOpen} className="rounded-lg p-2 text-blue-300 hover:bg-white/10 hover:text-white" data-testid="button-toggle-courses-subsections">
@@ -702,15 +712,15 @@ function Shell({
                             {selectedCourse ? (
                               <>
                                 <NavRow icon={FileText} label="Hero" nested active={activeCourseSection === "hero"} onClick={() => jumpToCourseSection("hero")} />
-                                <NavRow icon={FileText} label="Quick Course Highlights" nested active={activeCourseSection === "highlights"} onClick={() => jumpToCourseSection("highlights")} />
+                                <NavRow icon={Check} label="Quick Course Highlights" nested active={activeCourseSection === "highlights"} onClick={() => jumpToCourseSection("highlights")} />
                                 <NavRow icon={FileText} label="Faculty Preview" nested active={activeCourseSection === "faculty-preview"} onClick={() => jumpToCourseSection("faculty-preview")} />
-                                <NavRow icon={BookOpenCheck} label="Curriculum" nested active={activeCourseSection === "curriculum"} onClick={() => jumpToCourseSection("curriculum")} />
+                            <NavRow icon={BookOpenCheck} label="Curriculum" nested active={activeCourseSection === "curriculum"} onClick={() => jumpToCourseSection("curriculum")} />
                                 <NavRow icon={ImagePlus} label="Gallery Preview" nested active={activeCourseSection === "gallery-preview"} onClick={() => jumpToCourseSection("gallery-preview")} />
                                 <NavRow icon={ClipboardList} label="Enrollment Process" nested active={activeCourseSection === "enrollment-process"} onClick={() => jumpToCourseSection("enrollment-process")} />
                               </>
                             ) : null}
                             <div className="my-2 border-t border-white/10" />
-                            <NavRow icon={FileText} label="Explore Courses" nested active={activeView === "courses-explore"} onClick={() => go("courses-explore")} />
+                            <NavRow icon={BookOpen} label="Explore Courses" nested active={activeView === "courses-explore"} onClick={() => go("courses-explore")} />
                           </div>
                         ) : null}
                       </div>
@@ -720,12 +730,10 @@ function Shell({
                   return (
                     <NavRow
                       key={item.key}
-                      icon={FolderOpen}
+                      icon={item.icon}
                       label={item.label}
-                      nested
                       active={activeView === item.key}
                       onClick={() => go(item.key)}
-                      badge={item.note ? "Soon" : undefined}
                     />
                   );
                 })}
@@ -1395,6 +1403,17 @@ function AdminWorkspace() {
           sectionKey={activeView}
           onNavigate={setActiveView}
         />
+      </div>
+    );
+  } else if (activeView === "faqs") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / FAQs"
+          title="Manage shared questions and answers."
+          description="Write clear answers once, then choose whether each one appears on Home, Contact, or All Courses."
+        />
+        <AdminFaqEditor home={home} onFlash={showFlash} />
       </div>
     );
   } else if (activeView === "knowledge-hub-settings") {

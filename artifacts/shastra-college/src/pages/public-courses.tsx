@@ -11,6 +11,7 @@ import {
 } from "@workspace/api-client-react";
 import type { ContentItem, ContentSection, CoursesMenuCard } from "@workspace/api-client-react";
 import { Footer, Header } from "./public-home";
+import FaqSection from "../components/faq-section";
 
 function assetUrl(value: string | null | undefined) {
   if (!value) return "";
@@ -154,7 +155,6 @@ function validDestination(destination: string | null | undefined) {
     "/faculty",
     "/gallery",
     "/knowledge-hub",
-    "/results",
   ]);
 
   try {
@@ -345,6 +345,17 @@ export function PublicCoursesPage() {
   const pathways = sectionByKey(cms.data.sections, "regular-pathways") || sectionByKey(cms.data.sections, "pathways");
   const batchSchedule = sectionByKey(cms.data.sections, "batch-details-schedule");
   const admissions = sectionByKey(cms.data.sections, "admissions-cta");
+  const faqSection = home.data.sections.find(
+    (section) =>
+      section.pageSlug === "home" &&
+      section.sectionKey.toLowerCase() === "faqs",
+  );
+  const faqItems = faqSection
+    ? home.data.items.filter(
+        (item) =>
+          item.sectionId === faqSection.id && item.itemType === "faq",
+      )
+    : [];
   return (
     <div className="min-h-[100dvh] bg-[#f7f5ef]" data-college-theme style={{ "--college-primary": home.data.settings.primaryColor, "--college-accent": home.data.settings.accentColor } as React.CSSProperties}>
       <Header home={home.data} />
@@ -353,6 +364,7 @@ export function PublicCoursesPage() {
          {pathways ? <Pathways section={pathways} cards={cards} /> : null}
          {batchSchedule ? <BatchSchedule section={batchSchedule} items={cms.data.items} /> : null}
          {admissions ? <AdmissionsCta section={admissions} /> : null}
+          <FaqSection section={faqSection} items={faqItems} pageTarget="courses" />
        </main>
       <Footer home={home.data} />
     </div>

@@ -10,8 +10,9 @@ import {
   Footer,
   Header,
 } from "./public-home";
+import FaqSection from "../components/faq-section";
 
-type Destination = "courses" | "results" | "knowledge-hub" | "contact";
+type Destination = "courses" | "knowledge-hub" | "contact";
 
 const destinationContent: Record<
   Destination,
@@ -23,13 +24,6 @@ const destinationContent: Record<
     description: "Explore course information from Shastra Junior College.",
     notice:
       "Course details are being prepared for this page. Contact the college to ask about current course options.",
-  },
-  results: {
-    eyebrow: "COLLEGE UPDATES",
-    title: "Results",
-    description: "Find results information shared by Shastra Junior College.",
-    notice:
-      "Official results information will be shared here when it is available.",
   },
   "knowledge-hub": {
     eyebrow: "LEARNING RESOURCES",
@@ -167,6 +161,17 @@ function PublicDestinationPage({ destination }: { destination: Destination }) {
   const heroSection = home.sections.find(
     (section) => section.sectionKey.toLowerCase() === "hero",
   );
+  const faqSection = home.sections.find(
+    (section) =>
+      section.pageSlug === "home" &&
+      section.sectionKey.toLowerCase() === "faqs",
+  );
+  const faqItems = faqSection
+    ? home.items.filter(
+        (item) =>
+          item.sectionId === faqSection.id && item.itemType === "faq",
+      )
+    : [];
 
   return (
     <div
@@ -184,6 +189,13 @@ function PublicDestinationPage({ destination }: { destination: Destination }) {
         destination={destination}
         heroSection={heroSection}
       />
+      {destination === "contact" ? (
+        <FaqSection
+          section={faqSection}
+          items={faqItems}
+          pageTarget="contact"
+        />
+      ) : null}
       <Footer home={home} />
     </div>
   );
@@ -191,10 +203,6 @@ function PublicDestinationPage({ destination }: { destination: Destination }) {
 
 export function CoursesPage() {
   return <PublicDestinationPage destination="courses" />;
-}
-
-export function ResultsPage() {
-  return <PublicDestinationPage destination="results" />;
 }
 
 export function KnowledgeHubPage() {

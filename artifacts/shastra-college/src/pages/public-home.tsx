@@ -31,6 +31,7 @@ import type {
 import PlacementRecordsSection from "./placement-records-section";
 import TestimonialsCarousel from "../components/testimonials-carousel";
 import KnowledgeHubPreview from "../components/knowledge-hub-preview";
+import FaqSection from "../components/faq-section";
 import CoursesMegaMenu from "../components/courses-mega-menu";
 
 const logoPath = "/shastra-college-logo.png";
@@ -224,6 +225,9 @@ function publicNavigation(
     if (
       !label ||
       !path ||
+      path.split(/[?#]/, 1)[0].replace(/\/+$/, "").toLowerCase() ===
+        "/results" ||
+      /^results$/i.test(label) ||
       path === "/admin" ||
       path === "/sign-in" ||
       path === "/admissions" ||
@@ -1072,6 +1076,17 @@ function PageSections({ home }: { home: HomePage }) {
       section.sectionKey.toLowerCase() === "knowledge-hub-preview" &&
       section.isVisible,
   );
+  const faqSection = home.sections.find(
+    (section) =>
+      section.pageSlug === "home" &&
+      section.sectionKey.toLowerCase() === "faqs",
+  );
+  const faqItems = faqSection
+    ? home.items.filter(
+        (item) =>
+          item.sectionId === faqSection.id && item.itemType === "faq",
+      )
+    : [];
   const testimonialItems = testimonialsSection
     ? home.items
         .filter(
@@ -1139,6 +1154,7 @@ function PageSections({ home }: { home: HomePage }) {
       {knowledgeHubPreviewSection ? (
         <KnowledgeHubPreview section={knowledgeHubPreviewSection} />
       ) : null}
+      <FaqSection section={faqSection} items={faqItems} pageTarget="home" />
     </main>
   );
 }

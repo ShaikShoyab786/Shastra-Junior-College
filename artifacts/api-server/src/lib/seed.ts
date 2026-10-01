@@ -180,7 +180,6 @@ const DEFAULT_PUBLIC_NAVIGATION = [
   { label: "About", path: "/about" },
   { label: "Courses", path: "/courses" },
   { label: "Faculty", path: "/faculty" },
-  { label: "Results", path: "/results" },
   { label: "Gallery", path: "/gallery" },
   { label: "Knowledge Hub", path: "/knowledge-hub" },
   { label: "Contact", path: "/contact" },
@@ -2239,6 +2238,7 @@ export async function seedInitialHomeContent(): Promise<void> {
   await seedGalleryHomePreviewDefaults();
   await seedHomeTestimonials();
   await seedHomeKnowledgeHubPreview();
+  await seedHomeFaqs();
   await seedAboutPage();
 }
 
@@ -3356,6 +3356,81 @@ async function seedHomeKnowledgeHubPreview(): Promise<void> {
         position: 14,
       })
       .onConflictDoNothing();
+  });
+}
+
+async function seedHomeFaqs(): Promise<void> {
+  const defaultFaqs = [
+    {
+      question: "Which course pathways are available?",
+      answer:
+        "Current course listings include MPC, BiPC, MPC with IIT-JEE preparation, BiPC with NEET preparation, and MPC with EAMCET preparation. Explore All Courses for subject combinations and preparation details.",
+      pageTargets: ["home", "courses"],
+    },
+    {
+      question: "What subjects are part of MPC and BiPC?",
+      answer:
+        "MPC centers on Mathematics, Physics, and Chemistry. BiPC centers on Biology, Physics, and Chemistry.",
+      pageTargets: ["home", "courses"],
+    },
+    {
+      question: "How can I ask about admissions?",
+      answer:
+        "Send an enquiry through the Contact page and include the course you are interested in. The college team can follow up using the details you provide.",
+      pageTargets: ["home", "contact", "courses"],
+    },
+    {
+      question: "Where can I find course and batch information?",
+      answer:
+        "Open All Courses to review the pathways and schedule information shared by the college. For details about a particular option, send an enquiry through Contact.",
+      pageTargets: ["contact", "courses"],
+    },
+  ];
+
+  await db.transaction(async (tx) => {
+    const [existingSection] = await tx
+      .select()
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "home"),
+          eq(contentSectionsTable.sectionKey, "faqs"),
+        ),
+      )
+      .limit(1);
+
+    if (existingSection) return;
+
+    const [section] = await tx
+      .insert(contentSectionsTable)
+      .values({
+        pageSlug: "home",
+        sectionKey: "faqs",
+        title: "Frequently Asked Questions",
+        subtitle: "Answers about courses and getting in touch with the college.",
+        content: { eyebrow: "COMMON QUESTIONS" },
+        isVisible: true,
+        position: 15,
+      })
+      .onConflictDoNothing()
+      .returning();
+
+    if (!section) return;
+
+    await tx.insert(contentItemsTable).values(
+      defaultFaqs.map((faq, index) => ({
+        sectionId: section.id,
+        itemType: "faq",
+        title: faq.question,
+        description: faq.answer,
+        imageUrl: null,
+        linkPath: null,
+        label: null,
+        content: { pageTargets: faq.pageTargets },
+        isVisible: true,
+        position: index,
+      })),
+    );
   });
 }
 

@@ -16,7 +16,6 @@ import { getCourseDetail } from '@/pages/course-detail-config';
 import {
   ContactPage,
   KnowledgeHubPage,
-  ResultsPage,
 } from '@/pages/public-destination-page';
 import {
   Route,
@@ -124,7 +123,6 @@ function RoutedApp() {
           <Route path="/courses" component={CoursesPage} />
           <Route path="/courses/:courseSlug" component={CourseDetailRoute} />
           <Route path="/faculty" component={FacultyPage} />
-          <Route path="/results" component={ResultsPage} />
           <Route path="/gallery" component={GalleryPage} />
           <Route path="/knowledge-hub" component={KnowledgeHubPage} />
           <Route path="/contact" component={ContactPage} />
