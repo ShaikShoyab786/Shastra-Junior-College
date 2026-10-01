@@ -52,6 +52,15 @@ import type {
   PublicEnquirySubmission,
   SiteSettings,
   SiteSettingsUpdate,
+  StudyResource,
+  StudyResourceCategory,
+  StudyResourceCategoryInput,
+  StudyResourceCategoryUpdate,
+  StudyResourceInput,
+  StudyResourceSettings,
+  StudyResourceSettingsUpdate,
+  StudyResourceUpdate,
+  StudyResources,
   UpdateEnquiryStatus,
   UploadUrlRequest,
   UploadUrlResponse,
@@ -3093,6 +3102,750 @@ export const useDeleteVideo = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getDeleteVideoMutationOptions(options));
+    }
+
+export const getGetStudyResourcesUrl = () => {
+
+
+
+
+  return `/api/study-resources`
+}
+
+/**
+ * @summary Get published Study Resources content
+ */
+export const getStudyResources = async ( options?: Parameters<typeof customFetch>[1]): Promise<StudyResources> => {
+
+  return customFetch<StudyResources>(getGetStudyResourcesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetStudyResourcesQueryKey = () => {
+    return [
+    `/api/study-resources`
+    ] as const;
+    }
+
+
+export const getGetStudyResourcesQueryOptions = <TData = Awaited<ReturnType<typeof getStudyResources>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getStudyResources>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStudyResourcesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStudyResources>>> = ({ signal }) => getStudyResources({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStudyResources>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetStudyResourcesQueryResult = NonNullable<Awaited<ReturnType<typeof getStudyResources>>>
+export type GetStudyResourcesQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get published Study Resources content
+ */
+
+export function useGetStudyResources<TData = Awaited<ReturnType<typeof getStudyResources>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getStudyResources>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetStudyResourcesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminStudyResourcesUrl = () => {
+
+
+
+
+  return `/api/admin/study-resources`
+}
+
+/**
+ * @summary Get all Study Resources content for authorized staff
+ */
+export const getAdminStudyResources = async ( options?: Parameters<typeof customFetch>[1]): Promise<StudyResources> => {
+
+  return customFetch<StudyResources>(getGetAdminStudyResourcesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminStudyResourcesQueryKey = () => {
+    return [
+    `/api/admin/study-resources`
+    ] as const;
+    }
+
+
+export const getGetAdminStudyResourcesQueryOptions = <TData = Awaited<ReturnType<typeof getAdminStudyResources>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminStudyResources>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminStudyResourcesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminStudyResources>>> = ({ signal }) => getAdminStudyResources({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminStudyResources>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminStudyResourcesQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminStudyResources>>>
+export type GetAdminStudyResourcesQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get all Study Resources content for authorized staff
+ */
+
+export function useGetAdminStudyResources<TData = Awaited<ReturnType<typeof getAdminStudyResources>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminStudyResources>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminStudyResourcesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateStudyResourceSettingsUrl = () => {
+
+
+
+
+  return `/api/admin/study-resources/settings`
+}
+
+/**
+ * @summary Update Study Resources heading and hero image
+ */
+export const updateStudyResourceSettings = async (studyResourceSettingsUpdate: StudyResourceSettingsUpdate, options?: Parameters<typeof customFetch>[1]): Promise<StudyResourceSettings> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<StudyResourceSettings>(getUpdateStudyResourceSettingsUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(studyResourceSettingsUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateStudyResourceSettingsMutationKey = () => ['updateStudyResourceSettings'] as const;
+
+export const getUpdateStudyResourceSettingsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateStudyResourceSettings>>, TError,UpdateStudyResourceSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateStudyResourceSettings>>, TError,UpdateStudyResourceSettingsMutationVariables, TContext> => {
+
+const mutationKey = getUpdateStudyResourceSettingsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateStudyResourceSettings>>, UpdateStudyResourceSettingsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateStudyResourceSettings(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateStudyResourceSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateStudyResourceSettings>>>
+    export type UpdateStudyResourceSettingsMutationBody = BodyType<StudyResourceSettingsUpdate>
+    export type UpdateStudyResourceSettingsMutationError = ErrorType<void>
+    export type UpdateStudyResourceSettingsMutationVariables = {data: BodyType<StudyResourceSettingsUpdate>}
+
+    /**
+ * @summary Update Study Resources heading and hero image
+ */
+export const useUpdateStudyResourceSettings = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateStudyResourceSettings>>, TError,UpdateStudyResourceSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateStudyResourceSettings>>,
+        TError,
+        UpdateStudyResourceSettingsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateStudyResourceSettingsMutationOptions(options));
+    }
+
+export const getCreateStudyResourceCategoryUrl = () => {
+
+
+
+
+  return `/api/admin/study-resources/categories`
+}
+
+/**
+ * @summary Create a Study Resources category
+ */
+export const createStudyResourceCategory = async (studyResourceCategoryInput: StudyResourceCategoryInput, options?: Parameters<typeof customFetch>[1]): Promise<StudyResourceCategory> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<StudyResourceCategory>(getCreateStudyResourceCategoryUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(studyResourceCategoryInput)
+  }
+);}
+
+
+
+
+
+export const getCreateStudyResourceCategoryMutationKey = () => ['createStudyResourceCategory'] as const;
+
+export const getCreateStudyResourceCategoryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createStudyResourceCategory>>, TError,CreateStudyResourceCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createStudyResourceCategory>>, TError,CreateStudyResourceCategoryMutationVariables, TContext> => {
+
+const mutationKey = getCreateStudyResourceCategoryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createStudyResourceCategory>>, CreateStudyResourceCategoryMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createStudyResourceCategory(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateStudyResourceCategoryMutationResult = NonNullable<Awaited<ReturnType<typeof createStudyResourceCategory>>>
+    export type CreateStudyResourceCategoryMutationBody = BodyType<StudyResourceCategoryInput>
+    export type CreateStudyResourceCategoryMutationError = ErrorType<void>
+    export type CreateStudyResourceCategoryMutationVariables = {data: BodyType<StudyResourceCategoryInput>}
+
+    /**
+ * @summary Create a Study Resources category
+ */
+export const useCreateStudyResourceCategory = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createStudyResourceCategory>>, TError,CreateStudyResourceCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createStudyResourceCategory>>,
+        TError,
+        CreateStudyResourceCategoryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateStudyResourceCategoryMutationOptions(options));
+    }
+
+export const getUpdateStudyResourceCategoryUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/study-resources/categories/${id}`
+}
+
+/**
+ * @summary Update a Study Resources category
+ */
+export const updateStudyResourceCategory = async (id: string,
+    studyResourceCategoryUpdate: StudyResourceCategoryUpdate, options?: Parameters<typeof customFetch>[1]): Promise<StudyResourceCategory> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<StudyResourceCategory>(getUpdateStudyResourceCategoryUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(studyResourceCategoryUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateStudyResourceCategoryMutationKey = () => ['updateStudyResourceCategory'] as const;
+
+export const getUpdateStudyResourceCategoryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateStudyResourceCategory>>, TError,UpdateStudyResourceCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateStudyResourceCategory>>, TError,UpdateStudyResourceCategoryMutationVariables, TContext> => {
+
+const mutationKey = getUpdateStudyResourceCategoryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateStudyResourceCategory>>, UpdateStudyResourceCategoryMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateStudyResourceCategory(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateStudyResourceCategoryMutationResult = NonNullable<Awaited<ReturnType<typeof updateStudyResourceCategory>>>
+    export type UpdateStudyResourceCategoryMutationBody = BodyType<StudyResourceCategoryUpdate>
+    export type UpdateStudyResourceCategoryMutationError = ErrorType<void>
+    export type UpdateStudyResourceCategoryMutationVariables = {id: string;data: BodyType<StudyResourceCategoryUpdate>}
+
+    /**
+ * @summary Update a Study Resources category
+ */
+export const useUpdateStudyResourceCategory = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateStudyResourceCategory>>, TError,UpdateStudyResourceCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateStudyResourceCategory>>,
+        TError,
+        UpdateStudyResourceCategoryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateStudyResourceCategoryMutationOptions(options));
+    }
+
+export const getDeleteStudyResourceCategoryUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/study-resources/categories/${id}`
+}
+
+/**
+ * @summary Delete an unused Study Resources category
+ */
+export const deleteStudyResourceCategory = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteStudyResourceCategoryUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteStudyResourceCategoryMutationKey = () => ['deleteStudyResourceCategory'] as const;
+
+export const getDeleteStudyResourceCategoryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStudyResourceCategory>>, TError,DeleteStudyResourceCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteStudyResourceCategory>>, TError,DeleteStudyResourceCategoryMutationVariables, TContext> => {
+
+const mutationKey = getDeleteStudyResourceCategoryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteStudyResourceCategory>>, DeleteStudyResourceCategoryMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteStudyResourceCategory(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteStudyResourceCategoryMutationResult = NonNullable<Awaited<ReturnType<typeof deleteStudyResourceCategory>>>
+
+    export type DeleteStudyResourceCategoryMutationError = ErrorType<void>
+    export type DeleteStudyResourceCategoryMutationVariables = {id: string}
+
+    /**
+ * @summary Delete an unused Study Resources category
+ */
+export const useDeleteStudyResourceCategory = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStudyResourceCategory>>, TError,DeleteStudyResourceCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteStudyResourceCategory>>,
+        TError,
+        DeleteStudyResourceCategoryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteStudyResourceCategoryMutationOptions(options));
+    }
+
+export const getCreateStudyResourceUrl = () => {
+
+
+
+
+  return `/api/admin/study-resources/resources`
+}
+
+/**
+ * @summary Create a Study Resources document
+ */
+export const createStudyResource = async (studyResourceInput: StudyResourceInput, options?: Parameters<typeof customFetch>[1]): Promise<StudyResource> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<StudyResource>(getCreateStudyResourceUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(studyResourceInput)
+  }
+);}
+
+
+
+
+
+export const getCreateStudyResourceMutationKey = () => ['createStudyResource'] as const;
+
+export const getCreateStudyResourceMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createStudyResource>>, TError,CreateStudyResourceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createStudyResource>>, TError,CreateStudyResourceMutationVariables, TContext> => {
+
+const mutationKey = getCreateStudyResourceMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createStudyResource>>, CreateStudyResourceMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createStudyResource(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateStudyResourceMutationResult = NonNullable<Awaited<ReturnType<typeof createStudyResource>>>
+    export type CreateStudyResourceMutationBody = BodyType<StudyResourceInput>
+    export type CreateStudyResourceMutationError = ErrorType<void>
+    export type CreateStudyResourceMutationVariables = {data: BodyType<StudyResourceInput>}
+
+    /**
+ * @summary Create a Study Resources document
+ */
+export const useCreateStudyResource = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createStudyResource>>, TError,CreateStudyResourceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createStudyResource>>,
+        TError,
+        CreateStudyResourceMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateStudyResourceMutationOptions(options));
+    }
+
+export const getUpdateStudyResourceUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/study-resources/resources/${id}`
+}
+
+/**
+ * @summary Update a Study Resources document
+ */
+export const updateStudyResource = async (id: string,
+    studyResourceUpdate: StudyResourceUpdate, options?: Parameters<typeof customFetch>[1]): Promise<StudyResource> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<StudyResource>(getUpdateStudyResourceUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(studyResourceUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateStudyResourceMutationKey = () => ['updateStudyResource'] as const;
+
+export const getUpdateStudyResourceMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateStudyResource>>, TError,UpdateStudyResourceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateStudyResource>>, TError,UpdateStudyResourceMutationVariables, TContext> => {
+
+const mutationKey = getUpdateStudyResourceMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateStudyResource>>, UpdateStudyResourceMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateStudyResource(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateStudyResourceMutationResult = NonNullable<Awaited<ReturnType<typeof updateStudyResource>>>
+    export type UpdateStudyResourceMutationBody = BodyType<StudyResourceUpdate>
+    export type UpdateStudyResourceMutationError = ErrorType<void>
+    export type UpdateStudyResourceMutationVariables = {id: string;data: BodyType<StudyResourceUpdate>}
+
+    /**
+ * @summary Update a Study Resources document
+ */
+export const useUpdateStudyResource = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateStudyResource>>, TError,UpdateStudyResourceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateStudyResource>>,
+        TError,
+        UpdateStudyResourceMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateStudyResourceMutationOptions(options));
+    }
+
+export const getDeleteStudyResourceUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/study-resources/resources/${id}`
+}
+
+/**
+ * @summary Delete a Study Resources document
+ */
+export const deleteStudyResource = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteStudyResourceUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteStudyResourceMutationKey = () => ['deleteStudyResource'] as const;
+
+export const getDeleteStudyResourceMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStudyResource>>, TError,DeleteStudyResourceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteStudyResource>>, TError,DeleteStudyResourceMutationVariables, TContext> => {
+
+const mutationKey = getDeleteStudyResourceMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteStudyResource>>, DeleteStudyResourceMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteStudyResource(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteStudyResourceMutationResult = NonNullable<Awaited<ReturnType<typeof deleteStudyResource>>>
+
+    export type DeleteStudyResourceMutationError = ErrorType<void>
+    export type DeleteStudyResourceMutationVariables = {id: string}
+
+    /**
+ * @summary Delete a Study Resources document
+ */
+export const useDeleteStudyResource = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStudyResource>>, TError,DeleteStudyResourceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteStudyResource>>,
+        TError,
+        DeleteStudyResourceMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteStudyResourceMutationOptions(options));
     }
 
 export const getRequestUploadUrlUrl = () => {

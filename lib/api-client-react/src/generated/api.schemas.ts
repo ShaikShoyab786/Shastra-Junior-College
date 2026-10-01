@@ -357,6 +357,227 @@ export interface VideoHub {
   videos: Video[];
 }
 
+export interface StudyResourceSettings {
+  eyebrow: string;
+  title: string;
+  introduction: string;
+  /** @nullable */
+  heroImageUrl: string | null;
+  heroImageAlt: string;
+  updatedAt: string;
+}
+
+export interface StudyResourceSettingsUpdate {
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  eyebrow?: string;
+  /**
+     * @minLength 1
+     * @maxLength 180
+     */
+  title?: string;
+  /**
+     * @minLength 1
+     * @maxLength 1200
+     */
+  introduction?: string;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  heroImageUrl?: string | null;
+  /** @maxLength 300 */
+  heroImageAlt?: string;
+}
+
+export interface StudyResourceCategory {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StudyResourceCategoryInput {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  slug: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name: string;
+  /** @maxLength 500 */
+  description: string;
+  /** @minimum 0 */
+  position: number;
+}
+
+export interface StudyResourceCategoryUpdate {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  slug?: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name?: string;
+  /** @maxLength 500 */
+  description?: string;
+  /** @minimum 0 */
+  position?: number;
+}
+
+export type StudyResourceResourceType = typeof StudyResourceResourceType[keyof typeof StudyResourceResourceType];
+
+
+export const StudyResourceResourceType = {
+  'study-notes': 'study-notes',
+  'practice-paper': 'practice-paper',
+  syllabus: 'syllabus',
+  'revision-guide': 'revision-guide',
+  'study-planner': 'study-planner',
+} as const;
+
+export interface StudyResource {
+  id: string;
+  categoryId: string;
+  categoryName: string;
+  categorySlug: string;
+  title: string;
+  description: string;
+  resourceType: StudyResourceResourceType;
+  fileUrl: string;
+  fileName: string;
+  fileSizeBytes: number;
+  isDemo: boolean;
+  /** @nullable */
+  thumbnailUrl: string | null;
+  thumbnailAlt: string;
+  /** @nullable */
+  publishedAt: string | null;
+  isPublished: boolean;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type StudyResourceInputResourceType = typeof StudyResourceInputResourceType[keyof typeof StudyResourceInputResourceType];
+
+
+export const StudyResourceInputResourceType = {
+  'study-notes': 'study-notes',
+  'practice-paper': 'practice-paper',
+  syllabus: 'syllabus',
+  'revision-guide': 'revision-guide',
+  'study-planner': 'study-planner',
+} as const;
+
+export interface StudyResourceInput {
+  categoryId: string;
+  /**
+     * @minLength 1
+     * @maxLength 180
+     */
+  title: string;
+  /** @maxLength 1200 */
+  description: string;
+  resourceType: StudyResourceInputResourceType;
+  /**
+     * @minLength 1
+     * @maxLength 1000
+     */
+  fileUrl: string;
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
+  fileName: string;
+  /**
+     * @minimum 0
+     * @maximum 10485760
+     */
+  fileSizeBytes: number;
+  isDemo: boolean;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  thumbnailUrl: string | null;
+  /** @maxLength 300 */
+  thumbnailAlt: string;
+  /** @nullable */
+  publishedAt: string | null;
+  isPublished: boolean;
+  /** @minimum 0 */
+  position: number;
+}
+
+export type StudyResourceUpdateResourceType = typeof StudyResourceUpdateResourceType[keyof typeof StudyResourceUpdateResourceType];
+
+
+export const StudyResourceUpdateResourceType = {
+  'study-notes': 'study-notes',
+  'practice-paper': 'practice-paper',
+  syllabus: 'syllabus',
+  'revision-guide': 'revision-guide',
+  'study-planner': 'study-planner',
+} as const;
+
+export interface StudyResourceUpdate {
+  categoryId?: string;
+  /**
+     * @minLength 1
+     * @maxLength 180
+     */
+  title?: string;
+  /** @maxLength 1200 */
+  description?: string;
+  resourceType?: StudyResourceUpdateResourceType;
+  /**
+     * @minLength 1
+     * @maxLength 1000
+     */
+  fileUrl?: string;
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
+  fileName?: string;
+  /**
+     * @minimum 0
+     * @maximum 10485760
+     */
+  fileSizeBytes?: number;
+  isDemo?: boolean;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  thumbnailUrl?: string | null;
+  /** @maxLength 300 */
+  thumbnailAlt?: string;
+  /** @nullable */
+  publishedAt?: string | null;
+  isPublished?: boolean;
+  /** @minimum 0 */
+  position?: number;
+}
+
+export interface StudyResources {
+  settings: StudyResourceSettings;
+  categories: StudyResourceCategory[];
+  resources: StudyResource[];
+}
+
 export interface HealthStatus {
   status: string;
 }

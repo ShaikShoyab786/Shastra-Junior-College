@@ -4,6 +4,7 @@ import {
   seedArticleHub,
   seedCoursesPageSections,
   seedInitialHomeContent,
+  seedStudyResources,
   seedVideoHub,
 } from "./lib/seed";
 
@@ -26,6 +27,7 @@ async function start(): Promise<void> {
   await seedCoursesPageSections();
   await seedArticleHub();
   await seedVideoHub();
+  await seedStudyResources();
 
   app.listen(port, (err) => {
     if (err) {

@@ -74,6 +74,7 @@ import AdminKnowledgeHubMenuEditor from "./admin-knowledge-hub-menu-editor";
 import AdminKnowledgeHubPageEditor from "./admin-knowledge-hub-page-editor";
 import AdminArticleHubEditor from "./admin-article-hub-editor";
 import AdminVideoHubEditor from "./admin-video-hub-editor";
+import AdminStudyResourcesEditor from "./admin-study-resources-editor";
 import AdminCoursesPageEditor from "./admin-courses-page-editor";
 import AdminCourseDetailEditor from "./admin-course-detail-editor";
 import { isValidSocialProfileUrl } from "@/lib/social-profiles";
@@ -106,6 +107,7 @@ type WorkspaceView =
   | "knowledge-hub-settings"
   | "article-hub-editor"
   | "video-hub-editor"
+  | "study-resources-editor"
   | "knowledge-hub-mega-menu"
   | "identity"
   | "courses-mega-menu"
@@ -362,12 +364,14 @@ function Shell({
   const [pagesOpen, setPagesOpen] = useState(
     activeView === "knowledge-hub-settings" ||
       activeView === "article-hub-editor" ||
-      activeView === "video-hub-editor",
+      activeView === "video-hub-editor" ||
+      activeView === "study-resources-editor",
   );
   const [knowledgeHubOpen, setKnowledgeHubOpen] = useState(
     activeView === "knowledge-hub-settings" ||
       activeView === "article-hub-editor" ||
-      activeView === "video-hub-editor",
+      activeView === "video-hub-editor" ||
+      activeView === "study-resources-editor",
   );
   const [coursesOpen, setCoursesOpen] = useState(
     activeView === "courses" ||
@@ -425,7 +429,8 @@ function Shell({
         ? "Site settings"
         : activeView === "knowledge-hub-settings" ||
             activeView === "article-hub-editor" ||
-            activeView === "video-hub-editor"
+            activeView === "video-hub-editor" ||
+            activeView === "study-resources-editor"
           ? "Pages / Knowledge Hub"
           : activeView === "faqs"
             ? "Pages / FAQs"
@@ -500,6 +505,8 @@ function Shell({
                               ? "Article Hub"
                               : activeView === "video-hub-editor"
                                 ? "Video Hub"
+                                : activeView === "study-resources-editor"
+                                  ? "Study Resources"
                       : pageItems.find((item) => item.key === activeView)?.label ||
                         "Home";
 
@@ -519,7 +526,9 @@ function Shell({
     }
     if (
       view === "knowledge-hub-settings" ||
-      view === "article-hub-editor"
+      view === "article-hub-editor" ||
+      view === "video-hub-editor" ||
+      view === "study-resources-editor"
     ) {
       setPagesOpen(true);
       setKnowledgeHubOpen(true);
@@ -907,6 +916,13 @@ function Shell({
                               nested
                               active={activeView === "video-hub-editor"}
                               onClick={() => go("video-hub-editor")}
+                            />
+                            <NavRow
+                              icon={FileText}
+                              label="Study Resources"
+                              nested
+                              active={activeView === "study-resources-editor"}
+                              onClick={() => go("study-resources-editor")}
                             />
                           </div>
                         ) : null}
@@ -2017,6 +2033,17 @@ function AdminWorkspace() {
           description="Edit the page introduction and hero, organize categories, and add or update YouTube videos."
         />
         <AdminVideoHubEditor onFlash={showFlash} />
+      </div>
+    );
+  } else if (activeView === "study-resources-editor") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / Knowledge Hub / Study Resources"
+          title="Manage Study Resources content."
+          description="Edit the page introduction, organize resource categories, and upload or publish PDF study documents."
+        />
+        <AdminStudyResourcesEditor onFlash={showFlash} />
       </div>
     );
   } else if (activeView === "knowledge-hub-mega-menu") {

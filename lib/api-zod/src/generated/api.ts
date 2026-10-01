@@ -2045,6 +2045,337 @@ export const DeleteVideoResponse = zod.void()
 
 
 /**
+ * @summary Get published Study Resources content
+ */
+export const GetStudyResourcesResponse = zod.object({
+  "settings": zod.object({
+  "eyebrow": zod.string(),
+  "title": zod.string(),
+  "introduction": zod.string(),
+  "heroImageUrl": zod.string().nullable(),
+  "heroImageAlt": zod.string(),
+  "updatedAt": zod.coerce.date()
+}),
+  "categories": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "resources": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "categoryId": zod.string().uuid(),
+  "categoryName": zod.string(),
+  "categorySlug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "resourceType": zod.enum(['study-notes', 'practice-paper', 'syllabus', 'revision-guide', 'study-planner']),
+  "fileUrl": zod.string(),
+  "fileName": zod.string(),
+  "fileSizeBytes": zod.number().int(),
+  "isDemo": zod.boolean(),
+  "thumbnailUrl": zod.string().nullable(),
+  "thumbnailAlt": zod.string(),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Get all Study Resources content for authorized staff
+ */
+export const GetAdminStudyResourcesResponse = zod.object({
+  "settings": zod.object({
+  "eyebrow": zod.string(),
+  "title": zod.string(),
+  "introduction": zod.string(),
+  "heroImageUrl": zod.string().nullable(),
+  "heroImageAlt": zod.string(),
+  "updatedAt": zod.coerce.date()
+}),
+  "categories": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "resources": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "categoryId": zod.string().uuid(),
+  "categoryName": zod.string(),
+  "categorySlug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "resourceType": zod.enum(['study-notes', 'practice-paper', 'syllabus', 'revision-guide', 'study-planner']),
+  "fileUrl": zod.string(),
+  "fileName": zod.string(),
+  "fileSizeBytes": zod.number().int(),
+  "isDemo": zod.boolean(),
+  "thumbnailUrl": zod.string().nullable(),
+  "thumbnailAlt": zod.string(),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Update Study Resources heading and hero image
+ */
+export const updateStudyResourceSettingsBodyEyebrowMax = 120;
+
+export const updateStudyResourceSettingsBodyTitleMax = 180;
+
+export const updateStudyResourceSettingsBodyIntroductionMax = 1200;
+
+export const updateStudyResourceSettingsBodyHeroImageUrlMax = 1000;
+
+export const updateStudyResourceSettingsBodyHeroImageAltMax = 300;
+
+
+
+export const UpdateStudyResourceSettingsBody = zod.object({
+  "eyebrow": zod.string().min(1).max(updateStudyResourceSettingsBodyEyebrowMax).optional(),
+  "title": zod.string().min(1).max(updateStudyResourceSettingsBodyTitleMax).optional(),
+  "introduction": zod.string().min(1).max(updateStudyResourceSettingsBodyIntroductionMax).optional(),
+  "heroImageUrl": zod.string().max(updateStudyResourceSettingsBodyHeroImageUrlMax).nullish(),
+  "heroImageAlt": zod.string().max(updateStudyResourceSettingsBodyHeroImageAltMax).optional()
+})
+
+export const UpdateStudyResourceSettingsResponse = zod.object({
+  "eyebrow": zod.string(),
+  "title": zod.string(),
+  "introduction": zod.string(),
+  "heroImageUrl": zod.string().nullable(),
+  "heroImageAlt": zod.string(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Create a Study Resources category
+ */
+export const createStudyResourceCategoryBodySlugMax = 100;
+
+export const createStudyResourceCategoryBodyNameMax = 120;
+
+export const createStudyResourceCategoryBodyDescriptionMax = 500;
+
+export const createStudyResourceCategoryBodyPositionMin = 0;
+
+
+
+export const CreateStudyResourceCategoryBody = zod.object({
+  "slug": zod.string().min(1).max(createStudyResourceCategoryBodySlugMax),
+  "name": zod.string().min(1).max(createStudyResourceCategoryBodyNameMax),
+  "description": zod.string().max(createStudyResourceCategoryBodyDescriptionMax),
+  "position": zod.number().int().min(createStudyResourceCategoryBodyPositionMin)
+})
+
+export const CreateStudyResourceCategoryResponse = zod.object({
+  "id": zod.string().uuid(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a Study Resources category
+ */
+export const UpdateStudyResourceCategoryParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const updateStudyResourceCategoryBodySlugMax = 100;
+
+export const updateStudyResourceCategoryBodyNameMax = 120;
+
+export const updateStudyResourceCategoryBodyDescriptionMax = 500;
+
+export const updateStudyResourceCategoryBodyPositionMin = 0;
+
+
+
+export const UpdateStudyResourceCategoryBody = zod.object({
+  "slug": zod.string().min(1).max(updateStudyResourceCategoryBodySlugMax).optional(),
+  "name": zod.string().min(1).max(updateStudyResourceCategoryBodyNameMax).optional(),
+  "description": zod.string().max(updateStudyResourceCategoryBodyDescriptionMax).optional(),
+  "position": zod.number().int().min(updateStudyResourceCategoryBodyPositionMin).optional()
+})
+
+export const UpdateStudyResourceCategoryResponse = zod.object({
+  "id": zod.string().uuid(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete an unused Study Resources category
+ */
+export const DeleteStudyResourceCategoryParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const DeleteStudyResourceCategoryResponse = zod.void()
+
+
+/**
+ * @summary Create a Study Resources document
+ */
+export const createStudyResourceBodyTitleMax = 180;
+
+export const createStudyResourceBodyDescriptionMax = 1200;
+
+export const createStudyResourceBodyFileUrlMax = 1000;
+
+export const createStudyResourceBodyFileNameMax = 255;
+
+export const createStudyResourceBodyFileSizeBytesMin = 0;
+export const createStudyResourceBodyFileSizeBytesMax = 10485760;
+
+export const createStudyResourceBodyThumbnailUrlMax = 1000;
+
+export const createStudyResourceBodyThumbnailAltMax = 300;
+
+export const createStudyResourceBodyPositionMin = 0;
+
+
+
+export const CreateStudyResourceBody = zod.object({
+  "categoryId": zod.string().uuid(),
+  "title": zod.string().min(1).max(createStudyResourceBodyTitleMax),
+  "description": zod.string().max(createStudyResourceBodyDescriptionMax),
+  "resourceType": zod.enum(['study-notes', 'practice-paper', 'syllabus', 'revision-guide', 'study-planner']),
+  "fileUrl": zod.string().min(1).max(createStudyResourceBodyFileUrlMax),
+  "fileName": zod.string().min(1).max(createStudyResourceBodyFileNameMax),
+  "fileSizeBytes": zod.number().int().min(createStudyResourceBodyFileSizeBytesMin).max(createStudyResourceBodyFileSizeBytesMax),
+  "isDemo": zod.boolean(),
+  "thumbnailUrl": zod.string().max(createStudyResourceBodyThumbnailUrlMax).nullable(),
+  "thumbnailAlt": zod.string().max(createStudyResourceBodyThumbnailAltMax),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int().min(createStudyResourceBodyPositionMin)
+})
+
+export const CreateStudyResourceResponse = zod.object({
+  "id": zod.string().uuid(),
+  "categoryId": zod.string().uuid(),
+  "categoryName": zod.string(),
+  "categorySlug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "resourceType": zod.enum(['study-notes', 'practice-paper', 'syllabus', 'revision-guide', 'study-planner']),
+  "fileUrl": zod.string(),
+  "fileName": zod.string(),
+  "fileSizeBytes": zod.number().int(),
+  "isDemo": zod.boolean(),
+  "thumbnailUrl": zod.string().nullable(),
+  "thumbnailAlt": zod.string(),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a Study Resources document
+ */
+export const UpdateStudyResourceParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const updateStudyResourceBodyTitleMax = 180;
+
+export const updateStudyResourceBodyDescriptionMax = 1200;
+
+export const updateStudyResourceBodyFileUrlMax = 1000;
+
+export const updateStudyResourceBodyFileNameMax = 255;
+
+export const updateStudyResourceBodyFileSizeBytesMin = 0;
+export const updateStudyResourceBodyFileSizeBytesMax = 10485760;
+
+export const updateStudyResourceBodyThumbnailUrlMax = 1000;
+
+export const updateStudyResourceBodyThumbnailAltMax = 300;
+
+export const updateStudyResourceBodyPositionMin = 0;
+
+
+
+export const UpdateStudyResourceBody = zod.object({
+  "categoryId": zod.string().uuid().optional(),
+  "title": zod.string().min(1).max(updateStudyResourceBodyTitleMax).optional(),
+  "description": zod.string().max(updateStudyResourceBodyDescriptionMax).optional(),
+  "resourceType": zod.enum(['study-notes', 'practice-paper', 'syllabus', 'revision-guide', 'study-planner']).optional(),
+  "fileUrl": zod.string().min(1).max(updateStudyResourceBodyFileUrlMax).optional(),
+  "fileName": zod.string().min(1).max(updateStudyResourceBodyFileNameMax).optional(),
+  "fileSizeBytes": zod.number().int().min(updateStudyResourceBodyFileSizeBytesMin).max(updateStudyResourceBodyFileSizeBytesMax).optional(),
+  "isDemo": zod.boolean().optional(),
+  "thumbnailUrl": zod.string().max(updateStudyResourceBodyThumbnailUrlMax).nullish(),
+  "thumbnailAlt": zod.string().max(updateStudyResourceBodyThumbnailAltMax).optional(),
+  "publishedAt": zod.coerce.date().nullish(),
+  "isPublished": zod.boolean().optional(),
+  "position": zod.number().int().min(updateStudyResourceBodyPositionMin).optional()
+})
+
+export const UpdateStudyResourceResponse = zod.object({
+  "id": zod.string().uuid(),
+  "categoryId": zod.string().uuid(),
+  "categoryName": zod.string(),
+  "categorySlug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "resourceType": zod.enum(['study-notes', 'practice-paper', 'syllabus', 'revision-guide', 'study-planner']),
+  "fileUrl": zod.string(),
+  "fileName": zod.string(),
+  "fileSizeBytes": zod.number().int(),
+  "isDemo": zod.boolean(),
+  "thumbnailUrl": zod.string().nullable(),
+  "thumbnailAlt": zod.string(),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a Study Resources document
+ */
+export const DeleteStudyResourceParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const DeleteStudyResourceResponse = zod.void()
+
+
+/**
  * Returns a presigned GCS URL for direct upload. The client sends JSON
  * metadata here, then uploads the file directly to the returned URL.
  * @summary Request a presigned URL for file upload

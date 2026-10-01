@@ -8,6 +8,9 @@ import {
   articleHubSettingsTable,
   articlesTable,
   knowledgeHubMenuSettingsTable,
+  studyResourceCategoriesTable,
+  studyResourceHubSettingsTable,
+  studyResourcesTable,
   videoCategoriesTable,
   videoHubSettingsTable,
   videosTable,
@@ -4672,5 +4675,250 @@ export async function seedVideoHub(): Promise<void> {
         updatedAt: new Date(),
       })
       .where(eq(videoHubSettingsTable.id, "primary"));
+  });
+}
+
+export async function seedStudyResources(): Promise<void> {
+  const seedVersion = 1;
+  const categorySeeds = [
+    {
+      slug: "mathematics",
+      name: "Mathematics",
+      description: "Algebra, functions, and problem-solving practice.",
+      position: 0,
+    },
+    {
+      slug: "physics",
+      name: "Physics",
+      description: "Concept notes and practice for core physics topics.",
+      position: 1,
+    },
+    {
+      slug: "chemistry",
+      name: "Chemistry",
+      description: "Revision resources and practice for chemistry.",
+      position: 2,
+    },
+    {
+      slug: "biology",
+      name: "Biology",
+      description: "Study notes and practice for life science topics.",
+      position: 3,
+    },
+    {
+      slug: "exam-preparation",
+      name: "Exam Preparation",
+      description: "Practice sets for focused revision.",
+      position: 4,
+    },
+  ];
+  const resourceSeeds = [
+    {
+      categorySlug: "mathematics",
+      title: "Algebra & Functions — Quick Notes",
+      description:
+        "A concise MPC/JEE revision guide to expressions, equations, functions, and common algebraic patterns.",
+      resourceType: "study-notes",
+      fileUrl: "/study-resource-pdfs/mpc-mathematics-algebra-functions.pdf",
+      fileName: "mpc-mathematics-algebra-functions.pdf",
+      thumbnailUrl: "/study-resource-covers/mpc-jee.png",
+      thumbnailAlt: "MPC and JEE study resource cover",
+      position: 0,
+    },
+    {
+      categorySlug: "physics",
+      title: "Motion & Forces — Concept Review",
+      description:
+        "A focused review of motion graphs, Newton's laws, free-body diagrams, and friction.",
+      resourceType: "revision-guide",
+      fileUrl: "/study-resource-pdfs/mpc-physics-motion-forces.pdf",
+      fileName: "mpc-physics-motion-forces.pdf",
+      thumbnailUrl: "/article-images/article-cover-physics.jpg",
+      thumbnailAlt: "Illustrated physics resource cover",
+      position: 1,
+    },
+    {
+      categorySlug: "chemistry",
+      title: "Mole Concept — Practice Worksheet",
+      description:
+        "Worked examples and short exercises on molar mass, particle count, and chemical quantities.",
+      resourceType: "practice-paper",
+      fileUrl: "/study-resource-pdfs/mpc-chemistry-mole-concept.pdf",
+      fileName: "mpc-chemistry-mole-concept.pdf",
+      thumbnailUrl: "/article-images/article-cover-chemistry.jpg",
+      thumbnailAlt: "Illustrated chemistry resource cover",
+      position: 2,
+    },
+    {
+      categorySlug: "exam-preparation",
+      title: "MPC + JEE — Mixed Practice Set",
+      description:
+        "A short mixed-subject practice set with mathematics, physics, and chemistry questions.",
+      resourceType: "practice-paper",
+      fileUrl: "/study-resource-pdfs/mpc-jee-mixed-practice-set.pdf",
+      fileName: "mpc-jee-mixed-practice-set.pdf",
+      thumbnailUrl: "/study-resource-covers/mpc-jee.png",
+      thumbnailAlt: "MPC and JEE mixed practice resource cover",
+      position: 3,
+    },
+    {
+      categorySlug: "biology",
+      title: "Cell Biology — Revision Notes",
+      description:
+        "A structured overview of cell organelles, membranes, transport, and the cell cycle.",
+      resourceType: "revision-guide",
+      fileUrl: "/study-resource-pdfs/bipc-biology-cell-biology.pdf",
+      fileName: "bipc-biology-cell-biology.pdf",
+      thumbnailUrl: "/study-resource-covers/bipc-neet.png",
+      thumbnailAlt: "BiPC and NEET study resource cover",
+      position: 4,
+    },
+    {
+      categorySlug: "biology",
+      title: "Human Physiology — Practice Worksheet",
+      description:
+        "Review questions covering digestion, circulation, respiration, and homeostasis.",
+      resourceType: "practice-paper",
+      fileUrl: "/study-resource-pdfs/bipc-biology-human-physiology.pdf",
+      fileName: "bipc-biology-human-physiology.pdf",
+      thumbnailUrl: "/article-images/article-cover-biology.jpg",
+      thumbnailAlt: "Illustrated biology resource cover",
+      position: 5,
+    },
+    {
+      categorySlug: "biology",
+      title: "Genetics — Key Concepts",
+      description:
+        "A clear study guide to inheritance, alleles, genotype, phenotype, and simple crosses.",
+      resourceType: "study-notes",
+      fileUrl: "/study-resource-pdfs/bipc-biology-genetics.pdf",
+      fileName: "bipc-biology-genetics.pdf",
+      thumbnailUrl: "/article-images/article-cover-neet.jpg",
+      thumbnailAlt: "Illustrated biology exam-preparation cover",
+      position: 6,
+    },
+    {
+      categorySlug: "exam-preparation",
+      title: "BiPC + NEET — Biology Practice Set",
+      description:
+        "A concise biology practice paper on cells, genetics, plant systems, and human physiology.",
+      resourceType: "practice-paper",
+      fileUrl: "/study-resource-pdfs/bipc-neet-biology-practice-set.pdf",
+      fileName: "bipc-neet-biology-practice-set.pdf",
+      thumbnailUrl: "/study-resource-covers/bipc-neet.png",
+      thumbnailAlt: "BiPC and NEET biology practice resource cover",
+      position: 7,
+    },
+    {
+      categorySlug: "chemistry",
+      title: "Chemical Bonding — Revision Notes",
+      description:
+        "A compact review of ionic and covalent bonding, Lewis structures, and molecular shape.",
+      resourceType: "revision-guide",
+      fileUrl: "/study-resource-pdfs/chemistry-bonding-revision.pdf",
+      fileName: "chemistry-bonding-revision.pdf",
+      thumbnailUrl: "/article-images/article-cover-chemistry.jpg",
+      thumbnailAlt: "Illustrated chemistry revision cover",
+      position: 8,
+    },
+    {
+      categorySlug: "physics",
+      title: "Units, Measurements & Graphs",
+      description:
+        "A practical guide to SI units, significant figures, uncertainty, and reading data graphs.",
+      resourceType: "study-notes",
+      fileUrl: "/study-resource-pdfs/physics-measurements-graphs.pdf",
+      fileName: "physics-measurements-graphs.pdf",
+      thumbnailUrl: "/article-images/article-cover-study-plan.jpg",
+      thumbnailAlt: "Illustrated study resource cover",
+      position: 9,
+    },
+  ];
+  const pdfSizes: Record<string, number> = {
+    "mpc-mathematics-algebra-functions.pdf": 3595,
+    "mpc-physics-motion-forces.pdf": 3762,
+    "mpc-chemistry-mole-concept.pdf": 3684,
+    "mpc-jee-mixed-practice-set.pdf": 3660,
+    "bipc-biology-cell-biology.pdf": 3720,
+    "bipc-biology-human-physiology.pdf": 3734,
+    "bipc-biology-genetics.pdf": 3770,
+    "bipc-neet-biology-practice-set.pdf": 3889,
+    "chemistry-bonding-revision.pdf": 3873,
+    "physics-measurements-graphs.pdf": 3701,
+  };
+
+  await db.transaction(async (tx) => {
+    let [settings] = await tx
+      .select()
+      .from(studyResourceHubSettingsTable)
+      .where(eq(studyResourceHubSettingsTable.id, "primary"))
+      .for("update")
+      .limit(1);
+
+    if (!settings) {
+      await tx
+        .insert(studyResourceHubSettingsTable)
+        .values({
+          id: "primary",
+          eyebrow: "STUDY RESOURCES",
+          title: "Find focused guides and practice for what you're learning.",
+          introduction:
+            "Browse subject notes, revision guides, and practice sets prepared to support your next study session.",
+          heroImageUrl: "/article-images/article-hub-hero.jpg",
+          heroImageAlt: "Student studying in a bright classroom",
+        })
+        .onConflictDoNothing();
+      [settings] = await tx
+        .select()
+        .from(studyResourceHubSettingsTable)
+        .where(eq(studyResourceHubSettingsTable.id, "primary"))
+        .for("update")
+        .limit(1);
+    }
+
+    if (!settings) {
+      throw new Error("Study Resources settings could not be initialized.");
+    }
+    if (settings.contentSeedVersion >= seedVersion) return;
+
+    await tx
+      .insert(studyResourceCategoriesTable)
+      .values(categorySeeds)
+      .onConflictDoNothing();
+    const categories = await tx.select().from(studyResourceCategoriesTable);
+    const categoryIds = new Map(
+      categories.map((category) => [category.slug, category.id]),
+    );
+    const missingCategory = resourceSeeds.find(
+      (resource) => !categoryIds.has(resource.categorySlug),
+    );
+    if (missingCategory) {
+      throw new Error(
+        `Study Resources category "${missingCategory.categorySlug}" is missing.`,
+      );
+    }
+
+    await tx.insert(studyResourcesTable).values(
+      resourceSeeds.map((resource) => ({
+        categoryId: categoryIds.get(resource.categorySlug)!,
+        title: resource.title,
+        description: resource.description,
+        resourceType: resource.resourceType,
+        fileUrl: resource.fileUrl,
+        fileName: resource.fileName,
+        fileSizeBytes: pdfSizes[resource.fileName] ?? 0,
+        isDemo: true,
+        thumbnailUrl: resource.thumbnailUrl,
+        thumbnailAlt: resource.thumbnailAlt,
+        publishedAt: null,
+        isPublished: true,
+        position: resource.position,
+      })),
+    );
+
+    await tx
+      .update(studyResourceHubSettingsTable)
+      .set({ contentSeedVersion: seedVersion, updatedAt: new Date() })
+      .where(eq(studyResourceHubSettingsTable.id, "primary"));
   });
 }

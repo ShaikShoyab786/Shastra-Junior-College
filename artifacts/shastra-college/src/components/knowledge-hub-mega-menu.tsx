@@ -302,13 +302,16 @@ export default function KnowledgeHubMegaMenu({
                                 ? "/knowledge-hub/article-hub"
                                 : item.key === "video-hub"
                                   ? "/knowledge-hub/video-hub"
+                                  : item.key === "study-resources"
+                                    ? "/knowledge-hub/study-resources"
                                   : `/knowledge-hub#${item.key}`
                             }
                             key={item.key}
                             onClick={
                               item.key === "article-hub"
                                 ? undefined
-                                : item.key === "video-hub"
+                                : item.key === "video-hub" ||
+                                    item.key === "study-resources"
                                   ? () => close()
                                   : (event) => {
                                     event.preventDefault();

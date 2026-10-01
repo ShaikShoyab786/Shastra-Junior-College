@@ -13,6 +13,8 @@ import {
   articlesTable,
   videoHubSettingsTable,
   videosTable,
+  studyResourceHubSettingsTable,
+  studyResourcesTable,
   db,
   siteSettingsTable,
 } from "@workspace/db";
@@ -305,6 +307,48 @@ router.get(
           ),
         )
         .limit(1);
+      const [studyResourceHeroImage] = await db
+        .select({ id: studyResourceHubSettingsTable.id })
+        .from(studyResourceHubSettingsTable)
+        .where(
+          or(
+            eq(
+              studyResourceHubSettingsTable.heroImageUrl,
+              `/objects/${objectPath}`,
+            ),
+            eq(
+              studyResourceHubSettingsTable.heroImageUrl,
+              `/api/storage/objects/${objectPath}`,
+            ),
+          ),
+        )
+        .limit(1);
+      const [studyResourceFile] = await db
+        .select({ id: studyResourcesTable.id })
+        .from(studyResourcesTable)
+        .where(
+          or(
+            eq(studyResourcesTable.fileUrl, `/objects/${objectPath}`),
+            eq(
+              studyResourcesTable.fileUrl,
+              `/api/storage/objects/${objectPath}`,
+            ),
+          ),
+        )
+        .limit(1);
+      const [studyResourceThumbnail] = await db
+        .select({ id: studyResourcesTable.id })
+        .from(studyResourcesTable)
+        .where(
+          or(
+            eq(studyResourcesTable.thumbnailUrl, `/objects/${objectPath}`),
+            eq(
+              studyResourcesTable.thumbnailUrl,
+              `/api/storage/objects/${objectPath}`,
+            ),
+          ),
+        )
+        .limit(1);
 
       if (
         logoDoesNotMatch &&
@@ -318,7 +362,10 @@ router.get(
         !articleHubHeroImage &&
         !articleCoverImage &&
         !videoHubHeroImage &&
-        !videoThumbnail
+        !videoThumbnail &&
+        !studyResourceHeroImage &&
+        !studyResourceFile &&
+        !studyResourceThumbnail
       ) {
         res.status(404).json({ error: "Object not found." });
         return;

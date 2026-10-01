@@ -7,6 +7,7 @@ import coursesMenuRouter from "./courses-menu";
 import knowledgeHubMenuRouter from "./knowledge-hub-menu";
 import articleHubRouter from "./article-hub";
 import videoHubRouter from "./video-hub";
+import studyResourcesRouter from "./study-resources";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(coursesMenuRouter);
 router.use(knowledgeHubMenuRouter);
 router.use(articleHubRouter);
 router.use(videoHubRouter);
+router.use(studyResourcesRouter);
 
 export default router;
