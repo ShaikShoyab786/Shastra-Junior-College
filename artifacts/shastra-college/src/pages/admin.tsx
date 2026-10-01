@@ -70,6 +70,8 @@ import AdminGalleryEditor from "./admin-gallery-editor";
 import AdminFacultyEditor from "./admin-faculty-editor";
 import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
 import AdminCoursesEditor from "./admin-courses-editor";
+import AdminKnowledgeHubMenuEditor from "./admin-knowledge-hub-menu-editor";
+import AdminKnowledgeHubPageEditor from "./admin-knowledge-hub-page-editor";
 import AdminCoursesPageEditor from "./admin-courses-page-editor";
 import AdminCourseDetailEditor from "./admin-course-detail-editor";
 import { isValidSocialProfileUrl } from "@/lib/social-profiles";
@@ -100,6 +102,7 @@ type WorkspaceView =
   | "testimonials"
   | "knowledge-hub-preview"
   | "knowledge-hub-settings"
+  | "knowledge-hub-mega-menu"
   | "identity"
   | "courses-mega-menu"
   | "about"
@@ -131,6 +134,7 @@ const pageItems: Array<{
   { key: "gallery", label: "Gallery", icon: ImagePlus },
   { key: "faqs", label: "FAQs", icon: CircleHelp },
   { key: "courses", label: "Courses", icon: BookOpenCheck },
+  { key: "knowledge-hub-settings", label: "Knowledge Hub", icon: BookOpenCheck },
   { key: "contact", label: "Contact", icon: FileText },
 ];
 
@@ -343,12 +347,17 @@ function Shell({
   const [mobileNav, setMobileNav] = useState(false);
   const [homeOpen, setHomeOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(
-    activeView === "identity" || activeView === "courses-mega-menu",
+    activeView === "identity" ||
+      activeView === "courses-mega-menu" ||
+      activeView === "knowledge-hub-mega-menu",
   );
   const [megaMenusOpen, setMegaMenusOpen] = useState(
-    activeView === "courses-mega-menu",
+    activeView === "courses-mega-menu" ||
+      activeView === "knowledge-hub-mega-menu",
   );
-  const [pagesOpen, setPagesOpen] = useState(false);
+  const [pagesOpen, setPagesOpen] = useState(
+    activeView === "knowledge-hub-settings",
+  );
   const [coursesOpen, setCoursesOpen] = useState(
     activeView === "courses" ||
       activeView === "courses-explore" ||
@@ -399,7 +408,9 @@ function Shell({
   const activePage =
     activeView === "dashboard"
       ? "Dashboard"
-      : activeView === "identity" || activeView === "courses-mega-menu"
+      : activeView === "identity" ||
+          activeView === "courses-mega-menu" ||
+          activeView === "knowledge-hub-mega-menu"
         ? "Site settings"
         : activeView === "knowledge-hub-settings"
           ? "Pages / Knowledge Hub"
@@ -428,6 +439,8 @@ function Shell({
         ? "Site identity"
           : activeView === "courses-mega-menu"
             ? "Courses Mega Menu"
+            : activeView === "knowledge-hub-mega-menu"
+              ? "Knowledge Hub Mega Menu"
             : activeView === "courses-explore"
               ? "Explore Courses"
         : activeView === "about"
@@ -474,11 +487,21 @@ function Shell({
                         "Home";
 
   const go = (view: WorkspaceView) => {
-    if (view === "identity" || view === "courses-mega-menu") {
+    if (
+      view === "identity" ||
+      view === "courses-mega-menu" ||
+      view === "knowledge-hub-mega-menu"
+    ) {
       setSettingsOpen(true);
     }
-    if (view === "courses-mega-menu") {
+    if (
+      view === "courses-mega-menu" ||
+      view === "knowledge-hub-mega-menu"
+    ) {
       setMegaMenusOpen(true);
+    }
+    if (view === "knowledge-hub-settings") {
+      setPagesOpen(true);
     }
     if (
       view === "about" ||
@@ -569,7 +592,8 @@ function Shell({
                     onClick={() => setMegaMenusOpen((current) => !current)}
                     aria-expanded={megaMenusOpen}
                     className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${
-                      activeView === "courses-mega-menu"
+                      activeView === "courses-mega-menu" ||
+                      activeView === "knowledge-hub-mega-menu"
                         ? "bg-white/10 text-white"
                         : "text-blue-100 hover:bg-white/10 hover:text-white"
                     }`}
@@ -591,6 +615,13 @@ function Shell({
                         nested
                         active={activeView === "courses-mega-menu"}
                         onClick={() => go("courses-mega-menu")}
+                      />
+                      <NavRow
+                        icon={BookOpenCheck}
+                        label="Knowledge Hub Mega Menu"
+                        nested
+                        active={activeView === "knowledge-hub-mega-menu"}
+                        onClick={() => go("knowledge-hub-mega-menu")}
                       />
                     </div>
                   ) : null}
@@ -1869,8 +1900,8 @@ function AdminWorkspace() {
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
         <PageIntro
           eyebrow="Pages / Knowledge Hub"
-          title="Knowledge Hub settings"
-          description="This is the temporary settings destination for the Knowledge Hub page. The full editor can be added here later."
+          title="Manage the Knowledge Hub page."
+          description="Edit the public page introduction and the summaries for its four fixed sections."
           actions={
             <button
               type="button"
@@ -1882,18 +1913,18 @@ function AdminWorkspace() {
             </button>
           }
         />
-        <section
-          className="mt-6 max-w-3xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
-          data-testid="panel-knowledge-hub-settings-placeholder"
-        >
-          <p className="eyebrow text-[#e3212b]">Knowledge Hub</p>
-          <h2 className="mt-2 font-display text-2xl font-extrabold text-[#0b3472]">
-            Page settings
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            Full page controls will be added here later.
-          </p>
-        </section>
+        <AdminKnowledgeHubPageEditor onFlash={showFlash} />
+      </div>
+    );
+  } else if (activeView === "knowledge-hub-mega-menu") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Site settings / Mega Menus"
+          title="Manage the Knowledge Hub Mega Menu."
+          description="Edit the menu introduction and the four fixed resource destinations."
+        />
+        <AdminKnowledgeHubMenuEditor onFlash={showFlash} />
       </div>
     );
   } else if (activeView === "gallery") {

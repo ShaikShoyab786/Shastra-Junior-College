@@ -4,11 +4,49 @@ import {
   contentItemsTable,
   contentSectionsTable,
   coursesMenuSettingsTable,
+  knowledgeHubMenuSettingsTable,
   siteSettingsTable,
   type CmsJson,
   type CoursesMenuContent,
+  type KnowledgeHubMenuContent,
 } from "@workspace/db";
 import { logger } from "./logger";
+
+const DEFAULT_KNOWLEDGE_HUB_MENU: KnowledgeHubMenuContent = {
+  heading: {
+    eyebrow: "LEARNING RESOURCES",
+    title: "Explore the Knowledge Hub",
+    description:
+      "Find articles, videos, study resources, and exam information in one place.",
+  },
+  items: [
+    {
+      key: "article-hub",
+      order: 0,
+      title: "Article Hub",
+      description: "Read focused articles and explainers for your studies.",
+    },
+    {
+      key: "video-hub",
+      order: 1,
+      title: "Video Hub",
+      description: "Watch subject walkthroughs and learning videos.",
+    },
+    {
+      key: "study-resources",
+      order: 2,
+      title: "Study Resources",
+      description: "Browse study guides and learning materials.",
+    },
+    {
+      key: "exam-updates",
+      order: 3,
+      title: "Exam Updates",
+      description: "Keep up with information for upcoming examinations.",
+    },
+  ],
+  ctaLabel: "Explore Knowledge Hub",
+};
 
 const DEFAULT_COURSES_MENU: CoursesMenuContent = {
   brandPanel: {
@@ -1400,6 +1438,10 @@ export async function seedInitialHomeContent(): Promise<void> {
       .insert(coursesMenuSettingsTable)
       .values({ id: "primary", content: DEFAULT_COURSES_MENU })
       .onConflictDoNothing();
+    await tx
+      .insert(knowledgeHubMenuSettingsTable)
+      .values({ id: "primary", content: DEFAULT_KNOWLEDGE_HUB_MENU })
+      .onConflictDoNothing();
 
     const [insertedSettings] = await tx
       .insert(siteSettingsTable)
@@ -2241,6 +2283,7 @@ export async function seedInitialHomeContent(): Promise<void> {
   await seedHomeFaqs();
   await seedAboutPage();
   await seedContactPage();
+  await seedKnowledgeHubPage();
 }
 
 type AboutCollectionSeed = {
@@ -3543,6 +3586,46 @@ async function seedContactPage(): Promise<void> {
         .onConflictDoNothing();
     }
   });
+}
+
+async function seedKnowledgeHubPage(): Promise<void> {
+  await db
+    .insert(contentSectionsTable)
+    .values({
+      pageSlug: "knowledge-hub",
+      sectionKey: "hub-landing",
+      title: "Knowledge Hub",
+      subtitle:
+        "Explore articles, videos, study resources, and exam updates from Shastra Junior College.",
+      content: {
+        eyebrow: "LEARNING RESOURCES",
+        categories: [
+          {
+            key: "article-hub",
+            title: "Article Hub",
+            description: "Read focused articles and explainers for your studies.",
+          },
+          {
+            key: "video-hub",
+            title: "Video Hub",
+            description: "Watch subject walkthroughs and learning videos.",
+          },
+          {
+            key: "study-resources",
+            title: "Study Resources",
+            description: "Browse study guides and learning materials.",
+          },
+          {
+            key: "exam-updates",
+            title: "Exam Updates",
+            description: "Keep up with information for upcoming examinations.",
+          },
+        ],
+      },
+      isVisible: true,
+      position: 0,
+    })
+    .onConflictDoNothing();
 }
 
 async function seedHomeFaqs(): Promise<void> {

@@ -104,10 +104,10 @@ export const GetHomePageResponse = zod.object({
 
 
 /**
- * @summary Get published About, Faculty, Gallery, Courses, or Contact content
+ * @summary Get published About, Faculty, Gallery, Courses, Knowledge Hub, or Contact content
  */
 export const GetCmsPageParams = zod.object({
-  "pageSlug": zod.enum(['about', 'faculty', 'gallery', 'courses', 'contact'])
+  "pageSlug": zod.enum(['about', 'faculty', 'gallery', 'courses', 'knowledge-hub', 'contact'])
 })
 
 export const getCmsPageResponseSettingsNavigationItemLabelMax = 80;
@@ -998,10 +998,162 @@ export const UpdateAdminCoursesMenuResponse = zod.object({
 
 
 /**
- * @summary Get About, Faculty, Gallery, Courses, or Contact content for authorized staff
+ * @summary Get the Knowledge Hub mega-menu content
+ */
+export const getKnowledgeHubMenuResponseHeadingEyebrowMax = 100;
+
+export const getKnowledgeHubMenuResponseHeadingTitleMax = 140;
+
+export const getKnowledgeHubMenuResponseHeadingDescriptionMax = 360;
+
+export const getKnowledgeHubMenuResponseItemsItemOrderMin = 0;
+export const getKnowledgeHubMenuResponseItemsItemOrderMax = 3;
+
+export const getKnowledgeHubMenuResponseItemsItemTitleMax = 100;
+
+export const getKnowledgeHubMenuResponseItemsItemDescriptionMax = 240;
+
+export const getKnowledgeHubMenuResponseItemsMin = 4;
+export const getKnowledgeHubMenuResponseItemsMax = 4;
+
+export const getKnowledgeHubMenuResponseCtaLabelMax = 100;
+
+
+
+export const GetKnowledgeHubMenuResponse = zod.object({
+  "heading": zod.object({
+  "eyebrow": zod.string().max(getKnowledgeHubMenuResponseHeadingEyebrowMax),
+  "title": zod.string().min(1).max(getKnowledgeHubMenuResponseHeadingTitleMax),
+  "description": zod.string().max(getKnowledgeHubMenuResponseHeadingDescriptionMax)
+}),
+  "items": zod.array(zod.object({
+  "key": zod.enum(['article-hub', 'video-hub', 'study-resources', 'exam-updates']),
+  "order": zod.number().int().min(getKnowledgeHubMenuResponseItemsItemOrderMin).max(getKnowledgeHubMenuResponseItemsItemOrderMax),
+  "title": zod.string().min(1).max(getKnowledgeHubMenuResponseItemsItemTitleMax),
+  "description": zod.string().min(1).max(getKnowledgeHubMenuResponseItemsItemDescriptionMax)
+})).min(getKnowledgeHubMenuResponseItemsMin).max(getKnowledgeHubMenuResponseItemsMax),
+  "ctaLabel": zod.string().min(1).max(getKnowledgeHubMenuResponseCtaLabelMax)
+})
+
+
+/**
+ * @summary Get Knowledge Hub mega-menu content for an authorized admin
+ */
+export const getAdminKnowledgeHubMenuResponseHeadingEyebrowMax = 100;
+
+export const getAdminKnowledgeHubMenuResponseHeadingTitleMax = 140;
+
+export const getAdminKnowledgeHubMenuResponseHeadingDescriptionMax = 360;
+
+export const getAdminKnowledgeHubMenuResponseItemsItemOrderMin = 0;
+export const getAdminKnowledgeHubMenuResponseItemsItemOrderMax = 3;
+
+export const getAdminKnowledgeHubMenuResponseItemsItemTitleMax = 100;
+
+export const getAdminKnowledgeHubMenuResponseItemsItemDescriptionMax = 240;
+
+export const getAdminKnowledgeHubMenuResponseItemsMin = 4;
+export const getAdminKnowledgeHubMenuResponseItemsMax = 4;
+
+export const getAdminKnowledgeHubMenuResponseCtaLabelMax = 100;
+
+
+
+export const GetAdminKnowledgeHubMenuResponse = zod.object({
+  "heading": zod.object({
+  "eyebrow": zod.string().max(getAdminKnowledgeHubMenuResponseHeadingEyebrowMax),
+  "title": zod.string().min(1).max(getAdminKnowledgeHubMenuResponseHeadingTitleMax),
+  "description": zod.string().max(getAdminKnowledgeHubMenuResponseHeadingDescriptionMax)
+}),
+  "items": zod.array(zod.object({
+  "key": zod.enum(['article-hub', 'video-hub', 'study-resources', 'exam-updates']),
+  "order": zod.number().int().min(getAdminKnowledgeHubMenuResponseItemsItemOrderMin).max(getAdminKnowledgeHubMenuResponseItemsItemOrderMax),
+  "title": zod.string().min(1).max(getAdminKnowledgeHubMenuResponseItemsItemTitleMax),
+  "description": zod.string().min(1).max(getAdminKnowledgeHubMenuResponseItemsItemDescriptionMax)
+})).min(getAdminKnowledgeHubMenuResponseItemsMin).max(getAdminKnowledgeHubMenuResponseItemsMax),
+  "ctaLabel": zod.string().min(1).max(getAdminKnowledgeHubMenuResponseCtaLabelMax)
+})
+
+
+/**
+ * @summary Update Knowledge Hub mega-menu content for an authorized admin
+ */
+export const updateAdminKnowledgeHubMenuBodyHeadingEyebrowMax = 100;
+
+export const updateAdminKnowledgeHubMenuBodyHeadingTitleMax = 140;
+
+export const updateAdminKnowledgeHubMenuBodyHeadingDescriptionMax = 360;
+
+export const updateAdminKnowledgeHubMenuBodyItemsItemOrderMin = 0;
+export const updateAdminKnowledgeHubMenuBodyItemsItemOrderMax = 3;
+
+export const updateAdminKnowledgeHubMenuBodyItemsItemTitleMax = 100;
+
+export const updateAdminKnowledgeHubMenuBodyItemsItemDescriptionMax = 240;
+
+export const updateAdminKnowledgeHubMenuBodyItemsMin = 4;
+export const updateAdminKnowledgeHubMenuBodyItemsMax = 4;
+
+export const updateAdminKnowledgeHubMenuBodyCtaLabelMax = 100;
+
+
+
+export const UpdateAdminKnowledgeHubMenuBody = zod.object({
+  "heading": zod.object({
+  "eyebrow": zod.string().max(updateAdminKnowledgeHubMenuBodyHeadingEyebrowMax),
+  "title": zod.string().min(1).max(updateAdminKnowledgeHubMenuBodyHeadingTitleMax),
+  "description": zod.string().max(updateAdminKnowledgeHubMenuBodyHeadingDescriptionMax)
+}).optional(),
+  "items": zod.array(zod.object({
+  "key": zod.enum(['article-hub', 'video-hub', 'study-resources', 'exam-updates']),
+  "order": zod.number().int().min(updateAdminKnowledgeHubMenuBodyItemsItemOrderMin).max(updateAdminKnowledgeHubMenuBodyItemsItemOrderMax),
+  "title": zod.string().min(1).max(updateAdminKnowledgeHubMenuBodyItemsItemTitleMax),
+  "description": zod.string().min(1).max(updateAdminKnowledgeHubMenuBodyItemsItemDescriptionMax)
+})).min(updateAdminKnowledgeHubMenuBodyItemsMin).max(updateAdminKnowledgeHubMenuBodyItemsMax).optional(),
+  "ctaLabel": zod.string().min(1).max(updateAdminKnowledgeHubMenuBodyCtaLabelMax).optional()
+})
+
+export const updateAdminKnowledgeHubMenuResponseHeadingEyebrowMax = 100;
+
+export const updateAdminKnowledgeHubMenuResponseHeadingTitleMax = 140;
+
+export const updateAdminKnowledgeHubMenuResponseHeadingDescriptionMax = 360;
+
+export const updateAdminKnowledgeHubMenuResponseItemsItemOrderMin = 0;
+export const updateAdminKnowledgeHubMenuResponseItemsItemOrderMax = 3;
+
+export const updateAdminKnowledgeHubMenuResponseItemsItemTitleMax = 100;
+
+export const updateAdminKnowledgeHubMenuResponseItemsItemDescriptionMax = 240;
+
+export const updateAdminKnowledgeHubMenuResponseItemsMin = 4;
+export const updateAdminKnowledgeHubMenuResponseItemsMax = 4;
+
+export const updateAdminKnowledgeHubMenuResponseCtaLabelMax = 100;
+
+
+
+export const UpdateAdminKnowledgeHubMenuResponse = zod.object({
+  "heading": zod.object({
+  "eyebrow": zod.string().max(updateAdminKnowledgeHubMenuResponseHeadingEyebrowMax),
+  "title": zod.string().min(1).max(updateAdminKnowledgeHubMenuResponseHeadingTitleMax),
+  "description": zod.string().max(updateAdminKnowledgeHubMenuResponseHeadingDescriptionMax)
+}),
+  "items": zod.array(zod.object({
+  "key": zod.enum(['article-hub', 'video-hub', 'study-resources', 'exam-updates']),
+  "order": zod.number().int().min(updateAdminKnowledgeHubMenuResponseItemsItemOrderMin).max(updateAdminKnowledgeHubMenuResponseItemsItemOrderMax),
+  "title": zod.string().min(1).max(updateAdminKnowledgeHubMenuResponseItemsItemTitleMax),
+  "description": zod.string().min(1).max(updateAdminKnowledgeHubMenuResponseItemsItemDescriptionMax)
+})).min(updateAdminKnowledgeHubMenuResponseItemsMin).max(updateAdminKnowledgeHubMenuResponseItemsMax),
+  "ctaLabel": zod.string().min(1).max(updateAdminKnowledgeHubMenuResponseCtaLabelMax)
+})
+
+
+/**
+ * @summary Get About, Faculty, Gallery, Courses, Knowledge Hub, or Contact content for authorized staff
  */
 export const GetAdminCmsPageParams = zod.object({
-  "pageSlug": zod.enum(['about', 'faculty', 'gallery', 'courses', 'contact'])
+  "pageSlug": zod.enum(['about', 'faculty', 'gallery', 'courses', 'knowledge-hub', 'contact'])
 })
 
 export const getAdminCmsPageResponseSettingsNavigationItemLabelMax = 80;

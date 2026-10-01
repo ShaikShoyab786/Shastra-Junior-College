@@ -48,14 +48,14 @@ paths:
     get:
       operationId: getCmsPage
       tags: [home]
-      summary: Get published About, Faculty, Gallery, Courses, or Contact content
+      summary: Get published About, Faculty, Gallery, Courses, Knowledge Hub, or Contact content
       parameters:
         - name: pageSlug
           in: path
           required: true
           schema:
             type: string
-            enum: [about, faculty, gallery, courses, contact]
+            enum: [about, faculty, gallery, courses, knowledge-hub, contact]
       responses:
         "200":
           description: Published page content
@@ -252,18 +252,71 @@ paths:
           description: Sign-in required
         "403":
           description: The signed-in account is not an authorized admin
+  /knowledge-hub-menu:
+    get:
+      operationId: getKnowledgeHubMenu
+      tags: [public]
+      summary: Get the Knowledge Hub mega-menu content
+      responses:
+        "200":
+          description: Public Knowledge Hub mega-menu content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeHubMenuSettings"
+        "503":
+          description: Knowledge Hub menu content is not available
+  /admin/knowledge-hub-menu:
+    get:
+      operationId: getAdminKnowledgeHubMenu
+      tags: [admin]
+      summary: Get Knowledge Hub mega-menu content for an authorized admin
+      responses:
+        "200":
+          description: Knowledge Hub mega-menu content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeHubMenuSettings"
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+    patch:
+      operationId: updateAdminKnowledgeHubMenu
+      tags: [admin]
+      summary: Update Knowledge Hub mega-menu content for an authorized admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KnowledgeHubMenuPatch"
+      responses:
+        "200":
+          description: Updated Knowledge Hub mega-menu content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeHubMenuSettings"
+        "400":
+          description: Invalid menu content
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
   /admin/pages/{pageSlug}:
     get:
       operationId: getAdminCmsPage
       tags: [admin]
-      summary: Get About, Faculty, Gallery, Courses, or Contact content for authorized staff
+      summary: Get About, Faculty, Gallery, Courses, Knowledge Hub, or Contact content for authorized staff
       parameters:
         - name: pageSlug
           in: path
           required: true
           schema:
             type: string
-            enum: [about, faculty, gallery, courses, contact]
+            enum: [about, faculty, gallery, courses, knowledge-hub, contact]
       responses:
         "200":
           description: Page content including unpublished sections and items
@@ -832,6 +885,70 @@ components:
           maxItems: 8
           items:
             $ref: "#/components/schemas/CoursesMenuButton"
+    KnowledgeHubMenuItem:
+      type: object
+      properties:
+        key:
+          type: string
+          enum: [article-hub, video-hub, study-resources, exam-updates]
+        order:
+          type: integer
+          minimum: 0
+          maximum: 3
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          minLength: 1
+          maxLength: 240
+      required: [key, order, title, description]
+    KnowledgeHubMenuHeading:
+      type: object
+      properties:
+        eyebrow:
+          type: string
+          maxLength: 100
+        title:
+          type: string
+          minLength: 1
+          maxLength: 140
+        description:
+          type: string
+          maxLength: 360
+      required: [eyebrow, title, description]
+    KnowledgeHubMenuSettings:
+      type: object
+      properties:
+        heading:
+          $ref: "#/components/schemas/KnowledgeHubMenuHeading"
+        items:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            $ref: "#/components/schemas/KnowledgeHubMenuItem"
+        ctaLabel:
+          type: string
+          minLength: 1
+          maxLength: 100
+      required: [heading, items, ctaLabel]
+    KnowledgeHubMenuPatch:
+      type: object
+      properties:
+        heading:
+          $ref: "#/components/schemas/KnowledgeHubMenuHeading"
+        items:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            $ref: "#/components/schemas/KnowledgeHubMenuItem"
+        ctaLabel:
+          type: string
+          minLength: 1
+          maxLength: 100
     SocialProfileLinks:
       type: object
       additionalProperties: false

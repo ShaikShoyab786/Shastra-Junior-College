@@ -23,7 +23,7 @@ import {
 } from "../lib/contact-details";
 import { themeVariables } from "../lib/theme-presets";
 
-type Destination = "courses" | "knowledge-hub" | "contact";
+type Destination = "courses" | "contact";
 
 const destinationContent: Record<
   Destination,
@@ -35,13 +35,6 @@ const destinationContent: Record<
     description: "Explore course information from Shastra Junior College.",
     notice:
       "Course details are being prepared for this page. Contact the college to ask about current course options.",
-  },
-  "knowledge-hub": {
-    eyebrow: "LEARNING RESOURCES",
-    title: "Knowledge Hub",
-    description: "A place for learning resources and college updates.",
-    notice:
-      "Resources and learning updates will appear here as the college shares them.",
   },
   contact: {
     eyebrow: "GET IN TOUCH",
@@ -479,10 +472,6 @@ function PublicDestinationPage({ destination }: { destination: Destination }) {
 
 export function CoursesPage() {
   return <PublicDestinationPage destination="courses" />;
-}
-
-export function KnowledgeHubPage() {
-  return <PublicDestinationPage destination="knowledge-hub" />;
 }
 
 export function ContactPage() {

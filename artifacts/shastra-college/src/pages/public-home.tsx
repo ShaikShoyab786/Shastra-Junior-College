@@ -21,6 +21,7 @@ import {
   SiWhatsapp,
 } from "react-icons/si";
 import { FaLinkedin } from "react-icons/fa6";
+import KnowledgeHubMegaMenu from "../components/knowledge-hub-mega-menu";
 import {
   formatMetric,
   metricFor,
@@ -186,14 +187,30 @@ export function Header({ home }: { home?: HomePage }) {
               Home
             </Link>
           ) : (
-            navigation.map((link, index) =>
-              link.label === "Courses" && link.path === "/courses" ? (
-                <CoursesMegaMenu
-                  key={`${link.path}-${index}`}
-                  fallbackLogoUrl={collegeLogo(home?.settings.logoUrl)}
-                  onMobileNavClose={() => setMobileOpen(false)}
-                />
-              ) : (
+            navigation.map((link, index) => {
+              const publicPath = link.path
+                .split(/[?#]/, 1)[0]
+                .replace(/\/+$/, "")
+                .toLowerCase();
+              if (link.label === "Courses" && publicPath === "/courses") {
+                return (
+                  <CoursesMegaMenu
+                    key={`${link.path}-${index}`}
+                    fallbackLogoUrl={collegeLogo(home?.settings.logoUrl)}
+                    onMobileNavClose={() => setMobileOpen(false)}
+                  />
+                );
+              }
+              if (publicPath === "/knowledge-hub") {
+                return (
+                  <KnowledgeHubMegaMenu
+                    key={`${link.path}-${index}`}
+                    triggerLabel={link.label}
+                    onMobileNavClose={() => setMobileOpen(false)}
+                  />
+                );
+              }
+              return (
                 <Link
                   href={link.path}
                   key={`${link.path}-${index}`}
@@ -203,8 +220,8 @@ export function Header({ home }: { home?: HomePage }) {
                 >
                   {link.label}
                 </Link>
-              ),
-            )
+              );
+            })
           )}
           <Link
             href="/admin"

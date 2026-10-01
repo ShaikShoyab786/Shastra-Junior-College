@@ -183,6 +183,75 @@ export interface CoursesMenuPatch {
   ctaButtons?: CoursesMenuButton[];
 }
 
+export type KnowledgeHubMenuItemKey = typeof KnowledgeHubMenuItemKey[keyof typeof KnowledgeHubMenuItemKey];
+
+
+export const KnowledgeHubMenuItemKey = {
+  'article-hub': 'article-hub',
+  'video-hub': 'video-hub',
+  'study-resources': 'study-resources',
+  'exam-updates': 'exam-updates',
+} as const;
+
+export interface KnowledgeHubMenuItem {
+  key: KnowledgeHubMenuItemKey;
+  /**
+     * @minimum 0
+     * @maximum 3
+     */
+  order: number;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  title: string;
+  /**
+     * @minLength 1
+     * @maxLength 240
+     */
+  description: string;
+}
+
+export interface KnowledgeHubMenuHeading {
+  /** @maxLength 100 */
+  eyebrow: string;
+  /**
+     * @minLength 1
+     * @maxLength 140
+     */
+  title: string;
+  /** @maxLength 360 */
+  description: string;
+}
+
+export interface KnowledgeHubMenuSettings {
+  heading: KnowledgeHubMenuHeading;
+  /**
+     * @minItems 4
+     * @maxItems 4
+     */
+  items: KnowledgeHubMenuItem[];
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  ctaLabel: string;
+}
+
+export interface KnowledgeHubMenuPatch {
+  heading?: KnowledgeHubMenuHeading;
+  /**
+     * @minItems 4
+     * @maxItems 4
+     */
+  items?: KnowledgeHubMenuItem[];
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  ctaLabel?: string;
+}
+
 export interface SocialProfileLinks {
   /** @maxLength 2048 */
   instagram?: string;

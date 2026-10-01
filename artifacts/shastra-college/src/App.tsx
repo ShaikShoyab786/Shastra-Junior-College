@@ -16,8 +16,8 @@ import PublicCourseDetailPage from '@/pages/public-course-detail';
 import { getCourseDetail } from '@/pages/course-detail-config';
 import {
   ContactPage,
-  KnowledgeHubPage,
 } from '@/pages/public-destination-page';
+import KnowledgeHubPage from '@/pages/public-knowledge-hub';
 import {
   Route,
   Switch,

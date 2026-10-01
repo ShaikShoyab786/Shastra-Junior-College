@@ -37,6 +37,8 @@ import type {
   ErrorEnvelope,
   HealthStatus,
   HomePage,
+  KnowledgeHubMenuPatch,
+  KnowledgeHubMenuSettings,
   PublicEnquirySubmission,
   SiteSettings,
   SiteSettingsUpdate,
@@ -227,7 +229,7 @@ export function useGetHomePage<TData = Awaited<ReturnType<typeof getHomePage>>, 
 
 
 
-export const getGetCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'contact',) => {
+export const getGetCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'knowledge-hub' | 'contact',) => {
 
 
 
@@ -236,9 +238,9 @@ export const getGetCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery' | 'co
 }
 
 /**
- * @summary Get published About, Faculty, Gallery, Courses, or Contact content
+ * @summary Get published About, Faculty, Gallery, Courses, Knowledge Hub, or Contact content
  */
-export const getCmsPage = async (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'contact', options?: Parameters<typeof customFetch>[1]): Promise<CmsPage> => {
+export const getCmsPage = async (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'knowledge-hub' | 'contact', options?: Parameters<typeof customFetch>[1]): Promise<CmsPage> => {
 
   return customFetch<CmsPage>(getGetCmsPageUrl(pageSlug),
   {
@@ -253,14 +255,14 @@ export const getCmsPage = async (pageSlug: 'about' | 'faculty' | 'gallery' | 'co
 
 
 
-export const getGetCmsPageQueryKey = (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'contact',) => {
+export const getGetCmsPageQueryKey = (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'knowledge-hub' | 'contact',) => {
     return [
     `/api/pages/${pageSlug}`
     ] as const;
     }
 
 
-export const getGetCmsPageQueryOptions = <TData = Awaited<ReturnType<typeof getCmsPage>>, TError = ErrorType<void>>(pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'contact', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetCmsPageQueryOptions = <TData = Awaited<ReturnType<typeof getCmsPage>>, TError = ErrorType<void>>(pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'knowledge-hub' | 'contact', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -283,11 +285,11 @@ export type GetCmsPageQueryError = ErrorType<void>
 
 
 /**
- * @summary Get published About, Faculty, Gallery, Courses, or Contact content
+ * @summary Get published About, Faculty, Gallery, Courses, Knowledge Hub, or Contact content
  */
 
 export function useGetCmsPage<TData = Awaited<ReturnType<typeof getCmsPage>>, TError = ErrorType<void>>(
- pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'contact', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'knowledge-hub' | 'contact', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1025,7 +1027,249 @@ export const useUpdateAdminCoursesMenu = <TError = ErrorType<void>,
       return useMutation(getUpdateAdminCoursesMenuMutationOptions(options));
     }
 
-export const getGetAdminCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'contact',) => {
+export const getGetKnowledgeHubMenuUrl = () => {
+
+
+
+
+  return `/api/knowledge-hub-menu`
+}
+
+/**
+ * @summary Get the Knowledge Hub mega-menu content
+ */
+export const getKnowledgeHubMenu = async ( options?: Parameters<typeof customFetch>[1]): Promise<KnowledgeHubMenuSettings> => {
+
+  return customFetch<KnowledgeHubMenuSettings>(getGetKnowledgeHubMenuUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetKnowledgeHubMenuQueryKey = () => {
+    return [
+    `/api/knowledge-hub-menu`
+    ] as const;
+    }
+
+
+export const getGetKnowledgeHubMenuQueryOptions = <TData = Awaited<ReturnType<typeof getKnowledgeHubMenu>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getKnowledgeHubMenu>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetKnowledgeHubMenuQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getKnowledgeHubMenu>>> = ({ signal }) => getKnowledgeHubMenu({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getKnowledgeHubMenu>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetKnowledgeHubMenuQueryResult = NonNullable<Awaited<ReturnType<typeof getKnowledgeHubMenu>>>
+export type GetKnowledgeHubMenuQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get the Knowledge Hub mega-menu content
+ */
+
+export function useGetKnowledgeHubMenu<TData = Awaited<ReturnType<typeof getKnowledgeHubMenu>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getKnowledgeHubMenu>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetKnowledgeHubMenuQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminKnowledgeHubMenuUrl = () => {
+
+
+
+
+  return `/api/admin/knowledge-hub-menu`
+}
+
+/**
+ * @summary Get Knowledge Hub mega-menu content for an authorized admin
+ */
+export const getAdminKnowledgeHubMenu = async ( options?: Parameters<typeof customFetch>[1]): Promise<KnowledgeHubMenuSettings> => {
+
+  return customFetch<KnowledgeHubMenuSettings>(getGetAdminKnowledgeHubMenuUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminKnowledgeHubMenuQueryKey = () => {
+    return [
+    `/api/admin/knowledge-hub-menu`
+    ] as const;
+    }
+
+
+export const getGetAdminKnowledgeHubMenuQueryOptions = <TData = Awaited<ReturnType<typeof getAdminKnowledgeHubMenu>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminKnowledgeHubMenu>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminKnowledgeHubMenuQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminKnowledgeHubMenu>>> = ({ signal }) => getAdminKnowledgeHubMenu({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminKnowledgeHubMenu>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminKnowledgeHubMenuQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminKnowledgeHubMenu>>>
+export type GetAdminKnowledgeHubMenuQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get Knowledge Hub mega-menu content for an authorized admin
+ */
+
+export function useGetAdminKnowledgeHubMenu<TData = Awaited<ReturnType<typeof getAdminKnowledgeHubMenu>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminKnowledgeHubMenu>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminKnowledgeHubMenuQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateAdminKnowledgeHubMenuUrl = () => {
+
+
+
+
+  return `/api/admin/knowledge-hub-menu`
+}
+
+/**
+ * @summary Update Knowledge Hub mega-menu content for an authorized admin
+ */
+export const updateAdminKnowledgeHubMenu = async (knowledgeHubMenuPatch: KnowledgeHubMenuPatch, options?: Parameters<typeof customFetch>[1]): Promise<KnowledgeHubMenuSettings> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<KnowledgeHubMenuSettings>(getUpdateAdminKnowledgeHubMenuUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(knowledgeHubMenuPatch)
+  }
+);}
+
+
+
+
+
+export const getUpdateAdminKnowledgeHubMenuMutationKey = () => ['updateAdminKnowledgeHubMenu'] as const;
+
+export const getUpdateAdminKnowledgeHubMenuMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminKnowledgeHubMenu>>, TError,UpdateAdminKnowledgeHubMenuMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminKnowledgeHubMenu>>, TError,UpdateAdminKnowledgeHubMenuMutationVariables, TContext> => {
+
+const mutationKey = getUpdateAdminKnowledgeHubMenuMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminKnowledgeHubMenu>>, UpdateAdminKnowledgeHubMenuMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateAdminKnowledgeHubMenu(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAdminKnowledgeHubMenuMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminKnowledgeHubMenu>>>
+    export type UpdateAdminKnowledgeHubMenuMutationBody = BodyType<KnowledgeHubMenuPatch>
+    export type UpdateAdminKnowledgeHubMenuMutationError = ErrorType<void>
+    export type UpdateAdminKnowledgeHubMenuMutationVariables = {data: BodyType<KnowledgeHubMenuPatch>}
+
+    /**
+ * @summary Update Knowledge Hub mega-menu content for an authorized admin
+ */
+export const useUpdateAdminKnowledgeHubMenu = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminKnowledgeHubMenu>>, TError,UpdateAdminKnowledgeHubMenuMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateAdminKnowledgeHubMenu>>,
+        TError,
+        UpdateAdminKnowledgeHubMenuMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateAdminKnowledgeHubMenuMutationOptions(options));
+    }
+
+export const getGetAdminCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'knowledge-hub' | 'contact',) => {
 
 
 
@@ -1034,9 +1278,9 @@ export const getGetAdminCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery' 
 }
 
 /**
- * @summary Get About, Faculty, Gallery, Courses, or Contact content for authorized staff
+ * @summary Get About, Faculty, Gallery, Courses, Knowledge Hub, or Contact content for authorized staff
  */
-export const getAdminCmsPage = async (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'contact', options?: Parameters<typeof customFetch>[1]): Promise<CmsPage> => {
+export const getAdminCmsPage = async (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'knowledge-hub' | 'contact', options?: Parameters<typeof customFetch>[1]): Promise<CmsPage> => {
 
   return customFetch<CmsPage>(getGetAdminCmsPageUrl(pageSlug),
   {
@@ -1051,14 +1295,14 @@ export const getAdminCmsPage = async (pageSlug: 'about' | 'faculty' | 'gallery' 
 
 
 
-export const getGetAdminCmsPageQueryKey = (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'contact',) => {
+export const getGetAdminCmsPageQueryKey = (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'knowledge-hub' | 'contact',) => {
     return [
     `/api/admin/pages/${pageSlug}`
     ] as const;
     }
 
 
-export const getGetAdminCmsPageQueryOptions = <TData = Awaited<ReturnType<typeof getAdminCmsPage>>, TError = ErrorType<void>>(pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'contact', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetAdminCmsPageQueryOptions = <TData = Awaited<ReturnType<typeof getAdminCmsPage>>, TError = ErrorType<void>>(pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'knowledge-hub' | 'contact', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -1081,11 +1325,11 @@ export type GetAdminCmsPageQueryError = ErrorType<void>
 
 
 /**
- * @summary Get About, Faculty, Gallery, Courses, or Contact content for authorized staff
+ * @summary Get About, Faculty, Gallery, Courses, Knowledge Hub, or Contact content for authorized staff
  */
 
 export function useGetAdminCmsPage<TData = Awaited<ReturnType<typeof getAdminCmsPage>>, TError = ErrorType<void>>(
- pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'contact', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'knowledge-hub' | 'contact', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCmsPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 

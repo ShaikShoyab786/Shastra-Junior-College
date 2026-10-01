@@ -38,9 +38,17 @@ const managedPageSlugs = [
   "faculty",
   "gallery",
   "courses",
+  "knowledge-hub",
   "contact",
 ] as const;
-const publicPageSlugs = ["about", "faculty", "gallery", "courses", "contact"] as const;
+const publicPageSlugs = [
+  "about",
+  "faculty",
+  "gallery",
+  "courses",
+  "knowledge-hub",
+  "contact",
+] as const;
 type ManagedPageSlug = (typeof managedPageSlugs)[number];
 type PublicPageSlug = (typeof publicPageSlugs)[number];
 
@@ -607,6 +615,33 @@ adminRouter.delete("/admin/sections/:id", async (req, res): Promise<void> => {
   const params = DeleteContentSectionParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [existingSection] = await db
+    .select({
+      pageSlug: contentSectionsTable.pageSlug,
+      sectionKey: contentSectionsTable.sectionKey,
+    })
+    .from(contentSectionsTable)
+    .where(
+      and(
+        eq(contentSectionsTable.id, params.data.id),
+        inArray(contentSectionsTable.pageSlug, [...managedPageSlugs]),
+      ),
+    )
+    .limit(1);
+  if (!existingSection) {
+    res.status(404).json({ error: "Section not found." });
+    return;
+  }
+  if (
+    existingSection.pageSlug === "knowledge-hub" &&
+    existingSection.sectionKey === "hub-landing"
+  ) {
+    res.status(400).json({
+      error: "The Knowledge Hub landing section is required and cannot be deleted.",
+    });
     return;
   }
 

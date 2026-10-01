@@ -19,3 +19,4 @@
 
 export * from "./cms";
 export * from "./courses-menu";
+export * from "./knowledge-hub-menu";
