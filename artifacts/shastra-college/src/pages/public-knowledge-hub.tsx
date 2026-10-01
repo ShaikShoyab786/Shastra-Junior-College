@@ -275,6 +275,15 @@ export default function KnowledgeHubPage() {
                           Browse articles
                           <ArrowRight className="h-4 w-4" aria-hidden="true" />
                         </Link>
+                      ) : category.key === "video-hub" ? (
+                        <Link
+                          href="/knowledge-hub/video-hub"
+                          className="focus-ring mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-[#0b3472] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#082859]"
+                          data-testid="link-open-video-hub"
+                        >
+                          Browse videos
+                          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                        </Link>
                       ) : null}
                     </div>
                   </section>
