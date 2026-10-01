@@ -235,9 +235,11 @@ function CourseHighlights({
 function CourseFacultyPreview({
   course,
   items,
+  copy,
 }: {
   course: CourseDetail;
   items: ContentItem[];
+  copy: Record<string, unknown>;
 }) {
   const [selected, setSelected] = useState<ContentItem | null>(null);
   useEffect(() => setSelected(null), [course.slug]);
@@ -268,6 +270,13 @@ function CourseFacultyPreview({
   }, [course.slug, items]);
 
   if (!profiles.length) return null;
+  const eyebrow = textValue(copy, "eyebrow", "FACULTY PREVIEW");
+  const title = textValue(copy, "title", "Meet your course mentors");
+  const description = textValue(
+    copy,
+    "description",
+    `Faculty selected for the subjects and exam pathway in ${course.name}.`,
+  );
 
   return (
     <>
@@ -279,13 +288,13 @@ function CourseFacultyPreview({
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col justify-between gap-5 border-b border-[#0b3472]/15 pb-7 md:flex-row md:items-end">
             <div>
-              <p className="eyebrow text-[#e3212b]">FACULTY PREVIEW</p>
+              <p className="eyebrow text-[#e3212b]">{eyebrow}</p>
               <h2 className="mt-3 font-display text-4xl font-extrabold tracking-[-.055em] text-[#0b3472] sm:text-5xl">
-                Meet your course mentors
+                {title}
               </h2>
             </div>
             <p className="max-w-lg text-sm leading-6 text-[#53657d] sm:text-base">
-              Faculty selected for the subjects and exam pathway in {course.name}.
+              {description}
             </p>
           </div>
           <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -442,10 +451,12 @@ function CourseGalleryPreview({
   course,
   section,
   items,
+  copy,
 }: {
   course: CourseDetail;
   section: ContentSection;
   items: ContentItem[];
+  copy: Record<string, unknown>;
 }) {
   const images = useMemo(
     () =>
@@ -465,15 +476,25 @@ function CourseGalleryPreview({
 
   const content = recordValue(section.content);
   const title = textValue(
+    copy,
+    "title",
+    textValue(
     content,
     "headline",
     section.title || "Gallery Preview",
+    ),
   );
   const description = textValue(
+    copy,
+    "description",
+    textValue(
     content,
     "description",
     section.subtitle || "",
+    ),
   );
+  const eyebrow = textValue(copy, "eyebrow", "GALLERY PREVIEW");
+  const buttonLabel = textValue(copy, "ctaLabel", "View Gallery");
 
   return (
     <section
@@ -484,7 +505,7 @@ function CourseGalleryPreview({
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col justify-between gap-5 border-b border-[#0b3472]/15 pb-7 md:flex-row md:items-end">
           <div>
-            <p className="eyebrow text-[#e3212b]">GALLERY PREVIEW</p>
+            <p className="eyebrow text-[#e3212b]">{eyebrow}</p>
             <h2 className="mt-3 font-display text-4xl font-extrabold tracking-[-.055em] text-[#0b3472] sm:text-5xl">
               {title}
             </h2>
@@ -499,7 +520,7 @@ function CourseGalleryPreview({
             className="focus-ring inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#0b3472] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#e3212b]"
             data-testid={`link-course-gallery-all-${course.slug}`}
           >
-            View Gallery
+            {buttonLabel}
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
@@ -557,6 +578,9 @@ export default function PublicCourseDetailPage({ course }: { course: CourseDetai
   const hero = sections.find((section) => section.sectionKey === courseSectionKey(course.slug, "hero"));
   const highlights = sections.find((section) => section.sectionKey === courseSectionKey(course.slug, "highlights"));
   const curriculum = sections.find((section) => section.sectionKey === `course-${course.slug}-curriculum`);
+  const curriculumContent = recordValue(curriculum?.content);
+  const facultyPreviewCopy = recordValue(curriculumContent.courseFacultyPreview);
+  const galleryPreviewCopy = recordValue(curriculumContent.courseGalleryPreview);
   const gallerySection = gallery.data?.sections.find(
     (section) => section.sectionKey.toLocaleLowerCase() === "gallery",
   );
@@ -574,7 +598,11 @@ export default function PublicCourseDetailPage({ course }: { course: CourseDetai
           <CourseHero course={course} section={hero} />
           {highlights?.isVisible ? <CourseHighlights course={course} section={highlights} items={cms.data.items} /> : null}
           {faculty.data ? (
-            <CourseFacultyPreview course={course} items={faculty.data.items} />
+            <CourseFacultyPreview
+              course={course}
+              items={faculty.data.items}
+              copy={facultyPreviewCopy}
+            />
           ) : faculty.isError ? (
             <div className="bg-[#f7f5ef] px-5 py-5 text-center text-sm text-slate-500" role="status" data-testid={`status-course-faculty-preview-${course.slug}`}>
               Faculty previews are temporarily unavailable.
@@ -586,6 +614,7 @@ export default function PublicCourseDetailPage({ course }: { course: CourseDetai
               course={course}
               section={gallerySection}
               items={gallery.data.items}
+              copy={galleryPreviewCopy}
             />
           ) : null}
         </main>

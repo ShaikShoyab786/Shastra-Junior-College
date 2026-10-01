@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowDown, ArrowUp, Eye, EyeOff, ImagePlus, Plus, Save, Trash2, Upload } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, Eye, EyeOff, ImagePlus, Plus, Save, Trash2, Upload } from "lucide-react";
 import {
   getGetAdminCoursesMenuQueryKey,
   getGetAdminCmsPageQueryKey,
@@ -354,10 +354,12 @@ function ImageEditor({
 export default function AdminCourseDetailEditor({
   course,
   onCourseChange,
+  onNavigate,
   onFlash,
 }: {
   course: CourseDetail;
   onCourseChange: (course: CourseDetail) => void;
+  onNavigate: (view: "faculty" | "gallery") => void;
   onFlash: (flash: Flash) => void;
 }) {
   const client = useQueryClient();
@@ -369,6 +371,9 @@ export default function AdminCourseDetailEditor({
   const requestUpload = useRequestUploadUrl();
   const facultyPage = useGetAdminCmsPage("faculty", {
     query: { queryKey: getGetAdminCmsPageQueryKey("faculty") },
+  });
+  const galleryPage = useGetAdminCmsPage("gallery", {
+    query: { queryKey: getGetAdminCmsPageQueryKey("gallery") },
   });
   const [hero, setHero] = useState<SectionDraft | null>(null);
   const [highlightsSection, setHighlightsSection] = useState<SectionDraft | null>(null);
@@ -384,6 +389,9 @@ export default function AdminCourseDetailEditor({
   const highlightsSource = page.data?.sections.find((section) => section.sectionKey === courseSectionKey(course.slug, "highlights"));
   const curriculumSource = page.data?.sections.find((section) => section.sectionKey === `course-${course.slug}-curriculum`);
   const facultySection = facultyPage.data?.sections.find((section) => section.sectionKey === "faculty");
+  const gallerySection = galleryPage.data?.sections.find(
+    (section) => section.sectionKey.toLocaleLowerCase() === "gallery",
+  );
   const courseMentorSubjects = new Set<string>(
     getCourseMentorSubjectsForCourse(course.slug),
   );
@@ -489,6 +497,23 @@ export default function AdminCourseDetailEditor({
   };
   const patchCurriculumContent = (key: string, value: unknown) =>
     setCurriculum((current) => current ? { ...current, content: { ...current.content, [key]: value } } : current);
+  const patchCoursePreviewContent = (
+    section: "courseFacultyPreview" | "courseGalleryPreview",
+    key: string,
+    value: string,
+  ) =>
+    setCurriculum((current) => current
+      ? {
+          ...current,
+          content: {
+            ...current.content,
+            [section]: {
+              ...recordValue(current.content[section]),
+              [key]: value,
+            },
+          },
+        }
+      : current);
 
   const updateHighlightDraft = (next: HighlightDraft) => setItems((current) => current.map((item) => item.clientKey === next.clientKey ? next : item));
   const moveItem = (index: number, direction: -1 | 1) => setItems((current) => {
@@ -643,6 +668,18 @@ export default function AdminCourseDetailEditor({
     return <div className="space-y-6"><CoursePathwaySelector course={course} onCourseChange={onCourseChange} /><div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500" aria-busy="true" data-testid={`status-admin-course-${course.slug}-loading`}>Loading {course.name} course content…</div></div>;
   }
 
+  const facultyPreviewContent = recordValue(curriculum.content.courseFacultyPreview);
+  const galleryPreviewContent = recordValue(curriculum.content.courseGalleryPreview);
+  const gallerySectionContent = recordValue(gallerySection?.content);
+  const defaultGalleryTitle =
+    stringValue(gallerySectionContent, "headline") ||
+    gallerySection?.title ||
+    "Gallery Preview";
+  const defaultGalleryDescription =
+    stringValue(gallerySectionContent, "description") ||
+    gallerySection?.subtitle ||
+    "";
+
   return (
     <div className="space-y-6">
     <CoursePathwaySelector course={course} onCourseChange={onCourseChange} />
@@ -713,9 +750,43 @@ export default function AdminCourseDetailEditor({
       </Panel>
 
       <Panel id={courseSectionKey(course.slug, "faculty-preview")} eyebrow={`${course.name} / Section 3`} title="Faculty Preview" testId={`panel-admin-course-${course.slug}-faculty-preview`}>
-        <p className="text-sm leading-6 text-slate-600">
-          This section uses existing Faculty profiles. Eligibility and subject matches are managed in Faculty settings, independently from Faculty page and Home Preview visibility.
-        </p>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field
+            label="Eyebrow text"
+            value={stringValue(facultyPreviewContent, "eyebrow") || "FACULTY PREVIEW"}
+            onChange={(value) => patchCoursePreviewContent("courseFacultyPreview", "eyebrow", value)}
+            testId={`input-course-${course.slug}-faculty-preview-eyebrow`}
+          />
+          <Field
+            label="Section heading"
+            value={stringValue(facultyPreviewContent, "title") || "Meet your course mentors"}
+            onChange={(value) => patchCoursePreviewContent("courseFacultyPreview", "title", value)}
+            testId={`input-course-${course.slug}-faculty-preview-title`}
+          />
+          <div className="md:col-span-2">
+            <Field
+              label="Introduction"
+              value={stringValue(facultyPreviewContent, "description") || `Faculty selected for the subjects and exam pathway in ${course.name}.`}
+              onChange={(value) => patchCoursePreviewContent("courseFacultyPreview", "description", value)}
+              multiline
+              testId={`textarea-course-${course.slug}-faculty-preview-description`}
+            />
+          </div>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm leading-6 text-slate-600">
+            Faculty profiles, eligibility, and subject matches are managed in Faculty settings.
+          </p>
+          <button
+            type="button"
+            onClick={() => onNavigate("faculty")}
+            className="focus-ring inline-flex shrink-0 items-center gap-2 rounded-xl border border-[#0b3472]/20 bg-white px-4 py-2.5 text-sm font-bold text-[#0b3472] transition hover:bg-[#f4f7fb]"
+            data-testid={`button-course-${course.slug}-manage-faculty`}
+          >
+            Manage Faculty Profiles
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
         {facultyPage.isLoading ? (
           <div className="mt-4 h-20 animate-pulse rounded-2xl bg-slate-100" aria-busy="true" />
         ) : facultyPage.isError ? (
@@ -812,6 +883,54 @@ export default function AdminCourseDetailEditor({
         <div className="mt-5 rounded-xl border border-[#0b3472]/10 bg-[#f7f9fc] p-4">
           <p className="eyebrow text-[#0b3472]">Built for competitive success</p>
           <p className="mt-2 text-xs leading-5 text-slate-600">The public benefits panel is fixed: Comprehensive Syllabus, Exam-Oriented Focus, Structured Progression, and Regular Updates.</p>
+        </div>
+      </Panel>
+
+      <Panel
+        id={courseSectionKey(course.slug, "gallery-preview")}
+        eyebrow={`${course.name} / Section 5`}
+        title="Gallery Preview"
+        testId={`panel-admin-course-${course.slug}-gallery-preview`}
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field
+            label="Eyebrow text"
+            value={stringValue(galleryPreviewContent, "eyebrow") || "GALLERY PREVIEW"}
+            onChange={(value) => patchCoursePreviewContent("courseGalleryPreview", "eyebrow", value)}
+            testId={`input-course-${course.slug}-gallery-preview-eyebrow`}
+          />
+          <Field
+            label="Section heading"
+            value={stringValue(galleryPreviewContent, "title") || defaultGalleryTitle}
+            onChange={(value) => patchCoursePreviewContent("courseGalleryPreview", "title", value)}
+            testId={`input-course-${course.slug}-gallery-preview-title`}
+          />
+          <div className="md:col-span-2">
+            <Field
+              label="Introduction"
+              value={stringValue(galleryPreviewContent, "description") || defaultGalleryDescription}
+              onChange={(value) => patchCoursePreviewContent("courseGalleryPreview", "description", value)}
+              multiline
+              testId={`textarea-course-${course.slug}-gallery-preview-description`}
+            />
+          </div>
+          <Field
+            label="Gallery button label"
+            value={stringValue(galleryPreviewContent, "ctaLabel") || "View Gallery"}
+            onChange={(value) => patchCoursePreviewContent("courseGalleryPreview", "ctaLabel", value)}
+            testId={`input-course-${course.slug}-gallery-preview-cta`}
+          />
+        </div>
+        <div className="mt-4 flex justify-end">
+          <button
+            type="button"
+            onClick={() => onNavigate("gallery")}
+            className="focus-ring inline-flex shrink-0 items-center gap-2 rounded-xl border border-[#0b3472]/20 bg-white px-4 py-2.5 text-sm font-bold text-[#0b3472] transition hover:bg-[#f4f7fb]"
+            data-testid={`button-course-${course.slug}-manage-gallery`}
+          >
+            Manage Gallery Images
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </button>
         </div>
       </Panel>
 
