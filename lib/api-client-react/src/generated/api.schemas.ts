@@ -183,6 +183,21 @@ export interface CoursesMenuPatch {
   ctaButtons?: CoursesMenuButton[];
 }
 
+export interface SocialProfileLinks {
+  /** @maxLength 2048 */
+  instagram?: string;
+  /** @maxLength 2048 */
+  facebook?: string;
+  /** @maxLength 2048 */
+  youtube?: string;
+  /** @maxLength 2048 */
+  linkedin?: string;
+  /** @maxLength 2048 */
+  tiktok?: string;
+  /** @maxLength 2048 */
+  x?: string;
+}
+
 export interface SiteSettings {
   id: string;
   collegeName: string;
@@ -191,6 +206,7 @@ export interface SiteSettings {
   logoUrl: string | null;
   navigation: NavigationLink[];
   footerNote: string;
+  socialLinks: SocialProfileLinks;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   primaryColor: string;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
@@ -215,6 +231,7 @@ export interface SiteSettingsUpdate {
   navigation?: NavigationLink[];
   /** @maxLength 500 */
   footerNote?: string;
+  socialLinks?: SocialProfileLinks;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   primaryColor?: string;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */

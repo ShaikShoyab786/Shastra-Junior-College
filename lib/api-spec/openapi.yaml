@@ -832,6 +832,28 @@ components:
           maxItems: 8
           items:
             $ref: "#/components/schemas/CoursesMenuButton"
+    SocialProfileLinks:
+      type: object
+      additionalProperties: false
+      properties:
+        instagram:
+          type: string
+          maxLength: 2048
+        facebook:
+          type: string
+          maxLength: 2048
+        youtube:
+          type: string
+          maxLength: 2048
+        linkedin:
+          type: string
+          maxLength: 2048
+        tiktok:
+          type: string
+          maxLength: 2048
+        x:
+          type: string
+          maxLength: 2048
     SiteSettings:
       type: object
       properties:
@@ -849,6 +871,8 @@ components:
             $ref: "#/components/schemas/NavigationLink"
         footerNote:
           type: string
+        socialLinks:
+          $ref: "#/components/schemas/SocialProfileLinks"
         primaryColor:
           type: string
           pattern: "^#[0-9A-Fa-f]{6}$"
@@ -865,6 +889,7 @@ components:
         - logoUrl
         - navigation
         - footerNote
+        - socialLinks
         - primaryColor
         - accentColor
         - updatedAt
@@ -889,6 +914,8 @@ components:
         footerNote:
           type: string
           maxLength: 500
+        socialLinks:
+          $ref: "#/components/schemas/SocialProfileLinks"
         primaryColor:
           type: string
           pattern: "^#[0-9A-Fa-f]{6}$"

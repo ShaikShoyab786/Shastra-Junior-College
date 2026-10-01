@@ -24,6 +24,18 @@ export const getHomePageResponseSettingsNavigationItemLabelMax = 80;
 
 export const getHomePageResponseSettingsNavigationItemPathMax = 200;
 
+export const getHomePageResponseSettingsSocialLinksInstagramMax = 2048;
+
+export const getHomePageResponseSettingsSocialLinksFacebookMax = 2048;
+
+export const getHomePageResponseSettingsSocialLinksYoutubeMax = 2048;
+
+export const getHomePageResponseSettingsSocialLinksLinkedinMax = 2048;
+
+export const getHomePageResponseSettingsSocialLinksTiktokMax = 2048;
+
+export const getHomePageResponseSettingsSocialLinksXMax = 2048;
+
 export const getHomePageResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getHomePageResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
@@ -39,6 +51,14 @@ export const GetHomePageResponse = zod.object({
   "path": zod.string().min(1).max(getHomePageResponseSettingsNavigationItemPathMax)
 })),
   "footerNote": zod.string(),
+  "socialLinks": zod.object({
+  "instagram": zod.string().max(getHomePageResponseSettingsSocialLinksInstagramMax).optional(),
+  "facebook": zod.string().max(getHomePageResponseSettingsSocialLinksFacebookMax).optional(),
+  "youtube": zod.string().max(getHomePageResponseSettingsSocialLinksYoutubeMax).optional(),
+  "linkedin": zod.string().max(getHomePageResponseSettingsSocialLinksLinkedinMax).optional(),
+  "tiktok": zod.string().max(getHomePageResponseSettingsSocialLinksTiktokMax).optional(),
+  "x": zod.string().max(getHomePageResponseSettingsSocialLinksXMax).optional()
+}),
   "primaryColor": zod.string().regex(getHomePageResponseSettingsPrimaryColorRegExp),
   "accentColor": zod.string().regex(getHomePageResponseSettingsAccentColorRegExp),
   "updatedAt": zod.coerce.date()
@@ -84,6 +104,18 @@ export const getCmsPageResponseSettingsNavigationItemLabelMax = 80;
 
 export const getCmsPageResponseSettingsNavigationItemPathMax = 200;
 
+export const getCmsPageResponseSettingsSocialLinksInstagramMax = 2048;
+
+export const getCmsPageResponseSettingsSocialLinksFacebookMax = 2048;
+
+export const getCmsPageResponseSettingsSocialLinksYoutubeMax = 2048;
+
+export const getCmsPageResponseSettingsSocialLinksLinkedinMax = 2048;
+
+export const getCmsPageResponseSettingsSocialLinksTiktokMax = 2048;
+
+export const getCmsPageResponseSettingsSocialLinksXMax = 2048;
+
 export const getCmsPageResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getCmsPageResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
@@ -99,6 +131,14 @@ export const GetCmsPageResponse = zod.object({
   "path": zod.string().min(1).max(getCmsPageResponseSettingsNavigationItemPathMax)
 })),
   "footerNote": zod.string(),
+  "socialLinks": zod.object({
+  "instagram": zod.string().max(getCmsPageResponseSettingsSocialLinksInstagramMax).optional(),
+  "facebook": zod.string().max(getCmsPageResponseSettingsSocialLinksFacebookMax).optional(),
+  "youtube": zod.string().max(getCmsPageResponseSettingsSocialLinksYoutubeMax).optional(),
+  "linkedin": zod.string().max(getCmsPageResponseSettingsSocialLinksLinkedinMax).optional(),
+  "tiktok": zod.string().max(getCmsPageResponseSettingsSocialLinksTiktokMax).optional(),
+  "x": zod.string().max(getCmsPageResponseSettingsSocialLinksXMax).optional()
+}),
   "primaryColor": zod.string().regex(getCmsPageResponseSettingsPrimaryColorRegExp),
   "accentColor": zod.string().regex(getCmsPageResponseSettingsAccentColorRegExp),
   "updatedAt": zod.coerce.date()
@@ -238,6 +278,18 @@ export const getAdminHomeResponseSettingsNavigationItemLabelMax = 80;
 
 export const getAdminHomeResponseSettingsNavigationItemPathMax = 200;
 
+export const getAdminHomeResponseSettingsSocialLinksInstagramMax = 2048;
+
+export const getAdminHomeResponseSettingsSocialLinksFacebookMax = 2048;
+
+export const getAdminHomeResponseSettingsSocialLinksYoutubeMax = 2048;
+
+export const getAdminHomeResponseSettingsSocialLinksLinkedinMax = 2048;
+
+export const getAdminHomeResponseSettingsSocialLinksTiktokMax = 2048;
+
+export const getAdminHomeResponseSettingsSocialLinksXMax = 2048;
+
 export const getAdminHomeResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getAdminHomeResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
@@ -253,6 +305,14 @@ export const GetAdminHomeResponse = zod.object({
   "path": zod.string().min(1).max(getAdminHomeResponseSettingsNavigationItemPathMax)
 })),
   "footerNote": zod.string(),
+  "socialLinks": zod.object({
+  "instagram": zod.string().max(getAdminHomeResponseSettingsSocialLinksInstagramMax).optional(),
+  "facebook": zod.string().max(getAdminHomeResponseSettingsSocialLinksFacebookMax).optional(),
+  "youtube": zod.string().max(getAdminHomeResponseSettingsSocialLinksYoutubeMax).optional(),
+  "linkedin": zod.string().max(getAdminHomeResponseSettingsSocialLinksLinkedinMax).optional(),
+  "tiktok": zod.string().max(getAdminHomeResponseSettingsSocialLinksTiktokMax).optional(),
+  "x": zod.string().max(getAdminHomeResponseSettingsSocialLinksXMax).optional()
+}),
   "primaryColor": zod.string().regex(getAdminHomeResponseSettingsPrimaryColorRegExp),
   "accentColor": zod.string().regex(getAdminHomeResponseSettingsAccentColorRegExp),
   "updatedAt": zod.coerce.date()
@@ -918,6 +978,18 @@ export const getAdminCmsPageResponseSettingsNavigationItemLabelMax = 80;
 
 export const getAdminCmsPageResponseSettingsNavigationItemPathMax = 200;
 
+export const getAdminCmsPageResponseSettingsSocialLinksInstagramMax = 2048;
+
+export const getAdminCmsPageResponseSettingsSocialLinksFacebookMax = 2048;
+
+export const getAdminCmsPageResponseSettingsSocialLinksYoutubeMax = 2048;
+
+export const getAdminCmsPageResponseSettingsSocialLinksLinkedinMax = 2048;
+
+export const getAdminCmsPageResponseSettingsSocialLinksTiktokMax = 2048;
+
+export const getAdminCmsPageResponseSettingsSocialLinksXMax = 2048;
+
 export const getAdminCmsPageResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getAdminCmsPageResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
@@ -933,6 +1005,14 @@ export const GetAdminCmsPageResponse = zod.object({
   "path": zod.string().min(1).max(getAdminCmsPageResponseSettingsNavigationItemPathMax)
 })),
   "footerNote": zod.string(),
+  "socialLinks": zod.object({
+  "instagram": zod.string().max(getAdminCmsPageResponseSettingsSocialLinksInstagramMax).optional(),
+  "facebook": zod.string().max(getAdminCmsPageResponseSettingsSocialLinksFacebookMax).optional(),
+  "youtube": zod.string().max(getAdminCmsPageResponseSettingsSocialLinksYoutubeMax).optional(),
+  "linkedin": zod.string().max(getAdminCmsPageResponseSettingsSocialLinksLinkedinMax).optional(),
+  "tiktok": zod.string().max(getAdminCmsPageResponseSettingsSocialLinksTiktokMax).optional(),
+  "x": zod.string().max(getAdminCmsPageResponseSettingsSocialLinksXMax).optional()
+}),
   "primaryColor": zod.string().regex(getAdminCmsPageResponseSettingsPrimaryColorRegExp),
   "accentColor": zod.string().regex(getAdminCmsPageResponseSettingsAccentColorRegExp),
   "updatedAt": zod.coerce.date()
@@ -1012,6 +1092,18 @@ export const updateSiteSettingsBodyNavigationMax = 12;
 
 export const updateSiteSettingsBodyFooterNoteMax = 500;
 
+export const updateSiteSettingsBodySocialLinksInstagramMax = 2048;
+
+export const updateSiteSettingsBodySocialLinksFacebookMax = 2048;
+
+export const updateSiteSettingsBodySocialLinksYoutubeMax = 2048;
+
+export const updateSiteSettingsBodySocialLinksLinkedinMax = 2048;
+
+export const updateSiteSettingsBodySocialLinksTiktokMax = 2048;
+
+export const updateSiteSettingsBodySocialLinksXMax = 2048;
+
 export const updateSiteSettingsBodyPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const updateSiteSettingsBodyAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 
@@ -1025,6 +1117,14 @@ export const UpdateSiteSettingsBody = zod.object({
   "path": zod.string().min(1).max(updateSiteSettingsBodyNavigationItemPathMax)
 })).max(updateSiteSettingsBodyNavigationMax).optional(),
   "footerNote": zod.string().max(updateSiteSettingsBodyFooterNoteMax).optional(),
+  "socialLinks": zod.object({
+  "instagram": zod.string().max(updateSiteSettingsBodySocialLinksInstagramMax).optional(),
+  "facebook": zod.string().max(updateSiteSettingsBodySocialLinksFacebookMax).optional(),
+  "youtube": zod.string().max(updateSiteSettingsBodySocialLinksYoutubeMax).optional(),
+  "linkedin": zod.string().max(updateSiteSettingsBodySocialLinksLinkedinMax).optional(),
+  "tiktok": zod.string().max(updateSiteSettingsBodySocialLinksTiktokMax).optional(),
+  "x": zod.string().max(updateSiteSettingsBodySocialLinksXMax).optional()
+}).optional(),
   "primaryColor": zod.string().regex(updateSiteSettingsBodyPrimaryColorRegExp).optional(),
   "accentColor": zod.string().regex(updateSiteSettingsBodyAccentColorRegExp).optional()
 })
@@ -1032,6 +1132,18 @@ export const UpdateSiteSettingsBody = zod.object({
 export const updateSiteSettingsResponseNavigationItemLabelMax = 80;
 
 export const updateSiteSettingsResponseNavigationItemPathMax = 200;
+
+export const updateSiteSettingsResponseSocialLinksInstagramMax = 2048;
+
+export const updateSiteSettingsResponseSocialLinksFacebookMax = 2048;
+
+export const updateSiteSettingsResponseSocialLinksYoutubeMax = 2048;
+
+export const updateSiteSettingsResponseSocialLinksLinkedinMax = 2048;
+
+export const updateSiteSettingsResponseSocialLinksTiktokMax = 2048;
+
+export const updateSiteSettingsResponseSocialLinksXMax = 2048;
 
 export const updateSiteSettingsResponsePrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const updateSiteSettingsResponseAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
@@ -1047,6 +1159,14 @@ export const UpdateSiteSettingsResponse = zod.object({
   "path": zod.string().min(1).max(updateSiteSettingsResponseNavigationItemPathMax)
 })),
   "footerNote": zod.string(),
+  "socialLinks": zod.object({
+  "instagram": zod.string().max(updateSiteSettingsResponseSocialLinksInstagramMax).optional(),
+  "facebook": zod.string().max(updateSiteSettingsResponseSocialLinksFacebookMax).optional(),
+  "youtube": zod.string().max(updateSiteSettingsResponseSocialLinksYoutubeMax).optional(),
+  "linkedin": zod.string().max(updateSiteSettingsResponseSocialLinksLinkedinMax).optional(),
+  "tiktok": zod.string().max(updateSiteSettingsResponseSocialLinksTiktokMax).optional(),
+  "x": zod.string().max(updateSiteSettingsResponseSocialLinksXMax).optional()
+}),
   "primaryColor": zod.string().regex(updateSiteSettingsResponsePrimaryColorRegExp),
   "accentColor": zod.string().regex(updateSiteSettingsResponseAccentColorRegExp),
   "updatedAt": zod.coerce.date()

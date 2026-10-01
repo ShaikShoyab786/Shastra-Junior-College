@@ -39,6 +39,7 @@ export * from './publicEnquirySubmission';
 export * from './publicEnquirySubmissionValues';
 export * from './siteSettings';
 export * from './siteSettingsUpdate';
+export * from './socialProfileLinks';
 export * from './updateEnquiryStatus';
 export * from './uploadUrlRequest';
 export * from './uploadUrlResponse';

@@ -3,12 +3,24 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
+  Mail,
+  MapPin,
   Menu,
+  Phone,
   RefreshCw,
   Send,
   X,
 } from "lucide-react";
 import { Link } from "wouter";
+import {
+  SiFacebook,
+  SiInstagram,
+  SiTiktok,
+  SiX,
+  SiYoutube,
+  SiWhatsapp,
+} from "react-icons/si";
+import { FaLinkedin } from "react-icons/fa6";
 import {
   formatMetric,
   metricFor,
@@ -16,10 +28,12 @@ import {
 } from "@/lib/animated-statistics";
 import {
   getGetCmsPageQueryKey,
+  getGetCoursesMenuQueryKey,
   getGetAdminEnquiriesQueryKey,
   getGetHomePageQueryKey,
   useCreateEnquiry,
   useGetCmsPage,
+  useGetCoursesMenu,
   useGetHomePage,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -33,6 +47,13 @@ import TestimonialsCarousel from "../components/testimonials-carousel";
 import KnowledgeHubPreview from "../components/knowledge-hub-preview";
 import FaqSection from "../components/faq-section";
 import CoursesMegaMenu from "../components/courses-mega-menu";
+import {
+  getPhoneHref,
+  getWhatsAppHref,
+  isValidPublicEmail,
+  readContactDetails,
+} from "../lib/contact-details";
+import { isValidSocialProfileUrl } from "../lib/social-profiles";
 
 const logoPath = "/shastra-college-logo.png";
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -245,48 +266,191 @@ function publicNavigation(
 
 export function Footer({ home }: { home: HomePage }) {
   const navigation = publicNavigation(home.settings.navigation);
+  const coursesQuery = useGetCoursesMenu({
+    query: { queryKey: getGetCoursesMenuQueryKey() },
+  });
+  const contactQuery = useGetCmsPage("contact", {
+    query: { queryKey: getGetCmsPageQueryKey("contact") },
+  });
+  const programs = useMemo(
+    () =>
+      (coursesQuery.data?.courseCards || [])
+        .filter((card) => card.isVisible)
+        .sort((a, b) => a.order - b.order),
+    [coursesQuery.data?.courseCards],
+  );
+  const hero = contactQuery.data?.sections.find(
+    (section) => section.sectionKey.toLowerCase() === "hero",
+  );
+  const details = readContactDetails(hero?.content);
+  const phoneNumbers = details.mobileNumbers
+    .map((number) => ({ number, href: getPhoneHref(number) }))
+    .filter((entry) => entry.href);
+  const email = isValidPublicEmail(details.email) ? details.email.trim() : "";
+  const whatsappHref = getWhatsAppHref(details.whatsappNumber);
+  const socials = [
+    { key: "instagram", label: "Instagram", href: home.settings.socialLinks?.instagram, Icon: SiInstagram },
+    { key: "facebook", label: "Facebook", href: home.settings.socialLinks?.facebook, Icon: SiFacebook },
+    { key: "youtube", label: "YouTube", href: home.settings.socialLinks?.youtube, Icon: SiYoutube },
+    { key: "linkedin", label: "LinkedIn", href: home.settings.socialLinks?.linkedin, Icon: FaLinkedin },
+    { key: "tiktok", label: "TikTok", href: home.settings.socialLinks?.tiktok, Icon: SiTiktok },
+    { key: "x", label: "X", href: home.settings.socialLinks?.x, Icon: SiX },
+  ].filter(
+    (profile) =>
+      typeof profile.href === "string" &&
+      isValidSocialProfileUrl(profile.key, profile.href),
+  );
+  const programDestination = (destination: string) => {
+    const value = destination.trim();
+    if (!value || value.startsWith("//")) return null;
+    if (value.startsWith("/") && !value.startsWith("/\\"))
+      return { href: value, internal: true };
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" ? { href: value, internal: false } : null;
+    } catch {
+      return null;
+    }
+  };
+
   return (
-    <footer className="bg-[#082859] px-5 py-10 text-white sm:px-8 sm:py-12">
-      <div className="mx-auto flex max-w-7xl flex-col gap-7 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex max-w-xl items-start gap-4">
-          <img
-            src={collegeLogo(home.settings.logoUrl)}
-            alt=""
-            className="h-12 w-12 shrink-0 object-contain"
-          />
-          <div>
-            <p className="font-display text-lg font-extrabold">
-              {home.settings.collegeName}
-            </p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-100/65">
-              {home.settings.headerTagline}
-            </p>
-            {home.settings.footerNote ? (
-              <p className="mt-3 whitespace-pre-line text-sm leading-6 text-blue-100/75">
-                {home.settings.footerNote}
-              </p>
-            ) : null}
+    <footer
+      className="relative overflow-hidden bg-[#082859] px-5 pt-10 text-white sm:px-8 sm:pt-14"
+      data-testid="site-footer"
+    >
+      <div className="pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full border border-white/[.06]" aria-hidden="true" />
+      <div className="pointer-events-none absolute -right-12 -top-16 h-56 w-56 rounded-full border border-white/[.06]" aria-hidden="true" />
+      <div className="relative mx-auto grid max-w-7xl gap-9 pb-10 sm:grid-cols-2 lg:grid-cols-[1.25fr_.78fr_1.08fr_1fr] lg:gap-10 lg:pb-12">
+        <section className="max-w-sm" aria-label="College identity" data-testid="footer-identity">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-1">
+              <img src={collegeLogo(home.settings.logoUrl)} alt="" className="h-full w-full object-contain" data-testid="img-footer-logo" />
+            </span>
+            <div className="min-w-0">
+              <p className="font-display text-base font-extrabold leading-tight" data-testid="text-footer-college-name">{home.settings.collegeName}</p>
+              {home.settings.headerTagline ? (
+                <p className="mt-1 text-[9px] font-bold uppercase tracking-[.14em] text-blue-100/65" data-testid="text-footer-tagline">{home.settings.headerTagline}</p>
+              ) : null}
+            </div>
           </div>
-        </div>
-        {navigation.length > 0 ? (
-          <nav
-            className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-blue-100/80"
-            aria-label="Footer navigation"
-          >
+          {home.settings.footerNote ? (
+            <p className="mt-5 whitespace-pre-line text-sm leading-6 text-blue-100/75" data-testid="text-footer-description">
+              {home.settings.footerNote}
+            </p>
+          ) : null}
+          {socials.length ? (
+            <nav className="mt-5 flex flex-wrap gap-2" aria-label="Social profiles" data-testid="nav-footer-social">
+              {socials.map(({ key, label, href, Icon }) => (
+                <a
+                  key={key}
+                  href={href?.trim()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Visit our ${label} profile`}
+                  className="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/[.07] text-blue-100/80 transition-colors hover:border-white/35 hover:bg-white/15 hover:text-white"
+                  data-testid={`link-footer-social-${key}`}
+                >
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                </a>
+              ))}
+            </nav>
+          ) : null}
+        </section>
+
+        <nav aria-label="Explore" data-testid="nav-footer-explore">
+          <h2 className="font-display text-lg font-extrabold">Explore</h2>
+          <span className="mt-2 block h-0.5 w-7 bg-[#e3212b]" aria-hidden="true" />
+          <ul className="mt-4 space-y-2.5 text-sm text-blue-100/80">
             {navigation.map((link, index) => (
-              <Link
-                href={link.path}
-                key={`${link.path}-${index}`}
-                className="transition-colors hover:text-white"
-              >
-                {link.label}
-              </Link>
+              <li key={`${link.path}-${index}`}>
+                <Link href={link.path} className="focus-ring transition-colors hover:text-white" data-testid={`link-footer-explore-${index}`}>
+                  {link.label}
+                </Link>
+              </li>
             ))}
-          </nav>
-        ) : null}
+          </ul>
+        </nav>
+
+        <section aria-labelledby="footer-programs-heading" data-testid="section-footer-programs">
+          <h2 id="footer-programs-heading" className="font-display text-lg font-extrabold">Our Programs</h2>
+          <span className="mt-2 block h-0.5 w-7 bg-[#e3212b]" aria-hidden="true" />
+          {coursesQuery.isLoading ? (
+            <div className="mt-4 space-y-3" aria-busy="true" data-testid="status-footer-programs-loading">
+              {[0, 1, 2].map((item) => <div key={item} className="h-4 w-4/5 animate-pulse rounded bg-white/10" />)}
+            </div>
+          ) : programs.length ? (
+            <ul className="mt-4 space-y-2.5 text-sm text-blue-100/80">
+              {programs.map((card) => {
+                const destination = programDestination(card.destination);
+                return (
+                  <li key={card.id} data-testid={`item-footer-program-${card.id}`}>
+                    {destination?.internal ? (
+                      <Link href={destination.href} className="focus-ring transition-colors hover:text-white" data-testid={`link-footer-program-${card.id}`}>{card.title}</Link>
+                    ) : destination ? (
+                      <a href={destination.href} target="_blank" rel="noopener noreferrer" className="focus-ring transition-colors hover:text-white" data-testid={`link-footer-program-${card.id}`}>{card.title}</a>
+                    ) : (
+                      <span>{card.title}</span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+        </section>
+
+        <section aria-labelledby="footer-contact-heading" data-testid="section-footer-contact">
+          <h2 id="footer-contact-heading" className="font-display text-lg font-extrabold">Reach Us</h2>
+          <span className="mt-2 block h-0.5 w-7 bg-[#e3212b]" aria-hidden="true" />
+          {contactQuery.isLoading ? (
+            <div className="mt-4 space-y-3" aria-busy="true" data-testid="status-footer-contact-loading">
+              <div className="h-4 w-4/5 animate-pulse rounded bg-white/10" />
+              <div className="h-4 w-3/5 animate-pulse rounded bg-white/10" />
+            </div>
+          ) : (
+            <ul className="mt-4 space-y-3 text-sm text-blue-100/80">
+              {details.address.trim() ? (
+                <li className="flex items-start gap-3" data-testid="text-footer-address">
+                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[.08] text-[#f3b9a7]"><MapPin className="h-3.5 w-3.5" aria-hidden="true" /></span>
+                  <address className="whitespace-pre-line pt-1 not-italic leading-5">{details.address}</address>
+                </li>
+              ) : null}
+              {phoneNumbers.map(({ number, href }, index) => (
+                <li key={`${number}-${index}`}>
+                  <a href={href} className="focus-ring flex items-center gap-3 transition-colors hover:text-white" data-testid={`link-footer-phone-${index}`}>
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[.08] text-[#f3b9a7]"><Phone className="h-3.5 w-3.5" aria-hidden="true" /></span>
+                    <span>{number}</span>
+                  </a>
+                </li>
+              ))}
+              {whatsappHref ? (
+                <li>
+                  <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="focus-ring flex items-center gap-3 transition-colors hover:text-white" data-testid="link-footer-whatsapp">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[.08] text-[#f3b9a7]"><SiWhatsapp className="h-3.5 w-3.5" aria-hidden="true" /></span>
+                    <span>WhatsApp · {details.whatsappNumber}</span>
+                  </a>
+                </li>
+              ) : null}
+              {email ? (
+                <li>
+                  <a href={`mailto:${email}`} className="focus-ring flex min-w-0 items-center gap-3 transition-colors hover:text-white" data-testid="link-footer-email">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[.08] text-[#f3b9a7]"><Mail className="h-3.5 w-3.5" aria-hidden="true" /></span>
+                    <span className="break-all">{email}</span>
+                  </a>
+                </li>
+              ) : null}
+            </ul>
+          )}
+        </section>
       </div>
-      <div className="mx-auto mt-8 max-w-7xl border-t border-white/15 pt-4 text-xs text-blue-100/55">
-        © {new Date().getFullYear()} {home.settings.collegeName}
+
+      <div className="relative mx-auto grid max-w-7xl gap-3 border-t border-white/15 py-5 text-xs text-blue-100/60 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+        <p data-testid="text-footer-copyright">© {new Date().getFullYear()} {home.settings.collegeName}. All rights reserved.</p>
+        {home.settings.headerTagline ? (
+          <p className="sm:text-center" data-testid="text-footer-lower-tagline">{home.settings.headerTagline}</p>
+        ) : <span />}
+        <Link href="/admin" className="focus-ring inline-flex w-fit items-center rounded-full border border-white/20 px-4 py-2 font-bold text-blue-100/85 transition-colors hover:border-white/45 hover:text-white sm:ml-auto" data-testid="link-footer-admin">
+          Administration Sign In
+        </Link>
       </div>
     </footer>
   );

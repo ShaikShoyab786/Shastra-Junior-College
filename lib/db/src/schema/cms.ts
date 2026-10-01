@@ -28,6 +28,10 @@ export const siteSettingsTable = pgTable("site_settings", {
   logoUrl: text("logo_url"),
   navigation: jsonb("navigation").$type<NavigationLink[]>().notNull().default([]),
   footerNote: text("footer_note").notNull().default(""),
+  socialLinks: jsonb("social_links")
+    .$type<Record<string, string>>()
+    .notNull()
+    .default({}),
   primaryColor: text("primary_color").notNull().default("#0B3472"),
   accentColor: text("accent_color").notNull().default("#E3212B"),
   updatedAt: timestamp("updated_at", { withTimezone: true })

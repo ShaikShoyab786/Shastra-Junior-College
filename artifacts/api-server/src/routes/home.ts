@@ -119,6 +119,35 @@ function serializeSettings(
   };
 }
 
+const socialProfileHosts: Record<string, string[]> = {
+  instagram: ["instagram.com"],
+  facebook: ["facebook.com"],
+  youtube: ["youtube.com", "youtu.be"],
+  linkedin: ["linkedin.com"],
+  tiktok: ["tiktok.com"],
+  x: ["x.com", "twitter.com"],
+};
+
+function isSafeSocialProfileUrl(platform: string, value: string): boolean {
+  if (!value.trim()) return true;
+  const allowedHosts = socialProfileHosts[platform];
+  if (!allowedHosts) return false;
+
+  try {
+    const url = new URL(value.trim());
+    return (
+      url.protocol === "https:" &&
+      !url.username &&
+      !url.password &&
+      allowedHosts.some(
+        (host) => url.hostname === host || url.hostname.endsWith(`.${host}`),
+      )
+    );
+  } catch {
+    return false;
+  }
+}
+
 function serializeSection(
   section: typeof contentSectionsTable.$inferSelect,
 ) {
@@ -400,7 +429,7 @@ adminRouter.patch("/admin/site-settings", async (req, res): Promise<void> => {
     return;
   }
 
-  const { logoUrl, navigation, ...rest } = parsed.data;
+  const { logoUrl, navigation, socialLinks, ...rest } = parsed.data;
   if (logoUrl !== undefined && !isSafeImageReference(logoUrl)) {
     res.status(400).json({
       error: "Logo must use an http(s) URL or a same-site asset path.",
@@ -417,12 +446,27 @@ adminRouter.patch("/admin/site-settings", async (req, res): Promise<void> => {
     return;
   }
 
+  if (
+    socialLinks &&
+    Object.entries(socialLinks).some(
+      ([platform, value]) =>
+        typeof value === "string" &&
+        !isSafeSocialProfileUrl(platform, value),
+    )
+  ) {
+    res.status(400).json({
+      error: "Social profile links must use secure URLs for their platform.",
+    });
+    return;
+  }
+
   const [updated] = await db
     .update(siteSettingsTable)
     .set({
       ...rest,
       ...(logoUrl === undefined ? {} : { logoUrl }),
       ...(navigation === undefined ? {} : { navigation }),
+      ...(socialLinks === undefined ? {} : { socialLinks }),
       updatedAt: new Date(),
     })
     .where(eq(siteSettingsTable.id, "primary"))

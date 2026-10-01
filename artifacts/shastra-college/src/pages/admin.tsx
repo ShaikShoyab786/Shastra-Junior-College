@@ -40,6 +40,7 @@ import {
   getGetAdminCmsPageQueryKey,
   getGetAdminEnquiriesQueryKey,
   getGetAdminHomeQueryKey,
+  getGetHomePageQueryKey,
   useDeleteEnquiry,
   useGetAdminEnquiries,
   useGetAdminCmsPage,
@@ -68,6 +69,7 @@ import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
 import AdminCoursesEditor from "./admin-courses-editor";
 import AdminCoursesPageEditor from "./admin-courses-page-editor";
 import AdminCourseDetailEditor from "./admin-course-detail-editor";
+import { isValidSocialProfileUrl } from "@/lib/social-profiles";
 import AdminFaqEditor from "./admin-faq-editor";
 import AdminFaqTextSettingsEditor from "./admin-faq-text-settings-editor";
 import AdminAboutCtaEditor from "./admin-about-cta-editor";
@@ -835,8 +837,8 @@ function Shell({
   );
 }
 
-function SectionCard({ children, className = "", testId }: { children: ReactNode; className?: string; testId?: string }) {
-  return <section className={`rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(11,52,114,.045)] sm:p-7 ${className}`} data-testid={testId}>{children}</section>;
+function SectionCard({ children, className = "", testId, "data-testid": dataTestId }: { children: ReactNode; className?: string; testId?: string; "data-testid"?: string }) {
+  return <section className={`rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(11,52,114,.045)] sm:p-7 ${className}`} data-testid={testId || dataTestId}>{children}</section>;
 }
 
 function PageIntro({ eyebrow, title, description, actions }: { eyebrow: string; title: string; description: string; actions?: ReactNode }) {
@@ -1091,20 +1093,44 @@ function IdentityView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flas
       headerTagline: home.settings.headerTagline,
       logoUrl: home.settings.logoUrl,
       footerNote: home.settings.footerNote,
+      socialLinks: {
+        instagram: home.settings.socialLinks?.instagram || "",
+        facebook: home.settings.socialLinks?.facebook || "",
+        youtube: home.settings.socialLinks?.youtube || "",
+        linkedin: home.settings.socialLinks?.linkedin || "",
+        tiktok: home.settings.socialLinks?.tiktok || "",
+        x: home.settings.socialLinks?.x || "",
+      },
       primaryColor: home.settings.primaryColor,
       accentColor: home.settings.accentColor,
     });
   }, [home.settings]);
 
   const set = <K extends keyof SiteSettingsUpdate>(key: K, value: SiteSettingsUpdate[K]) => setForm((current) => ({ ...current, [key]: value }));
+  const setSocial = (key: keyof NonNullable<SiteSettingsUpdate["socialLinks"]>, value: string) => {
+    setForm((current) => ({
+      ...current,
+      socialLinks: { ...current.socialLinks, [key]: value },
+    }));
+  };
   const save = (event: FormEvent) => {
     event.preventDefault();
     if (!form.collegeName?.trim()) {
       onFlash({ tone: "error", message: "College name is required." });
       return;
     }
-    updateSettings.mutate({ data: { ...form, collegeName: form.collegeName.trim(), headerTagline: form.headerTagline?.trim(), footerNote: form.footerNote?.trim() } }, {
-      onSuccess: () => { void client.invalidateQueries({ queryKey: getGetAdminHomeQueryKey() }); onFlash({ tone: "success", message: "Site identity saved." }); },
+    for (const [platform, rawUrl] of Object.entries(form.socialLinks || {})) {
+      const value = typeof rawUrl === "string" ? rawUrl.trim() : "";
+      if (!isValidSocialProfileUrl(platform, value)) {
+        onFlash({
+          tone: "error",
+          message: `Enter a valid HTTPS ${platform} profile URL, or leave it blank.`,
+        });
+        return;
+      }
+    }
+    updateSettings.mutate({ data: { ...form, collegeName: form.collegeName.trim(), headerTagline: form.headerTagline?.trim(), footerNote: form.footerNote?.trim(), socialLinks: Object.fromEntries(Object.entries(form.socialLinks || {}).map(([key, value]) => [key, typeof value === "string" ? value.trim() : ""])) as NonNullable<SiteSettingsUpdate["socialLinks"]> } }, {
+      onSuccess: () => { void Promise.all([client.invalidateQueries({ queryKey: getGetAdminHomeQueryKey() }), client.invalidateQueries({ queryKey: getGetHomePageQueryKey() })]); onFlash({ tone: "success", message: "Site identity saved." }); },
       onError: (error) => onFlash({ tone: "error", message: errorMessage(error) }),
     });
   };
@@ -1128,7 +1154,15 @@ function IdentityView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flas
     }
   };
   const logoPreview = form.logoUrl ? (form.logoUrl.startsWith("/objects/") ? `/api/storage${form.logoUrl}` : form.logoUrl) : "/shastra-college-logo.png";
-  return <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10"><PageIntro eyebrow="Site settings / identity" title="Make the college unmistakable." description="These details appear in the header, footer, and browser-facing palette across the public site." /><form onSubmit={save} className="grid gap-6 lg:grid-cols-[1.2fr_.8fr]"><div className="space-y-6"><SectionCard><div><p className="eyebrow text-[#e3212b]">Public details</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">College identity</h2></div><div className="mt-6 space-y-5"><Field label="College name" value={form.collegeName || ""} onChange={(value) => set("collegeName", value)} placeholder="Displayed in the public header" testId="input-college-name" /><Field label="Header tagline" value={form.headerTagline || ""} onChange={(value) => set("headerTagline", value)} placeholder="A short line beneath the college name" testId="input-header-tagline" /><Field label="Footer note" value={form.footerNote || ""} onChange={(value) => set("footerNote", value)} placeholder="Displayed in the public footer" multiline testId="input-footer-note" /></div></SectionCard><SectionCard><div><p className="eyebrow text-[#e3212b]">Brand palette</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Primary and accent colors</h2></div><div className="mt-6 grid gap-5 sm:grid-cols-2"><ColorField label="Primary color" value={form.primaryColor || "#0B3472"} onChange={(value) => set("primaryColor", value)} testId="input-primary-color" /><ColorField label="Accent color" value={form.accentColor || "#E3212B"} onChange={(value) => set("accentColor", value)} testId="input-accent-color" /></div><p className="mt-4 text-xs leading-5 text-slate-500">Use six-digit hex colors. These colors are used by the public navigation and calls to action.</p></SectionCard></div><div className="space-y-6"><SectionCard><div><p className="eyebrow text-[#e3212b]">Header mark</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">College logo</h2></div><div className="mt-6 flex min-h-[180px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-[#f7f9fc] p-6"><img src={logoPreview} alt="College logo preview" className="max-h-32 max-w-full object-contain" data-testid="img-logo-preview" /></div><div className="mt-4 rounded-2xl border border-slate-200 p-4"><label className="flex cursor-pointer items-center gap-3 text-sm font-bold text-[#0b3472]"><ImagePlus className="h-5 w-5" /><span>{selectedFile ? selectedFile.name : "Choose a new logo"}</span><input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => setSelectedFile(event.target.files?.[0] || null)} data-testid="input-logo-file" /></label><p className="mt-2 text-xs leading-5 text-slate-500">PNG, JPEG, or WebP. Maximum 2 MB.</p>{selectedFile ? <Button onClick={() => void upload()} disabled={uploading} testId="button-upload-logo" variant="outline"><Upload className="h-4 w-4" />{uploading ? "Uploading…" : "Upload logo"}</Button> : null}</div></SectionCard><SectionCard className="sticky top-[100px]"><div className="flex items-start gap-3"><Palette className="mt-0.5 h-5 w-5 text-[#e3212b]" /><div><p className="eyebrow text-[#e3212b]">Save changes</p><h2 className="mt-1 font-display text-xl font-extrabold text-[#0b3472]">Ready to publish?</h2><p className="mt-2 text-sm leading-6 text-slate-500">Saving updates the shared settings used by the public homepage.</p></div></div><Button type="submit" onClick={() => undefined} disabled={updateSettings.isPending || uploading} testId="button-save-identity" variant="primary"><Save className="h-4 w-4" />{updateSettings.isPending ? "Saving…" : "Save identity"}</Button></SectionCard></div></form></div>;
+  const socialFields: Array<{ key: keyof NonNullable<SiteSettingsUpdate["socialLinks"]>; label: string }> = [
+    { key: "instagram", label: "Instagram" },
+    { key: "facebook", label: "Facebook" },
+    { key: "youtube", label: "YouTube" },
+    { key: "linkedin", label: "LinkedIn" },
+    { key: "tiktok", label: "TikTok" },
+    { key: "x", label: "X" },
+  ];
+  return <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10"><PageIntro eyebrow="Site settings / identity" title="Make the college unmistakable." description="These details appear in the header, footer, and browser-facing palette across the public site." /><form onSubmit={save} className="grid gap-6 lg:grid-cols-[1.2fr_.8fr]"><div className="space-y-6"><SectionCard><div><p className="eyebrow text-[#e3212b]">Public details</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">College identity</h2></div><div className="mt-6 space-y-5"><Field label="College name" value={form.collegeName || ""} onChange={(value) => set("collegeName", value)} placeholder="Displayed in the public header" testId="input-college-name" /><Field label="Header tagline" value={form.headerTagline || ""} onChange={(value) => set("headerTagline", value)} placeholder="A short line beneath the college name" testId="input-header-tagline" /><Field label="Footer note" value={form.footerNote || ""} onChange={(value) => set("footerNote", value)} placeholder="Displayed in the public footer" multiline testId="input-footer-note" /></div></SectionCard><SectionCard data-testid="section-footer-settings"><div><p className="eyebrow text-[#e3212b]">Footer settings</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Social profiles</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Add official HTTPS profile links to display their logos in the public footer. Leave a field blank to hide that profile.</p></div><div className="mt-6 grid gap-4 sm:grid-cols-2">{socialFields.map(({ key, label }) => (<Field key={key} label={`${label} profile URL`} value={form.socialLinks?.[key] || ""} onChange={(value) => setSocial(key, value)} placeholder={`Paste official ${label} profile URL`} type="url" testId={`input-social-${key}`} />))}</div></SectionCard><SectionCard><div><p className="eyebrow text-[#e3212b]">Brand palette</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Primary and accent colors</h2></div><div className="mt-6 grid gap-5 sm:grid-cols-2"><ColorField label="Primary color" value={form.primaryColor || "#0B3472"} onChange={(value) => set("primaryColor", value)} testId="input-primary-color" /><ColorField label="Accent color" value={form.accentColor || "#E3212B"} onChange={(value) => set("accentColor", value)} testId="input-accent-color" /></div><p className="mt-4 text-xs leading-5 text-slate-500">Use six-digit hex colors. These colors are used by the public navigation and calls to action.</p></SectionCard></div><div className="space-y-6"><SectionCard><div><p className="eyebrow text-[#e3212b]">Header mark</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">College logo</h2></div><div className="mt-6 flex min-h-[180px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-[#f7f9fc] p-6"><img src={logoPreview} alt="College logo preview" className="max-h-32 max-w-full object-contain" data-testid="img-logo-preview" /></div><div className="mt-4 rounded-2xl border border-slate-200 p-4"><label className="flex cursor-pointer items-center gap-3 text-sm font-bold text-[#0b3472]"><ImagePlus className="h-5 w-5" /><span>{selectedFile ? selectedFile.name : "Choose a new logo"}</span><input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => setSelectedFile(event.target.files?.[0] || null)} data-testid="input-logo-file" /></label><p className="mt-2 text-xs leading-5 text-slate-500">PNG, JPEG, or WebP. Maximum 2 MB.</p>{selectedFile ? <Button onClick={() => void upload()} disabled={uploading} testId="button-upload-logo" variant="outline"><Upload className="h-4 w-4" />{uploading ? "Uploading…" : "Upload logo"}</Button> : null}</div></SectionCard><SectionCard className="sticky top-[100px]"><div className="flex items-start gap-3"><Palette className="mt-0.5 h-5 w-5 text-[#e3212b]" /><div><p className="eyebrow text-[#e3212b]">Save changes</p><h2 className="mt-1 font-display text-xl font-extrabold text-[#0b3472]">Ready to publish?</h2><p className="mt-2 text-sm leading-6 text-slate-500">Saving updates the shared settings used by the public homepage.</p></div></div><Button type="submit" onClick={() => undefined} disabled={updateSettings.isPending || uploading} testId="button-save-identity" variant="primary"><Save className="h-4 w-4" />{updateSettings.isPending ? "Saving…" : "Save identity"}</Button></SectionCard></div></form></div>;
 }
 
 function ColorField({ label, value, onChange, testId }: { label: string; value: string; onChange: (value: string) => void; testId: string }) {

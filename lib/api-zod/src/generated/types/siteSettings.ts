@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { NavigationLink } from './navigationLink';
+import type { SocialProfileLinks } from './socialProfileLinks';
 
 export interface SiteSettings {
   id: string;
@@ -15,6 +16,7 @@ export interface SiteSettings {
   logoUrl: string | null;
   navigation: NavigationLink[];
   footerNote: string;
+  socialLinks: SocialProfileLinks;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   primaryColor: string;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
