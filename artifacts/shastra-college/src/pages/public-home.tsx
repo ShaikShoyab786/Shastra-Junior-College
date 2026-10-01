@@ -61,7 +61,7 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 type UnknownRecord = Record<string, unknown>;
 
-function collegeLogo(path?: string | null) {
+export function collegeLogo(path?: string | null) {
   if (!path) return `${basePath}${logoPath}`;
   if (path.startsWith("/objects/")) return `/api/storage${path}`;
   return path.startsWith("/") && basePath && !path.startsWith(`${basePath}/`)

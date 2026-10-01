@@ -39,6 +39,8 @@ export const getHomePageResponseSettingsSocialLinksXMax = 2048;
 export const getHomePageResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getHomePageResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getHomePageResponseSettingsSurfaceColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getHomePageResponseSettingsIntroQuoteMax = 80;
+
 
 
 export const GetHomePageResponse = zod.object({
@@ -64,6 +66,11 @@ export const GetHomePageResponse = zod.object({
   "primaryColor": zod.string().regex(getHomePageResponseSettingsPrimaryColorRegExp),
   "accentColor": zod.string().regex(getHomePageResponseSettingsAccentColorRegExp),
   "surfaceColor": zod.string().regex(getHomePageResponseSettingsSurfaceColorRegExp),
+  "introEnabled": zod.boolean(),
+  "introQuote": zod.string().max(getHomePageResponseSettingsIntroQuoteMax),
+  "scrollCtaEnabled": zod.boolean(),
+  "floatingWhatsAppEnabled": zod.boolean(),
+  "cursorSparkleEnabled": zod.boolean(),
   "updatedAt": zod.coerce.date()
 }),
   "sections": zod.array(zod.object({
@@ -122,6 +129,8 @@ export const getCmsPageResponseSettingsSocialLinksXMax = 2048;
 export const getCmsPageResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getCmsPageResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getCmsPageResponseSettingsSurfaceColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getCmsPageResponseSettingsIntroQuoteMax = 80;
+
 
 
 export const GetCmsPageResponse = zod.object({
@@ -147,6 +156,11 @@ export const GetCmsPageResponse = zod.object({
   "primaryColor": zod.string().regex(getCmsPageResponseSettingsPrimaryColorRegExp),
   "accentColor": zod.string().regex(getCmsPageResponseSettingsAccentColorRegExp),
   "surfaceColor": zod.string().regex(getCmsPageResponseSettingsSurfaceColorRegExp),
+  "introEnabled": zod.boolean(),
+  "introQuote": zod.string().max(getCmsPageResponseSettingsIntroQuoteMax),
+  "scrollCtaEnabled": zod.boolean(),
+  "floatingWhatsAppEnabled": zod.boolean(),
+  "cursorSparkleEnabled": zod.boolean(),
   "updatedAt": zod.coerce.date()
 }),
   "sections": zod.array(zod.object({
@@ -299,6 +313,8 @@ export const getAdminHomeResponseSettingsSocialLinksXMax = 2048;
 export const getAdminHomeResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getAdminHomeResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getAdminHomeResponseSettingsSurfaceColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminHomeResponseSettingsIntroQuoteMax = 80;
+
 
 
 export const GetAdminHomeResponse = zod.object({
@@ -324,6 +340,11 @@ export const GetAdminHomeResponse = zod.object({
   "primaryColor": zod.string().regex(getAdminHomeResponseSettingsPrimaryColorRegExp),
   "accentColor": zod.string().regex(getAdminHomeResponseSettingsAccentColorRegExp),
   "surfaceColor": zod.string().regex(getAdminHomeResponseSettingsSurfaceColorRegExp),
+  "introEnabled": zod.boolean(),
+  "introQuote": zod.string().max(getAdminHomeResponseSettingsIntroQuoteMax),
+  "scrollCtaEnabled": zod.boolean(),
+  "floatingWhatsAppEnabled": zod.boolean(),
+  "cursorSparkleEnabled": zod.boolean(),
   "updatedAt": zod.coerce.date()
 }),
   "sections": zod.array(zod.object({
@@ -1002,6 +1023,8 @@ export const getAdminCmsPageResponseSettingsSocialLinksXMax = 2048;
 export const getAdminCmsPageResponseSettingsPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getAdminCmsPageResponseSettingsAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const getAdminCmsPageResponseSettingsSurfaceColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getAdminCmsPageResponseSettingsIntroQuoteMax = 80;
+
 
 
 export const GetAdminCmsPageResponse = zod.object({
@@ -1027,6 +1050,11 @@ export const GetAdminCmsPageResponse = zod.object({
   "primaryColor": zod.string().regex(getAdminCmsPageResponseSettingsPrimaryColorRegExp),
   "accentColor": zod.string().regex(getAdminCmsPageResponseSettingsAccentColorRegExp),
   "surfaceColor": zod.string().regex(getAdminCmsPageResponseSettingsSurfaceColorRegExp),
+  "introEnabled": zod.boolean(),
+  "introQuote": zod.string().max(getAdminCmsPageResponseSettingsIntroQuoteMax),
+  "scrollCtaEnabled": zod.boolean(),
+  "floatingWhatsAppEnabled": zod.boolean(),
+  "cursorSparkleEnabled": zod.boolean(),
   "updatedAt": zod.coerce.date()
 }),
   "sections": zod.array(zod.object({
@@ -1119,6 +1147,8 @@ export const updateSiteSettingsBodySocialLinksXMax = 2048;
 export const updateSiteSettingsBodyPrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const updateSiteSettingsBodyAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const updateSiteSettingsBodySurfaceColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateSiteSettingsBodyIntroQuoteMax = 80;
+
 
 
 export const UpdateSiteSettingsBody = zod.object({
@@ -1141,7 +1171,12 @@ export const UpdateSiteSettingsBody = zod.object({
   "primaryColor": zod.string().regex(updateSiteSettingsBodyPrimaryColorRegExp).optional(),
   "accentColor": zod.string().regex(updateSiteSettingsBodyAccentColorRegExp).optional(),
   "themePreset": zod.enum(['shastra-blue-red', 'heritage-ink-gold', 'teal-copper', 'charcoal-saffron', 'mulberry-rosewood', 'olive-parchment', 'custom']).optional(),
-  "surfaceColor": zod.string().regex(updateSiteSettingsBodySurfaceColorRegExp).optional()
+  "surfaceColor": zod.string().regex(updateSiteSettingsBodySurfaceColorRegExp).optional(),
+  "introEnabled": zod.boolean().optional(),
+  "introQuote": zod.string().max(updateSiteSettingsBodyIntroQuoteMax).optional(),
+  "scrollCtaEnabled": zod.boolean().optional(),
+  "floatingWhatsAppEnabled": zod.boolean().optional(),
+  "cursorSparkleEnabled": zod.boolean().optional()
 })
 
 export const updateSiteSettingsResponseNavigationItemLabelMax = 80;
@@ -1163,6 +1198,8 @@ export const updateSiteSettingsResponseSocialLinksXMax = 2048;
 export const updateSiteSettingsResponsePrimaryColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const updateSiteSettingsResponseAccentColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
 export const updateSiteSettingsResponseSurfaceColorRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateSiteSettingsResponseIntroQuoteMax = 80;
+
 
 
 export const UpdateSiteSettingsResponse = zod.object({
@@ -1187,6 +1224,11 @@ export const UpdateSiteSettingsResponse = zod.object({
   "primaryColor": zod.string().regex(updateSiteSettingsResponsePrimaryColorRegExp),
   "accentColor": zod.string().regex(updateSiteSettingsResponseAccentColorRegExp),
   "surfaceColor": zod.string().regex(updateSiteSettingsResponseSurfaceColorRegExp),
+  "introEnabled": zod.boolean(),
+  "introQuote": zod.string().max(updateSiteSettingsResponseIntroQuoteMax),
+  "scrollCtaEnabled": zod.boolean(),
+  "floatingWhatsAppEnabled": zod.boolean(),
+  "cursorSparkleEnabled": zod.boolean(),
   "updatedAt": zod.coerce.date()
 })
 

@@ -227,6 +227,12 @@ export interface SiteSettings {
   accentColor: string;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   surfaceColor: string;
+  introEnabled: boolean;
+  /** @maxLength 80 */
+  introQuote: string;
+  scrollCtaEnabled: boolean;
+  floatingWhatsAppEnabled: boolean;
+  cursorSparkleEnabled: boolean;
   updatedAt: string;
 }
 
@@ -255,6 +261,12 @@ export interface SiteSettingsUpdate {
   themePreset?: ThemePreset;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   surfaceColor?: string;
+  introEnabled?: boolean;
+  /** @maxLength 80 */
+  introQuote?: string;
+  scrollCtaEnabled?: boolean;
+  floatingWhatsAppEnabled?: boolean;
+  cursorSparkleEnabled?: boolean;
 }
 
 export type PublicEnquirySubmissionValues = {[key: string]: string};

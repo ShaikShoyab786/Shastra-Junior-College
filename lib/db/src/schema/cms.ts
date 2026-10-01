@@ -47,6 +47,17 @@ export const siteSettingsTable = pgTable("site_settings", {
   primaryColor: text("primary_color").notNull().default("#0B3472"),
   accentColor: text("accent_color").notNull().default("#E3212B"),
   surfaceColor: text("surface_color").notNull().default("#F7F5EF"),
+  introEnabled: boolean("intro_enabled").notNull().default(true),
+  introQuote: text("intro_quote")
+    .notNull()
+    .default("Education is Key to Success"),
+  scrollCtaEnabled: boolean("scroll_cta_enabled").notNull().default(true),
+  floatingWhatsAppEnabled: boolean("floating_whatsapp_enabled")
+    .notNull()
+    .default(true),
+  cursorSparkleEnabled: boolean("cursor_sparkle_enabled")
+    .notNull()
+    .default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow()

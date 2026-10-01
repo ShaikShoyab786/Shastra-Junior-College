@@ -30,6 +30,7 @@ import {
   Palette,
   Save,
   Settings2,
+  Sparkles,
   Trash2,
   Undo2,
   Upload,
@@ -72,6 +73,7 @@ import AdminCoursesEditor from "./admin-courses-editor";
 import AdminCoursesPageEditor from "./admin-courses-page-editor";
 import AdminCourseDetailEditor from "./admin-course-detail-editor";
 import { isValidSocialProfileUrl } from "@/lib/social-profiles";
+import { Switch } from "@/components/ui/switch";
 import AdminFaqEditor from "./admin-faq-editor";
 import AdminFaqTextSettingsEditor from "./admin-faq-text-settings-editor";
 import AdminAboutCtaEditor from "./admin-about-cta-editor";
@@ -1115,6 +1117,11 @@ function IdentityView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flas
       primaryColor: home.settings.primaryColor,
       accentColor: home.settings.accentColor,
       surfaceColor: home.settings.surfaceColor,
+      introEnabled: home.settings.introEnabled,
+      introQuote: home.settings.introQuote,
+      scrollCtaEnabled: home.settings.scrollCtaEnabled,
+      floatingWhatsAppEnabled: home.settings.floatingWhatsAppEnabled,
+      cursorSparkleEnabled: home.settings.cursorSparkleEnabled,
     });
   }, [home.settings]);
 
@@ -1148,6 +1155,10 @@ function IdentityView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flas
       onFlash({ tone: "error", message: "Use a valid six-digit hex value for every palette color." });
       return;
     }
+    if (form.introEnabled && !form.introQuote?.trim()) {
+      onFlash({ tone: "error", message: "Add a quotation or turn off the welcome intro." });
+      return;
+    }
     for (const [platform, rawUrl] of Object.entries(form.socialLinks || {})) {
       const value = typeof rawUrl === "string" ? rawUrl.trim() : "";
       if (!isValidSocialProfileUrl(platform, value)) {
@@ -1158,7 +1169,7 @@ function IdentityView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flas
         return;
       }
     }
-    updateSettings.mutate({ data: { ...form, collegeName: form.collegeName.trim(), headerTagline: form.headerTagline?.trim(), footerNote: form.footerNote?.trim(), socialLinks: Object.fromEntries(Object.entries(form.socialLinks || {}).map(([key, value]) => [key, typeof value === "string" ? value.trim() : ""])) as NonNullable<SiteSettingsUpdate["socialLinks"]> } }, {
+    updateSettings.mutate({ data: { ...form, collegeName: form.collegeName.trim(), headerTagline: form.headerTagline?.trim(), footerNote: form.footerNote?.trim(), introQuote: form.introQuote?.trim(), socialLinks: Object.fromEntries(Object.entries(form.socialLinks || {}).map(([key, value]) => [key, typeof value === "string" ? value.trim() : ""])) as NonNullable<SiteSettingsUpdate["socialLinks"]> } }, {
       onSuccess: () => {
         void Promise.all([
           client.invalidateQueries({ queryKey: getGetAdminHomeQueryKey() }),
@@ -1282,6 +1293,89 @@ function IdentityView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flas
             </div>
             <p className="mt-4 text-xs leading-5 text-slate-500">Primary sets brand emphasis, accent sets calls to action, and surface colors page backgrounds. Use six-digit hex values.</p>
           </SectionCard>
+          <SectionCard data-testid="section-public-experience">
+            <div className="flex items-start gap-3">
+              <Sparkles className="mt-1 h-5 w-5 text-[#e3212b]" aria-hidden="true" />
+              <div>
+                <p className="eyebrow text-[#e3212b]">Visitor experience</p>
+                <h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Welcome & quick actions</h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Manage the first-visit intro and the contact actions visitors see as they browse.</p>
+              </div>
+            </div>
+            <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_.95fr]">
+              <div className="space-y-3">
+                <IdentityToggle
+                  label="Show intro on first public visit"
+                  description="Uses the college logo and selected theme. It stays visible for at least six seconds and appears once per browser tab."
+                  checked={form.introEnabled === true}
+                  onChange={(checked) => set("introEnabled", checked)}
+                  testId="switch-intro-enabled"
+                />
+                <label className="block text-sm font-bold text-slate-700">
+                  Intro quotation
+                  <span className="ml-2 text-xs font-normal text-slate-500">One line · up to 80 characters</span>
+                  <input
+                    value={form.introQuote || ""}
+                    onChange={(event) => set("introQuote", event.target.value)}
+                    maxLength={80}
+                    placeholder="Education is Key to Success"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 outline-none transition focus:border-[#0b3472] focus:ring-2 focus:ring-[#0b3472]/10"
+                    data-testid="input-intro-quote"
+                  />
+                </label>
+                <IdentityToggle
+                  label="Show the scroll action bar"
+                  description="Appears after visitors scroll down. Call and WhatsApp use the numbers saved in Contact; Apply Now opens the admissions enquiry form."
+                  checked={form.scrollCtaEnabled === true}
+                  onChange={(checked) => set("scrollCtaEnabled", checked)}
+                  testId="switch-scroll-cta-enabled"
+                />
+                <IdentityToggle
+                  label="Show the floating WhatsApp button"
+                  description="Keeps a WhatsApp shortcut in the lower-right corner of public pages."
+                  checked={form.floatingWhatsAppEnabled === true}
+                  onChange={(checked) => set("floatingWhatsAppEnabled", checked)}
+                  testId="switch-floating-whatsapp-enabled"
+                />
+                <IdentityToggle
+                  label="Enable cursor sparkle trail"
+                  description="A restrained, theme-colored sparkle trail follows mouse and pen movement. It stays off when reduced motion is preferred."
+                  checked={form.cursorSparkleEnabled === true}
+                  onChange={(checked) => set("cursorSparkleEnabled", checked)}
+                  testId="switch-cursor-sparkle-enabled"
+                  checkbox
+                />
+              </div>
+              <div>
+                <p className="eyebrow text-slate-500">Live intro preview</p>
+                <div
+                  className="mt-2 flex min-h-[290px] flex-col items-center justify-center rounded-2xl border border-slate-200 p-6 text-center"
+                  style={
+                    {
+                      ...themeVariables(
+                        form.primaryColor || THEME_PRESETS[DEFAULT_THEME].primary,
+                        form.accentColor || THEME_PRESETS[DEFAULT_THEME].accent,
+                        form.surfaceColor || THEME_PRESETS[DEFAULT_THEME].surface,
+                      ),
+                      backgroundColor: form.surfaceColor || THEME_PRESETS[DEFAULT_THEME].surface,
+                    } as React.CSSProperties
+                  }
+                  data-testid="preview-intro-screen"
+                >
+                  <span className="flex h-[76px] w-[76px] items-center justify-center rounded-full bg-white p-3 shadow-lg">
+                    <img src={logoPreview} alt="" className="max-h-full max-w-full object-contain" />
+                  </span>
+                  <span className="mt-5 max-w-full font-display text-xl font-extrabold leading-tight tracking-tight text-[var(--college-primary)] sm:text-2xl">
+                    {form.introQuote?.trim() || "Education is Key to Success"}
+                  </span>
+                  <span className="mt-4 h-[3px] w-32 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--college-accent)_24%,transparent)]">
+                    <span className="block h-full w-1/3 rounded-full bg-[var(--college-accent)]" />
+                  </span>
+                </div>
+                <p className="mt-3 text-xs leading-5 text-slate-500">Preview updates with your unsaved logo, quote, and palette.</p>
+              </div>
+            </div>
+          </SectionCard>
         </div>
         <div className="space-y-6">
           <SectionCard>
@@ -1301,6 +1395,49 @@ function IdentityView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flas
 
 function ColorField({ label, value, onChange, testId }: { label: string; value: string; onChange: (value: string) => void; testId: string }) {
   return <label className="block text-sm font-bold text-slate-700">{label}<div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2"><input type="color" value={/^#[0-9A-Fa-f]{6}$/.test(value) ? value : "#0B3472"} onChange={(event) => onChange(event.target.value.toUpperCase())} className="h-9 w-10 cursor-pointer rounded-lg border-0 bg-transparent" data-testid={testId} /><input value={value} onChange={(event) => onChange(event.target.value)} className="min-w-0 flex-1 bg-transparent px-1 text-sm font-bold text-slate-700 outline-none" aria-label={`${label} hex value`} data-testid={`${testId}-hex`} /></div></label>;
+}
+
+function IdentityToggle({
+  label,
+  description,
+  checked,
+  onChange,
+  testId,
+  checkbox = false,
+}: {
+  label: string;
+  description: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  testId: string;
+  checkbox?: boolean;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4">
+      <div className="min-w-0">
+        <p className="text-sm font-extrabold text-slate-800">{label}</p>
+        <p className="mt-1 text-xs leading-5 text-slate-500">{description}</p>
+      </div>
+      {checkbox ? (
+        <input
+          type="checkbox"
+          className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-[#0b3472]"
+          checked={checked}
+          onChange={(event) => onChange(event.target.checked)}
+          aria-label={label}
+          data-testid={testId}
+        />
+      ) : (
+        <Switch
+          className="mt-0.5 shrink-0"
+          checked={checked}
+          onCheckedChange={onChange}
+          aria-label={label}
+          data-testid={testId}
+        />
+      )}
+    </div>
+  );
 }
 
 function PlaceholderView({ label }: { label: string }) {

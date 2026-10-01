@@ -894,6 +894,17 @@ components:
         surfaceColor:
           type: string
           pattern: "^#[0-9A-Fa-f]{6}$"
+        introEnabled:
+          type: boolean
+        introQuote:
+          type: string
+          maxLength: 80
+        scrollCtaEnabled:
+          type: boolean
+        floatingWhatsAppEnabled:
+          type: boolean
+        cursorSparkleEnabled:
+          type: boolean
         updatedAt:
           type: string
           format: date-time
@@ -909,6 +920,11 @@ components:
         - primaryColor
         - accentColor
         - surfaceColor
+        - introEnabled
+        - introQuote
+        - scrollCtaEnabled
+        - floatingWhatsAppEnabled
+        - cursorSparkleEnabled
         - updatedAt
     SiteSettingsUpdate:
       type: object
@@ -944,6 +960,17 @@ components:
         surfaceColor:
           type: string
           pattern: "^#[0-9A-Fa-f]{6}$"
+        introEnabled:
+          type: boolean
+        introQuote:
+          type: string
+          maxLength: 80
+        scrollCtaEnabled:
+          type: boolean
+        floatingWhatsAppEnabled:
+          type: boolean
+        cursorSparkleEnabled:
+          type: boolean
       minProperties: 1
     PublicEnquirySubmission:
       type: object

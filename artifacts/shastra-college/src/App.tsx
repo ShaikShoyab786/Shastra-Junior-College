@@ -7,6 +7,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import AdminPage from '@/pages/admin';
 import HomePage from '@/pages/public-home';
+import PublicSiteEffects from '@/components/public-site-effects';
 import AboutPage from '@/pages/about';
 import GalleryPage from '@/pages/gallery';
 import FacultyPage from '@/pages/faculty';
@@ -117,6 +118,7 @@ function RoutedApp() {
     >
       <ClerkQueryClientCacheInvalidator />
       <QueryClientProvider client={queryClient}>
+        <PublicSiteEffects />
         <Switch>
           <Route path="/" component={HomePage} />
           <Route path="/about" component={AboutPage} />
