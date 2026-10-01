@@ -4,3 +4,4 @@
 - [CMS media path handling](cms-image-path-inputs.md) — validate uploaded asset types and authorize each CMS media reference before public serving.
 - [About statistic visibility](about-statistics-visibility.md) — reuse Home statistic records; About selection must never change Home visibility.
 - [Headless CDP value serialization](headless-cdp-value-serialization.md) — with `returnByValue`, return primitives or plain objects from `Runtime.evaluate`, not DOM nodes.
+- [Course gallery preview](course-gallery-preview.md) — per-image Gallery toggle controls display on every course page, independent of Home Preview and faculty eligibility.
