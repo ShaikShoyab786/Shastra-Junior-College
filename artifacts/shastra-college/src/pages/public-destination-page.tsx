@@ -314,6 +314,15 @@ function ContactContent({
         </div>
       </section>
 
+      <section
+        className="px-5 pb-14 pt-10 sm:px-8 sm:pb-20 sm:pt-14"
+        data-testid="section-contact-enquiry"
+      >
+        <div className="mx-auto max-w-5xl">
+          <EnquiryForm section={enquirySection} />
+        </div>
+      </section>
+
       {mapEmbedUrl ? (
         <section
           className="px-5 pb-2 pt-8 sm:px-8 sm:pt-10"
@@ -345,15 +354,6 @@ function ContactContent({
           </div>
         </section>
       ) : null}
-
-      <section
-        className="px-5 pb-14 pt-10 sm:px-8 sm:pb-20 sm:pt-14"
-        data-testid="section-contact-enquiry"
-      >
-        <div className="mx-auto max-w-5xl">
-          <EnquiryForm section={enquirySection} />
-        </div>
-      </section>
     </main>
   );
 }
