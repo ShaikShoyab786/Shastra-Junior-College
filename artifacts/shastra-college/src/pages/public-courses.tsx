@@ -149,6 +149,7 @@ function validDestination(destination: string | null | undefined) {
     "/courses/integrated",
     "/courses/iit-jee",
     "/courses/mpc",
+    "/courses/mpc-eamcet",
     "/courses/neet",
     "/faculty",
     "/gallery",

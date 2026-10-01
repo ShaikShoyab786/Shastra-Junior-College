@@ -90,11 +90,11 @@ const DEFAULT_COURSES_MENU: CoursesMenuContent = {
     {
       id: "mpc-eamcet",
       order: 4,
-      title: "MPC_EAMCET",
+      title: "MPC+EAMCET",
       category: "EAMCET pathway",
       description:
         "A Mathematics, Physics and Chemistry pathway associated with EAMCET.",
-      destination: "/courses/mpc",
+      destination: "/courses/mpc-eamcet",
       isVisible: true,
       icon: null,
       tint: null,
@@ -303,7 +303,8 @@ export async function seedCoursesPageSections(): Promise<void> {
         "bipc": "/courses/bipc",
         "mpc+iit-jee": "/courses/iit-jee",
         "bipc+neet": "/courses/neet",
-        "mpc_eamcet": "/courses/mpc",
+        "mpc_eamcet": "/courses/mpc-eamcet",
+        "mpc+eamcet": "/courses/mpc-eamcet",
       };
       const courseCards = seedableMenu.courseCards.map((card) => {
         const destination = detailDestinations[card.title.trim().toLowerCase()];
@@ -454,6 +455,141 @@ export async function seedCoursesPageSections(): Promise<void> {
         );
       }
       seedMarkers.add(courseDetailsSeedMarker);
+    }
+
+    const eamcetDestinationSeedMarker = "course-detail-mpc-eamcet-destination-v1";
+    if (!seedMarkers.has(eamcetDestinationSeedMarker)) {
+      const courseCards = seedableMenu.courseCards.map((card) => {
+        const isEamcetCard =
+          card.id === "mpc-eamcet" ||
+          ["mpc_eamcet", "mpc+eamcet"].includes(card.title.trim().toLowerCase());
+        if (!isEamcetCard || card.destination !== "/courses/mpc") return card;
+        return {
+          ...card,
+          title: card.title === "MPC_EAMCET" ? "MPC+EAMCET" : card.title,
+          destination: "/courses/mpc-eamcet",
+        };
+      });
+      seedableMenu = { ...seedableMenu, courseCards };
+      seedMarkers.add(eamcetDestinationSeedMarker);
+    }
+
+    const eamcetDetailSeedMarker = "course-detail-mpc-eamcet-sections-v1";
+    if (!seedMarkers.has(eamcetDetailSeedMarker)) {
+      const courseCard = seedableMenu.courseCards.find(
+        (card) => card.id === "mpc-eamcet",
+      );
+      const description = courseCard?.description?.trim() ?? "";
+      const isReadyForPublication = Boolean(description);
+      const eamcetSections: Array<SeedSection & { pageSlug: string }> = [
+        {
+          pageSlug: "courses",
+          sectionKey: "course-mpc-eamcet-hero",
+          title: "MPC + EAMCET",
+          subtitle: description || null,
+          content: {
+            eyebrow: "MPC + EAMCET · COURSE DETAILS",
+            statusLabel: "",
+            duration: "",
+            studyMode: "",
+            imageUrl: null,
+            imageAlt: "",
+            primaryCtaLabel: "Ask about MPC + EAMCET",
+            secondaryCtaLabel: "View all courses",
+          },
+          isVisible: isReadyForPublication,
+          position: 20,
+        },
+        {
+          pageSlug: "courses",
+          sectionKey: "course-mpc-eamcet-highlights",
+          title: "Quick Course Highlights",
+          subtitle: description
+            ? "Review the subjects and EAMCET focus associated with this pathway."
+            : null,
+          content: { eyebrow: "QUICK OVERVIEW" },
+          isVisible: isReadyForPublication,
+          position: 21,
+        },
+      ];
+      await tx.insert(contentSectionsTable).values(eamcetSections).onConflictDoNothing();
+
+      const [eamcetHighlightsSection] = await tx
+        .select({ id: contentSectionsTable.id })
+        .from(contentSectionsTable)
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "courses"),
+            eq(contentSectionsTable.sectionKey, "course-mpc-eamcet-highlights"),
+          ),
+        )
+        .limit(1);
+      if (eamcetHighlightsSection && description) {
+        const [existingHighlight] = await tx
+          .select({ id: contentItemsTable.id })
+          .from(contentItemsTable)
+          .where(
+            and(
+              eq(contentItemsTable.sectionId, eamcetHighlightsSection.id),
+              eq(contentItemsTable.itemType, "course-highlight"),
+            ),
+          )
+          .limit(1);
+        if (!existingHighlight) {
+          await tx.insert(contentItemsTable).values([
+            {
+              sectionId: eamcetHighlightsSection.id,
+              itemType: "course-highlight",
+              title: "Mathematics",
+              description: "A core subject in the MPC + EAMCET pathway.",
+              imageUrl: null,
+              linkPath: null,
+              label: null,
+              content: { category: "CORE SUBJECT" },
+              isVisible: true,
+              position: 0,
+            },
+            {
+              sectionId: eamcetHighlightsSection.id,
+              itemType: "course-highlight",
+              title: "Physics",
+              description: "A core subject in the MPC + EAMCET pathway.",
+              imageUrl: null,
+              linkPath: null,
+              label: null,
+              content: { category: "CORE SUBJECT" },
+              isVisible: true,
+              position: 1,
+            },
+            {
+              sectionId: eamcetHighlightsSection.id,
+              itemType: "course-highlight",
+              title: "Chemistry",
+              description: "A core subject in the MPC + EAMCET pathway.",
+              imageUrl: null,
+              linkPath: null,
+              label: null,
+              content: { category: "CORE SUBJECT" },
+              isVisible: true,
+              position: 2,
+            },
+            {
+              sectionId: eamcetHighlightsSection.id,
+              itemType: "course-highlight",
+              title: "EAMCET",
+              description: "Entrance-exam preparation associated with this pathway.",
+              imageUrl: null,
+              linkPath: null,
+              label: null,
+              content: { category: "EXAM PATHWAY" },
+              isVisible: true,
+              position: 3,
+            },
+          ]);
+        }
+      }
+      seedMarkers.add(eamcetDestinationSeedMarker);
+      seedMarkers.add(eamcetDetailSeedMarker);
     }
 
     const starterSeedMarker = "courses-batches-schedule-admissions-v1";

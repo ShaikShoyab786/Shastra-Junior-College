@@ -2,18 +2,25 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, Eye, EyeOff, ImagePlus, Plus, Save, Trash2, Upload } from "lucide-react";
 import {
+  getGetAdminCoursesMenuQueryKey,
   getGetAdminCmsPageQueryKey,
   getGetCmsPageQueryKey,
   useCreateContentItem,
   useDeleteContentItem,
   useGetAdminCmsPage,
+  useGetAdminCoursesMenu,
   useRequestUploadUrl,
   useUpdateContentItem,
   useUpdateContentSection,
 } from "@workspace/api-client-react";
 import type { ContentItem, ContentItemInput, ContentSection } from "@workspace/api-client-react";
 import { Link } from "wouter";
-import { courseSectionKey, type CourseDetail } from "./course-detail-config";
+import {
+  COURSE_DETAILS,
+  courseSectionKey,
+  getCourseDetailForMenuCard,
+  type CourseDetail,
+} from "./course-detail-config";
 
 type Flash = { tone: "success" | "error"; message: string };
 type SectionDraft = {
@@ -117,17 +124,108 @@ function Panel({
   title,
   children,
   testId,
+  id,
 }: {
   eyebrow: string;
   title: string;
   children: React.ReactNode;
   testId: string;
+  id?: string;
 }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(11,52,114,.045)] sm:p-7" data-testid={testId}>
+    <section id={id} className="scroll-mt-24 rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(11,52,114,.045)] sm:p-7" data-testid={testId}>
       <p className="eyebrow text-[#e3212b]">{eyebrow}</p>
       <h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">{title}</h2>
       <div className="mt-6">{children}</div>
+    </section>
+  );
+}
+
+function CoursePathwaySelector({
+  course,
+  onCourseChange,
+}: {
+  course: CourseDetail;
+  onCourseChange: (course: CourseDetail) => void;
+}) {
+  const menu = useGetAdminCoursesMenu({
+    query: { queryKey: getGetAdminCoursesMenuQueryKey() },
+  });
+  const cards = menu.data?.courseCards.slice().sort((a, b) => a.order - b.order) ?? [];
+  const draftCourse = COURSE_DETAILS.find((item) => "isDraft" in item && item.isDraft);
+
+  return (
+    <section id="course-pathway-selector" className="scroll-mt-6 rounded-3xl border border-[#0b3472]/15 bg-white p-5 shadow-[0_10px_30px_rgba(11,52,114,.045)] sm:p-7" data-testid="panel-admin-course-pathway-selector">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="eyebrow text-[#e3212b]">Course pathway</p>
+          <h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Select a pathway to edit.</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Choose a course here. The sidebar links below jump to sections for the selected pathway.</p>
+        </div>
+      </div>
+
+      {menu.isLoading ? (
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-busy="true">
+          {Array.from({ length: 5 }, (_, index) => <div key={index} className="h-24 animate-pulse rounded-2xl bg-slate-100" />)}
+        </div>
+      ) : menu.isError ? (
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3" role="alert" data-testid="status-admin-course-selector-error">
+          <p className="text-sm font-semibold text-red-800">Course choices could not be loaded.</p>
+          <button type="button" onClick={() => void menu.refetch()} className="rounded-lg bg-[#0b3472] px-3 py-2 text-xs font-bold text-white">Try again</button>
+        </div>
+      ) : (
+        <>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            {cards.map((card) => {
+              const target = getCourseDetailForMenuCard(card);
+              const selected = target?.slug === course.slug;
+              return (
+                <button
+                  key={card.id}
+                  type="button"
+                  disabled={!target}
+                  onClick={() => target && onCourseChange(target)}
+                  aria-pressed={selected}
+                  className={`min-h-24 rounded-2xl border p-4 text-left transition ${
+                    selected
+                      ? "border-[#0b3472] bg-[#f1f5fb] ring-1 ring-[#0b3472]/20"
+                      : "border-slate-200 bg-white hover:border-[#0b3472]/40 hover:bg-[#f8fafc]"
+                  } disabled:cursor-not-allowed disabled:opacity-55`}
+                  data-testid={`button-admin-course-select-${card.id}`}
+                >
+                  <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-500">{card.category || "Course pathway"}</span>
+                  <span className="mt-1 block font-bold text-[#0b3472]">{card.title}</span>
+                  <span className="mt-1 block text-xs leading-5 text-slate-600">{target ? card.description : "Detail editor not configured"}</span>
+                  {!card.isVisible ? <span className="mt-2 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500">Hidden from menu</span> : null}
+                </button>
+              );
+            })}
+          </div>
+          {cards.length === 0 ? <p className="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">No course pathways are configured in the Courses menu.</p> : null}
+        </>
+      )}
+
+      {draftCourse ? (
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+          <div>
+            <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-500">Unlisted draft</p>
+            <p className="mt-1 text-xs text-slate-500">This pathway is not in the public Courses menu.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => onCourseChange(draftCourse)}
+            aria-pressed={course.slug === draftCourse.slug}
+            className={`rounded-xl border px-4 py-2.5 text-sm font-bold transition ${
+              course.slug === draftCourse.slug
+                ? "border-[#0b3472] bg-[#f1f5fb] text-[#0b3472]"
+                : "border-slate-200 bg-white text-slate-700 hover:border-[#0b3472]/40"
+            }`}
+            data-testid={`button-admin-course-select-${draftCourse.slug}`}
+          >
+            {draftCourse.name} draft
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -242,9 +340,11 @@ function ImageEditor({
 
 export default function AdminCourseDetailEditor({
   course,
+  onCourseChange,
   onFlash,
 }: {
   course: CourseDetail;
+  onCourseChange: (course: CourseDetail) => void;
   onFlash: (flash: Flash) => void;
 }) {
   const client = useQueryClient();
@@ -403,16 +503,18 @@ export default function AdminCourseDetailEditor({
   };
 
   if (page.isLoading) {
-    return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500" aria-busy="true" data-testid={`status-admin-course-${course.slug}-loading`}>Loading {course.name} course content…</div>;
+    return <div className="space-y-6"><CoursePathwaySelector course={course} onCourseChange={onCourseChange} /><div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500" aria-busy="true" data-testid={`status-admin-course-${course.slug}-loading`}>Loading {course.name} course content…</div></div>;
   }
   if (page.isError || !page.data || !heroSource || !highlightsSource) {
-    return <div className="rounded-2xl border border-red-200 bg-white p-6 text-sm text-red-700" role="alert" data-testid={`status-admin-course-${course.slug}-error`}>The saved course sections are unavailable. Restart the site content service and reload this page.</div>;
+    return <div className="space-y-6"><CoursePathwaySelector course={course} onCourseChange={onCourseChange} /><div className="rounded-2xl border border-red-200 bg-white p-6 text-sm text-red-700" role="alert" data-testid={`status-admin-course-${course.slug}-error`}>The saved course sections are unavailable. Restart the site content service and reload this page.</div></div>;
   }
   if (!hero || !highlightsSection || hydratedCourse !== course.slug) {
-    return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500" aria-busy="true" data-testid={`status-admin-course-${course.slug}-loading`}>Loading {course.name} course content…</div>;
+    return <div className="space-y-6"><CoursePathwaySelector course={course} onCourseChange={onCourseChange} /><div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500" aria-busy="true" data-testid={`status-admin-course-${course.slug}-loading`}>Loading {course.name} course content…</div></div>;
   }
 
   return (
+    <div className="space-y-6">
+    <CoursePathwaySelector course={course} onCourseChange={onCourseChange} />
     <form onSubmit={(event) => void save(event)} className="space-y-6" data-testid={`form-admin-course-${course.slug}`}>
       {course.slug === "integrated" ? (
         <div className="rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-950" role="status" data-testid="notice-integrated-course-draft">
@@ -420,7 +522,7 @@ export default function AdminCourseDetailEditor({
         </div>
       ) : null}
 
-      <Panel eyebrow={`${course.name} / Section 1`} title="Hero" testId={`panel-admin-course-${course.slug}-hero`}>
+      <Panel id={courseSectionKey(course.slug, "hero")} eyebrow={`${course.name} / Section 1`} title="Hero" testId={`panel-admin-course-${course.slug}-hero`}>
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Section label" value={stringValue(recordValue(hero.content), "eyebrow")} onChange={(value) => patchSectionContent("hero", "eyebrow", value)} testId={`input-course-${course.slug}-hero-eyebrow`} />
           <Field label="Course title" value={hero.title} onChange={(value) => setHero((current) => current ? { ...current, title: value } : current)} testId={`input-course-${course.slug}-hero-title`} />
@@ -445,7 +547,7 @@ export default function AdminCourseDetailEditor({
         </div>
       </Panel>
 
-      <Panel eyebrow={`${course.name} / Section 2`} title="Quick Course Highlights" testId={`panel-admin-course-${course.slug}-highlights`}>
+      <Panel id={courseSectionKey(course.slug, "highlights")} eyebrow={`${course.name} / Section 2`} title="Quick Course Highlights" testId={`panel-admin-course-${course.slug}-highlights`}>
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Section label" value={stringValue(recordValue(highlightsSection.content), "eyebrow")} onChange={(value) => patchSectionContent("highlights", "eyebrow", value)} testId={`input-course-${course.slug}-highlights-eyebrow`} />
           <Field label="Section heading" value={highlightsSection.title} onChange={(value) => setHighlightsSection((current) => current ? { ...current, title: value } : current)} testId={`input-course-${course.slug}-highlights-title`} />
@@ -490,5 +592,6 @@ export default function AdminCourseDetailEditor({
         </button>
       </div>
     </form>
+    </div>
   );
 }

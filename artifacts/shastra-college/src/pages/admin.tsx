@@ -63,7 +63,11 @@ import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
 import AdminCoursesEditor from "./admin-courses-editor";
 import AdminCoursesPageEditor from "./admin-courses-page-editor";
 import AdminCourseDetailEditor from "./admin-course-detail-editor";
-import { COURSE_DETAILS, type CourseDetailAdminView } from "./course-detail-config";
+import {
+  COURSE_DETAILS,
+  courseSectionKey,
+  type CourseDetailAdminView,
+} from "./course-detail-config";
 
 type Flash = {
   tone: "success" | "error";
@@ -361,6 +365,10 @@ function Shell({
                 ? "Pages / Courses"
             : "Pages";
   const selectedCourse = COURSE_DETAILS.find((course) => course.adminView === activeView);
+  const [activeCourseSection, setActiveCourseSection] = useState<"hero" | "highlights">("hero");
+  useEffect(() => {
+    setActiveCourseSection("hero");
+  }, [selectedCourse?.slug]);
   const activeTitle =
     selectedCourse
       ? `${selectedCourse.name} course page`
@@ -425,6 +433,30 @@ function Shell({
       setCoursesOpen(true);
     }
     onNavigate(view);
+    setMobileNav(false);
+  };
+
+  const jumpToCourseSelector = () => {
+    if (!selectedCourse) {
+      const firstPathway = COURSE_DETAILS.find(
+        (course) => !("isDraft" in course && course.isDraft),
+      );
+      if (firstPathway) go(firstPathway.adminView);
+      return;
+    }
+    document.getElementById("course-pathway-selector")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    setMobileNav(false);
+  };
+
+  const jumpToCourseSection = (section: "hero" | "highlights") => {
+    if (!selectedCourse) return;
+    setActiveCourseSection(section);
+    document
+      .getElementById(courseSectionKey(selectedCourse.slug, section))
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
     setMobileNav(false);
   };
 
@@ -638,7 +670,7 @@ function Shell({
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
-                            onClick={() => go("courses")}
+                            onClick={jumpToCourseSelector}
                             className={`flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${
                               activeView === "courses" || activeView === "courses-explore" || COURSE_DETAILS.some((course) => course.adminView === activeView)
                                 ? "bg-white/10 text-white"
@@ -655,12 +687,15 @@ function Shell({
                         </div>
                         {coursesOpen ? (
                           <div className="ml-3 mt-1 space-y-1 border-l border-white/10 pl-2">
+                            <NavRow icon={FileText} label="All Courses" nested active={activeView === "courses"} onClick={jumpToCourseSelector} />
+                            {selectedCourse ? (
+                              <>
+                                <NavRow icon={FileText} label="Hero" nested active={activeCourseSection === "hero"} onClick={() => jumpToCourseSection("hero")} />
+                                <NavRow icon={FileText} label="Quick Course Highlights" nested active={activeCourseSection === "highlights"} onClick={() => jumpToCourseSection("highlights")} />
+                              </>
+                            ) : null}
+                            <div className="my-2 border-t border-white/10" />
                             <NavRow icon={FileText} label="Explore Courses" nested active={activeView === "courses-explore"} onClick={() => go("courses-explore")} />
-                            {COURSE_DETAILS.map((course) => (
-                              <NavRow key={course.slug} icon={FileText} label={course.name} nested active={activeView === course.adminView} onClick={() => go(course.adminView)} />
-                            ))}
-                            <NavRow icon={FileText} label="Why Choose This Pathway" nested active={false} onClick={() => undefined} badge="Soon" />
-                            <NavRow icon={FileText} label="Syllabus" nested active={false} onClick={() => undefined} badge="Soon" />
                           </div>
                         ) : null}
                       </div>
@@ -1450,11 +1485,15 @@ function AdminWorkspace() {
     body = course ? (
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
         <PageIntro
-          eyebrow={`Pages / Courses / ${course.name} / Sections`}
-          title={`Edit ${course.name}.`}
-          description="Manage this course page’s Hero and Quick Course Highlights. Each course saves separately."
+          eyebrow="Pages / Courses / Course pathways"
+          title="Keep every pathway accurate."
+          description="Choose a course at the top of the editor, then use the sidebar to jump between that course’s sections."
         />
-        <AdminCourseDetailEditor course={course} onFlash={showFlash} />
+        <AdminCourseDetailEditor
+          course={course}
+          onCourseChange={(nextCourse) => setActiveView(nextCourse.adminView)}
+          onFlash={showFlash}
+        />
       </div>
     ) : null;
   } else {
