@@ -107,6 +107,7 @@ function Field({
   value,
   onChange,
   testId,
+  placeholder,
   multiline = false,
   hint,
   type = "text",
@@ -115,6 +116,7 @@ function Field({
   value: string;
   onChange: (value: string) => void;
   testId: string;
+  placeholder?: string;
   multiline?: boolean;
   hint?: string;
   type?: "text" | "url";
@@ -123,9 +125,9 @@ function Field({
     <label className="block text-sm font-bold text-slate-700">
       {label}
       {multiline ? (
-        <textarea value={value} onChange={(event) => onChange(event.currentTarget.value)} rows={4} className={`${inputClass} resize-y`} data-testid={testId} />
+        <textarea value={value} onChange={(event) => onChange(event.currentTarget.value)} placeholder={placeholder} rows={4} className={`${inputClass} resize-y`} data-testid={testId} />
       ) : (
-        <input type={type} value={value} onChange={(event) => onChange(event.currentTarget.value)} className={inputClass} data-testid={testId} />
+        <input type={type} value={value} onChange={(event) => onChange(event.currentTarget.value)} placeholder={placeholder} className={inputClass} data-testid={testId} />
       )}
       {hint ? <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">{hint}</span> : null}
     </label>
@@ -901,8 +903,9 @@ export default function AdminCourseDetailEditor({
           />
           <Field
             label="Section heading"
-            value={stringValue(galleryPreviewContent, "title") || defaultGalleryTitle}
+            value={stringValue(galleryPreviewContent, "title")}
             onChange={(value) => patchCoursePreviewContent("courseGalleryPreview", "title", value)}
+            placeholder={defaultGalleryTitle}
             testId={`input-course-${course.slug}-gallery-preview-title`}
           />
           <div className="md:col-span-2">
