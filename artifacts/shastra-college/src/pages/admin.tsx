@@ -366,7 +366,7 @@ function Shell({
                 ? "Pages / Courses"
             : "Pages";
   const selectedCourse = COURSE_DETAILS.find((course) => course.adminView === activeView);
-  const [activeCourseSection, setActiveCourseSection] = useState<"hero" | "highlights" | "faculty-preview" | "curriculum" | "gallery-preview">("hero");
+  const [activeCourseSection, setActiveCourseSection] = useState<"hero" | "highlights" | "faculty-preview" | "curriculum" | "gallery-preview" | "enrollment-process">("hero");
   useEffect(() => {
     setActiveCourseSection("hero");
   }, [selectedCourse?.slug]);
@@ -452,7 +452,7 @@ function Shell({
     setMobileNav(false);
   };
 
-  const jumpToCourseSection = (section: "hero" | "highlights" | "faculty-preview" | "curriculum" | "gallery-preview") => {
+  const jumpToCourseSection = (section: "hero" | "highlights" | "faculty-preview" | "curriculum" | "gallery-preview" | "enrollment-process") => {
     if (!selectedCourse) return;
     setActiveCourseSection(section);
     document
@@ -696,6 +696,7 @@ function Shell({
                                 <NavRow icon={FileText} label="Faculty Preview" nested active={activeCourseSection === "faculty-preview"} onClick={() => jumpToCourseSection("faculty-preview")} />
                                 <NavRow icon={BookOpenCheck} label="Curriculum" nested active={activeCourseSection === "curriculum"} onClick={() => jumpToCourseSection("curriculum")} />
                                 <NavRow icon={ImagePlus} label="Gallery Preview" nested active={activeCourseSection === "gallery-preview"} onClick={() => jumpToCourseSection("gallery-preview")} />
+                                <NavRow icon={ClipboardList} label="Enrollment Process" nested active={activeCourseSection === "enrollment-process"} onClick={() => jumpToCourseSection("enrollment-process")} />
                               </>
                             ) : null}
                             <div className="my-2 border-t border-white/10" />

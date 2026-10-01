@@ -46,7 +46,8 @@ export function courseSectionKey(
     | "highlights"
     | "faculty-preview"
     | "curriculum"
-    | "gallery-preview",
+    | "gallery-preview"
+    | "enrollment-process",
 ) {
   const suffix =
     section === "highlights"
@@ -57,6 +58,8 @@ export function courseSectionKey(
           ? "curriculum"
           : section === "gallery-preview"
             ? "gallery-preview"
+          : section === "enrollment-process"
+            ? "enrollment-process"
           : "hero";
   return `course-${slug}-${suffix}`;
 }

@@ -23,6 +23,7 @@ import {
   getCourseDetailForMenuCard,
   type CourseDetail,
 } from "./course-detail-config";
+import { readCourseEnrollmentProcess } from "./course-enrollment-process";
 
 type Flash = { tone: "success" | "error"; message: string };
 type SectionDraft = {
@@ -80,6 +81,9 @@ function newId() {
 }
 function newCurriculumId() {
   return `course-subject-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+}
+function newEnrollmentStepId() {
+  return `course-enrollment-step-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
 function draftFromSection(section: ContentSection): SectionDraft {
@@ -500,9 +504,9 @@ export default function AdminCourseDetailEditor({
   const patchCurriculumContent = (key: string, value: unknown) =>
     setCurriculum((current) => current ? { ...current, content: { ...current.content, [key]: value } } : current);
   const patchCoursePreviewContent = (
-    section: "courseFacultyPreview" | "courseGalleryPreview",
+    section: "courseFacultyPreview" | "courseGalleryPreview" | "courseEnrollmentProcess",
     key: string,
-    value: string,
+    value: unknown,
   ) =>
     setCurriculum((current) => current
       ? {
@@ -578,6 +582,23 @@ export default function AdminCourseDetailEditor({
     if (curriculum.isVisible && (!curriculum.title.trim() || !curriculum.subtitle.trim() || !stringValue(curriculum.content, "eyebrow").trim())) {
       setError("For a published Curriculum, complete the section label, heading, and introduction.");
       return;
+    }
+    const enrollmentProcess = readCourseEnrollmentProcess(curriculum.content.courseEnrollmentProcess);
+    if (
+      enrollmentProcess.isVisible &&
+      (!enrollmentProcess.eyebrow.trim() ||
+        !enrollmentProcess.title.trim() ||
+        !enrollmentProcess.description.trim() ||
+        !enrollmentProcess.steps.length)
+    ) {
+      setError("Complete the Admission Enrollment Process heading, introduction, and at least one step, or hide the section.");
+      return;
+    }
+    for (const [index, step] of enrollmentProcess.steps.entries()) {
+      if (!step.title.trim() || !step.description.trim()) {
+        setError(`Complete or remove enrollment step ${index + 1}.`);
+        return;
+      }
     }
     for (const subject of subjects) {
       if (!subject.title.trim() || !subject.description.trim()) {
@@ -681,6 +702,16 @@ export default function AdminCourseDetailEditor({
     stringValue(gallerySectionContent, "description") ||
     gallerySection?.subtitle ||
     "";
+  const enrollmentProcess = readCourseEnrollmentProcess(
+    curriculum.content.courseEnrollmentProcess,
+  );
+  const moveEnrollmentStep = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= enrollmentProcess.steps.length) return;
+    const next = enrollmentProcess.steps.slice();
+    [next[index], next[target]] = [next[target], next[index]];
+    patchCoursePreviewContent("courseEnrollmentProcess", "steps", next);
+  };
 
   return (
     <div className="space-y-6">
@@ -934,6 +965,138 @@ export default function AdminCourseDetailEditor({
             Manage Gallery Images
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </button>
+        </div>
+      </Panel>
+
+      <Panel
+        id={courseSectionKey(course.slug, "enrollment-process")}
+        eyebrow={`${course.name} / Section 6`}
+        title="Admission Enrollment Process"
+        testId={`panel-admin-course-${course.slug}-enrollment-process`}
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field
+            label="Eyebrow text"
+            value={enrollmentProcess.eyebrow}
+            onChange={(value) => patchCoursePreviewContent("courseEnrollmentProcess", "eyebrow", value)}
+            testId={`input-course-${course.slug}-enrollment-process-eyebrow`}
+          />
+          <Field
+            label="Section heading"
+            value={enrollmentProcess.title}
+            onChange={(value) => patchCoursePreviewContent("courseEnrollmentProcess", "title", value)}
+            testId={`input-course-${course.slug}-enrollment-process-title`}
+          />
+          <div className="md:col-span-2">
+            <Field
+              label="Introduction"
+              value={enrollmentProcess.description}
+              onChange={(value) => patchCoursePreviewContent("courseEnrollmentProcess", "description", value)}
+              multiline
+              testId={`textarea-course-${course.slug}-enrollment-process-description`}
+            />
+          </div>
+        </div>
+        <div className="mt-5 border-t border-slate-100 pt-4">
+          <SectionToggle
+            label="Show Admission Enrollment Process on course page"
+            checked={enrollmentProcess.isVisible}
+            onChange={(value) => patchCoursePreviewContent("courseEnrollmentProcess", "isVisible", value)}
+            testId={`checkbox-course-${course.slug}-enrollment-process-visible`}
+          />
+        </div>
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs font-semibold text-slate-500">
+            {enrollmentProcess.steps.length} step{enrollmentProcess.steps.length === 1 ? "" : "s"} · reorder to change the public sequence
+          </p>
+          <button
+            type="button"
+            onClick={() => patchCoursePreviewContent("courseEnrollmentProcess", "steps", [
+              ...enrollmentProcess.steps,
+              { id: newEnrollmentStepId(), title: "", description: "" },
+            ])}
+            className="inline-flex items-center gap-2 rounded-lg border border-[#0b3472]/15 bg-white px-3 py-2 text-xs font-bold text-[#0b3472] hover:bg-[#f4f7fb]"
+            data-testid={`button-add-course-${course.slug}-enrollment-step`}
+          >
+            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+            Add step
+          </button>
+        </div>
+        <div className="mt-4 space-y-3">
+          {enrollmentProcess.steps.map((step, index) => (
+            <article
+              key={step.id}
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+              data-testid={`row-course-${course.slug}-enrollment-step-${step.id}`}
+            >
+              <div className="mb-4 flex items-center gap-2">
+                <span className="min-w-0 flex-1 text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Step {String(index + 1).padStart(2, "0")}
+                </span>
+                <button
+                  type="button"
+                  disabled={index === 0}
+                  onClick={() => moveEnrollmentStep(index, -1)}
+                  className="rounded-lg p-2 text-slate-600 disabled:opacity-30"
+                  aria-label={`Move enrollment step ${index + 1} up`}
+                  data-testid={`button-move-enrollment-step-up-${step.id}`}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  disabled={index === enrollmentProcess.steps.length - 1}
+                  onClick={() => moveEnrollmentStep(index, 1)}
+                  className="rounded-lg p-2 text-slate-600 disabled:opacity-30"
+                  aria-label={`Move enrollment step ${index + 1} down`}
+                  data-testid={`button-move-enrollment-step-down-${step.id}`}
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => patchCoursePreviewContent(
+                    "courseEnrollmentProcess",
+                    "steps",
+                    enrollmentProcess.steps.filter((item) => item.id !== step.id),
+                  )}
+                  className="rounded-lg p-2 text-red-700 hover:bg-red-50"
+                  aria-label={`Remove enrollment step ${index + 1}`}
+                  data-testid={`button-remove-enrollment-step-${step.id}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field
+                  label="Step title"
+                  value={step.title}
+                  onChange={(value) => patchCoursePreviewContent(
+                    "courseEnrollmentProcess",
+                    "steps",
+                    enrollmentProcess.steps.map((item) => item.id === step.id ? { ...item, title: value } : item),
+                  )}
+                  testId={`input-enrollment-step-title-${step.id}`}
+                />
+                <Field
+                  label="Step description"
+                  value={step.description}
+                  onChange={(value) => patchCoursePreviewContent(
+                    "courseEnrollmentProcess",
+                    "steps",
+                    enrollmentProcess.steps.map((item) => item.id === step.id ? { ...item, description: value } : item),
+                  )}
+                  multiline
+                  testId={`textarea-enrollment-step-description-${step.id}`}
+                />
+              </div>
+            </article>
+          ))}
+          {!enrollmentProcess.steps.length ? (
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-7 text-center text-sm text-slate-500">
+              No enrollment steps have been added.
+            </div>
+          ) : null}
         </div>
       </Panel>
 
