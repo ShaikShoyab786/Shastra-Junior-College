@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   getGetCmsPageQueryKey,
   getGetHomePageQueryKey,
@@ -11,6 +12,7 @@ import { AboutChairmanSection } from "./about-chairman-section";
 import { AboutBoardSection } from "./about-board-section";
 import { AboutInstitutionalStrengthsSection } from "./about-institutional-strengths-section";
 import { AboutCoreValuesSection } from "./about-core-values-section";
+import { AboutCoursesPreviewSection } from "./about-courses-preview-section";
 import { Footer, Header } from "./public-home";
 
 function AboutLoading() {
@@ -43,6 +45,21 @@ export default function AboutPage() {
   const faculty = useGetCmsPage("faculty", {
     query: { queryKey: getGetCmsPageQueryKey("faculty") },
   });
+
+  useEffect(() => {
+    if (!page.data || !window.location.hash) return;
+    let targetId: string;
+    try {
+      targetId = decodeURIComponent(window.location.hash.slice(1));
+    } catch {
+      return;
+    }
+    requestAnimationFrame(() =>
+      document
+        .getElementById(targetId)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
+  }, [page.data]);
 
   if (home.isLoading || page.isLoading) {
     return <AboutLoading />;
@@ -79,7 +96,8 @@ export default function AboutPage() {
       section.sectionKey === "chairman-message" ||
       section.sectionKey === "board-of-directors" ||
       section.sectionKey === "institutional-strengths" ||
-      section.sectionKey === "core-values",
+      section.sectionKey === "core-values" ||
+      section.sectionKey === "courses-preview",
   );
 
   return (
@@ -153,6 +171,14 @@ export default function AboutPage() {
                     key={section.id}
                     section={section}
                     items={page.data?.items ?? []}
+                  />
+                );
+              }
+              if (section.sectionKey === "courses-preview") {
+                return (
+                  <AboutCoursesPreviewSection
+                    key={section.id}
+                    section={section}
                   />
                 );
               }

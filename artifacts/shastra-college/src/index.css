@@ -421,6 +421,121 @@ html { scroll-behavior: smooth; }
   }
 }
 
+.about-course-preview-viewport {
+  overflow-x: auto;
+  scrollbar-width: none;
+  touch-action: auto;
+}
+
+.about-course-preview-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.about-course-preview-track {
+  display: flex;
+  width: max-content;
+  animation: about-course-preview-scroll var(--about-course-preview-duration, 32s) linear infinite;
+  will-change: transform;
+}
+
+.about-course-preview-track.is-paused,
+.about-course-preview-viewport:hover .about-course-preview-track,
+.about-course-preview-viewport:focus-within .about-course-preview-track,
+.about-course-preview-viewport.is-pointer-active .about-course-preview-track {
+  animation-play-state: paused;
+}
+
+.about-course-preview-group {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.about-course-preview-image {
+  position: relative;
+  height: 11rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 85% 15%, rgb(227 33 43 / 28%), transparent 28%),
+    linear-gradient(135deg, #0b3472, #17478f);
+}
+
+.about-course-preview-image img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  transition: transform 500ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.about-course-preview-image::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 45%, rgb(11 52 114 / 45%));
+  content: "";
+  pointer-events: none;
+}
+
+.about-course-preview-placeholder {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: rgb(255 255 255 / 75%);
+}
+
+.about-course-preview-category {
+  position: absolute;
+  z-index: 1;
+  bottom: 1rem;
+  left: 1.25rem;
+  max-width: calc(100% - 2.5rem);
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 999px;
+  background: rgb(11 52 114 / 82%);
+  padding: .4rem .75rem;
+  color: white;
+  font-size: .65rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@keyframes about-course-preview-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .about-course-preview-track .group:hover .about-course-preview-image img {
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-course-preview-track {
+    animation: none !important;
+    transform: none !important;
+    will-change: auto;
+  }
+
+  .about-course-preview-group[aria-hidden="true"] {
+    display: none;
+  }
+
+  .about-course-preview-image img {
+    transition: none !important;
+  }
+
+  .about-course-preview-track .group {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
 /**
  * Using the elevate system.
  * Automatic contrast adjustment.

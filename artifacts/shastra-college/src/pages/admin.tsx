@@ -61,6 +61,7 @@ import AdminAboutWhoWeAreEditor from "./admin-about-who-we-are-editor";
 import AdminAboutChairmanEditor from "./admin-about-chairman-editor";
 import AdminAboutBoardEditor from "./admin-about-board-editor";
 import AdminAboutCollectionEditor from "./admin-about-collection-editor";
+import AdminAboutCoursesPreviewEditor from "./admin-about-courses-preview-editor";
 import AdminGalleryEditor from "./admin-gallery-editor";
 import AdminFacultyEditor from "./admin-faculty-editor";
 import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
@@ -99,6 +100,7 @@ type WorkspaceView =
   | "about-board"
   | "about-institutional-strengths"
   | "about-core-values"
+  | "about-courses-preview"
   | "faqs"
   | "faculty"
   | "courses"
@@ -345,8 +347,18 @@ function Shell({
       activeView === "about-chairman" ||
       activeView === "about-board" ||
       activeView === "about-institutional-strengths" ||
-      activeView === "about-core-values",
+      activeView === "about-core-values" ||
+      activeView === "about-courses-preview",
   );
+  useEffect(() => {
+    if (
+      activeView === "courses" ||
+      activeView === "courses-explore" ||
+      COURSE_DETAILS.some((course) => course.adminView === activeView)
+    ) {
+      setCoursesOpen(true);
+    }
+  }, [activeView]);
   const homeSectionActive =
     activeView === "hero" ||
     activeView === "programs" ||
@@ -363,7 +375,8 @@ function Shell({
     activeView === "about-chairman" ||
     activeView === "about-board" ||
     activeView === "about-institutional-strengths" ||
-    activeView === "about-core-values";
+    activeView === "about-core-values" ||
+    activeView === "about-courses-preview";
   const activePage =
     activeView === "dashboard"
       ? "Dashboard"
@@ -410,6 +423,8 @@ function Shell({
                     ? "About · Institutional Strengths"
                     : activeView === "about-core-values"
                       ? "About · Core Values"
+                      : activeView === "about-courses-preview"
+                        ? "About · Courses Preview"
         : activeView === "hero"
           ? "Home · Hero"
           : activeView === "programs"
@@ -445,7 +460,8 @@ function Shell({
       view === "about-chairman" ||
       view === "about-board" ||
       view === "about-institutional-strengths" ||
-      view === "about-core-values"
+      view === "about-core-values" ||
+      view === "about-courses-preview"
     ) {
       setAboutOpen(true);
     }
@@ -678,6 +694,13 @@ function Shell({
                               nested
                               active={activeView === "about-core-values"}
                               onClick={() => go("about-core-values")}
+                            />
+                            <NavRow
+                              icon={BookOpen}
+                              label="Courses Preview"
+                              nested
+                              active={activeView === "about-courses-preview"}
+                              onClick={() => go("about-courses-preview")}
                             />
                           </div>
                         ) : null}
@@ -1198,6 +1221,14 @@ function AdminWorkspace() {
                 "Edit the section introduction and the values displayed on the About page.",
               action: "Edit Core Values",
             },
+            {
+              key: "about-courses-preview" as const,
+              number: "07",
+              title: "Courses Preview",
+              description:
+                "Edit the About introduction and visibility. Course records stay connected to Courses settings.",
+              action: "Edit Courses Preview",
+            },
           ].map((subsection) => (
             <button
               key={subsection.key}
@@ -1251,6 +1282,30 @@ function AdminWorkspace() {
           home={home}
           onFlash={showFlash}
           onNavigate={() => setActiveView("statistics")}
+        />
+      </div>
+    );
+  } else if (activeView === "about-courses-preview") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / About / Courses Preview"
+          title="Manage the Courses Preview."
+          description="Edit the About section text and visibility. Course cards and course details remain managed in Courses settings."
+          actions={
+            <button
+              type="button"
+              onClick={() => setActiveView("about")}
+              className="focus-ring rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-[#0b3472] transition hover:border-[#0b3472]/30"
+              data-testid="button-back-about-courses-preview"
+            >
+              All About subsections
+            </button>
+          }
+        />
+        <AdminAboutCoursesPreviewEditor
+          onFlash={showFlash}
+          onNavigate={() => setActiveView("courses-explore")}
         />
       </div>
     );

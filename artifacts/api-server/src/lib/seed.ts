@@ -2648,6 +2648,46 @@ async function seedAboutPage(): Promise<void> {
         .where(eq(contentSectionsTable.id, heroSection.id));
     }
 
+    if (heroSectionContent.aboutCoursesPreviewSeedVersion !== 1) {
+      const [existingCoursesPreview] = await tx
+        .select({ id: contentSectionsTable.id })
+        .from(contentSectionsTable)
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "about"),
+            eq(contentSectionsTable.sectionKey, "courses-preview"),
+          ),
+        )
+        .limit(1);
+
+      if (!existingCoursesPreview) {
+        await tx
+          .insert(contentSectionsTable)
+          .values({
+            pageSlug: "about",
+            sectionKey: "courses-preview",
+            title: "Explore our courses",
+            subtitle: "Explore the courses offered at Shastra Junior College.",
+            content: { eyebrow: "PATHWAYS AT SHASTRA" },
+            isVisible: true,
+            position: 6,
+          })
+          .onConflictDoNothing();
+      }
+
+      heroSectionContent = {
+        ...heroSectionContent,
+        aboutCoursesPreviewSeedVersion: 1,
+      };
+      await tx
+        .update(contentSectionsTable)
+        .set({
+          content: heroSectionContent as CmsJson,
+          updatedAt: new Date(),
+        })
+        .where(eq(contentSectionsTable.id, heroSection.id));
+    }
+
     const [statisticsSection] = await tx
       .select({ id: contentSectionsTable.id })
       .from(contentSectionsTable)
