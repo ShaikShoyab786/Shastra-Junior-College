@@ -1,4 +1,4 @@
-import { and, eq, inArray, or } from "drizzle-orm";
+import { and, eq, inArray, like, or, sql } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import { Readable } from "node:stream";
 import {
@@ -216,6 +216,20 @@ router.get(
       const coursesMenuImageMatches =
         coursesMenuImageUrls.includes(`/objects/${objectPath}`) ||
         coursesMenuImageUrls.includes(`/api/storage/objects/${objectPath}`);
+      const [courseHeroImage] = await db
+        .select({ id: contentSectionsTable.id })
+        .from(contentSectionsTable)
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "courses"),
+            like(contentSectionsTable.sectionKey, "course-%-hero"),
+            or(
+              sql`${contentSectionsTable.content}->>'imageUrl' = ${`/objects/${objectPath}`}`,
+              sql`${contentSectionsTable.content}->>'imageUrl' = ${`/api/storage/objects/${objectPath}`}`,
+            ),
+          ),
+        )
+        .limit(1);
 
       if (
         logoDoesNotMatch &&
@@ -223,7 +237,8 @@ router.get(
         !placementRecordImage &&
         !facultyPortrait &&
         !aboutImageMatches &&
-        !coursesMenuImageMatches
+        !coursesMenuImageMatches &&
+        !courseHeroImage
       ) {
         res.status(404).json({ error: "Object not found." });
         return;
