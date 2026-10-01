@@ -30,6 +30,7 @@ import type {
 } from "@workspace/api-client-react";
 import PlacementRecordsSection from "./placement-records-section";
 import TestimonialsCarousel from "../components/testimonials-carousel";
+import KnowledgeHubPreview from "../components/knowledge-hub-preview";
 import CoursesMegaMenu from "../components/courses-mega-menu";
 
 const logoPath = "/shastra-college-logo.png";
@@ -1065,6 +1066,12 @@ function PageSections({ home }: { home: HomePage }) {
       section.sectionKey.toLowerCase() === "testimonials" &&
       section.isVisible,
   );
+  const knowledgeHubPreviewSection = home.sections.find(
+    (section) =>
+      section.pageSlug === "home" &&
+      section.sectionKey.toLowerCase() === "knowledge-hub-preview" &&
+      section.isVisible,
+  );
   const testimonialItems = testimonialsSection
     ? home.items
         .filter(
@@ -1128,6 +1135,9 @@ function PageSections({ home }: { home: HomePage }) {
           section={testimonialsSection}
           items={testimonialItems}
         />
+      ) : null}
+      {knowledgeHubPreviewSection ? (
+        <KnowledgeHubPreview section={knowledgeHubPreviewSection} />
       ) : null}
     </main>
   );
