@@ -24,6 +24,11 @@ import {
   type CourseDetail,
 } from "./course-detail-config";
 import { readCourseEnrollmentProcess } from "./course-enrollment-process";
+import {
+  DEFAULT_COURSE_FAQ_SETTINGS,
+  DEFAULT_COURSE_TESTIMONIALS_SETTINGS,
+  readCoursePageSectionSettings,
+} from "./course-page-section-settings";
 
 type Flash = { tone: "success" | "error"; message: string };
 type SectionDraft = {
@@ -365,7 +370,7 @@ export default function AdminCourseDetailEditor({
 }: {
   course: CourseDetail;
   onCourseChange: (course: CourseDetail) => void;
-  onNavigate: (view: "faculty" | "gallery") => void;
+  onNavigate: (view: "faculty" | "gallery" | "testimonials" | "faqs") => void;
   onFlash: (flash: Flash) => void;
 }) {
   const client = useQueryClient();
@@ -504,7 +509,12 @@ export default function AdminCourseDetailEditor({
   const patchCurriculumContent = (key: string, value: unknown) =>
     setCurriculum((current) => current ? { ...current, content: { ...current.content, [key]: value } } : current);
   const patchCoursePreviewContent = (
-    section: "courseFacultyPreview" | "courseGalleryPreview" | "courseEnrollmentProcess",
+    section:
+      | "courseFacultyPreview"
+      | "courseGalleryPreview"
+      | "courseEnrollmentProcess"
+      | "courseTestimonials"
+      | "courseFaqs",
     key: string,
     value: unknown,
   ) =>
@@ -537,8 +547,11 @@ export default function AdminCourseDetailEditor({
     return next;
   });
 
-  const save = async (event: FormEvent) => {
-    event.preventDefault();
+  const save = async (
+    event?: FormEvent,
+    navigateAfterSave?: "testimonials" | "faqs",
+  ) => {
+    event?.preventDefault();
     setError("");
     const currentPage = page.data;
     if (!currentPage || !heroSource || !highlightsSource || !curriculumSource || !hero || !highlightsSection || !curriculum) {
@@ -584,6 +597,14 @@ export default function AdminCourseDetailEditor({
       return;
     }
     const enrollmentProcess = readCourseEnrollmentProcess(curriculum.content.courseEnrollmentProcess);
+    const testimonialsSettings = readCoursePageSectionSettings(
+      curriculum.content.courseTestimonials,
+      DEFAULT_COURSE_TESTIMONIALS_SETTINGS,
+    );
+    const faqSettings = readCoursePageSectionSettings(
+      curriculum.content.courseFaqs,
+      DEFAULT_COURSE_FAQ_SETTINGS,
+    );
     if (
       enrollmentProcess.isVisible &&
       (!enrollmentProcess.eyebrow.trim() ||
@@ -599,6 +620,24 @@ export default function AdminCourseDetailEditor({
         setError(`Complete or remove enrollment step ${index + 1}.`);
         return;
       }
+    }
+    if (
+      testimonialsSettings.isVisible &&
+      (!testimonialsSettings.eyebrow.trim() ||
+        !testimonialsSettings.title.trim() ||
+        !testimonialsSettings.description.trim())
+    ) {
+      setError("Complete the Testimonials eyebrow, heading, and introduction, or hide the section.");
+      return;
+    }
+    if (
+      faqSettings.isVisible &&
+      (!faqSettings.eyebrow.trim() ||
+        !faqSettings.title.trim() ||
+        !faqSettings.description.trim())
+    ) {
+      setError("Complete the FAQs eyebrow, heading, and introduction, or hide the section.");
+      return;
     }
     for (const subject of subjects) {
       if (!subject.title.trim() || !subject.description.trim()) {
@@ -672,6 +711,7 @@ export default function AdminCourseDetailEditor({
       await client.invalidateQueries({ queryKey: getGetAdminCmsPageQueryKey("courses") });
       await client.invalidateQueries({ queryKey: getGetCmsPageQueryKey("courses") });
       onFlash({ tone: "success", message: `${course.name} course page saved.` });
+      if (navigateAfterSave) onNavigate(navigateAfterSave);
     } catch (failure) {
       setError(errorMessage(failure));
       await client.invalidateQueries({ queryKey: getGetAdminCmsPageQueryKey("courses") });
@@ -704,6 +744,14 @@ export default function AdminCourseDetailEditor({
     "";
   const enrollmentProcess = readCourseEnrollmentProcess(
     curriculum.content.courseEnrollmentProcess,
+  );
+  const testimonialsSettings = readCoursePageSectionSettings(
+    curriculum.content.courseTestimonials,
+    DEFAULT_COURSE_TESTIMONIALS_SETTINGS,
+  );
+  const faqSettings = readCoursePageSectionSettings(
+    curriculum.content.courseFaqs,
+    DEFAULT_COURSE_FAQ_SETTINGS,
   );
   const moveEnrollmentStep = (index: number, direction: -1 | 1) => {
     const target = index + direction;
@@ -1097,6 +1145,108 @@ export default function AdminCourseDetailEditor({
               No enrollment steps have been added.
             </div>
           ) : null}
+        </div>
+      </Panel>
+
+      <Panel
+        id={courseSectionKey(course.slug, "testimonials")}
+        eyebrow={`${course.name} / Section 7`}
+        title="Testimonials"
+        testId={`panel-admin-course-${course.slug}-testimonials`}
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field
+            label="Eyebrow text"
+            value={testimonialsSettings.eyebrow}
+            onChange={(value) => patchCoursePreviewContent("courseTestimonials", "eyebrow", value)}
+            testId={`input-course-${course.slug}-testimonials-eyebrow`}
+          />
+          <Field
+            label="Section heading"
+            value={testimonialsSettings.title}
+            onChange={(value) => patchCoursePreviewContent("courseTestimonials", "title", value)}
+            testId={`input-course-${course.slug}-testimonials-title`}
+          />
+          <div className="md:col-span-2">
+            <Field
+              label="Introduction"
+              value={testimonialsSettings.description}
+              onChange={(value) => patchCoursePreviewContent("courseTestimonials", "description", value)}
+              multiline
+              testId={`textarea-course-${course.slug}-testimonials-description`}
+            />
+          </div>
+        </div>
+        <div className="mt-5 border-t border-slate-100 pt-4">
+          <SectionToggle
+            label="Show Testimonials on this course page"
+            checked={testimonialsSettings.isVisible}
+            onChange={(value) => patchCoursePreviewContent("courseTestimonials", "isVisible", value)}
+            testId={`checkbox-course-${course.slug}-testimonials-visible`}
+          />
+        </div>
+        <div className="mt-5 flex justify-end">
+          <button
+            type="button"
+            onClick={() => void save(undefined, "testimonials")}
+            disabled={saving || uploadsInProgress > 0 || updateSection.isPending || createItem.isPending || updateItemMutation.isPending || deleteItem.isPending}
+            className="focus-ring inline-flex items-center gap-2 rounded-xl border border-[#0b3472]/20 bg-white px-4 py-2.5 text-sm font-bold text-[#0b3472] transition hover:bg-[#f4f7fb]"
+            data-testid={`button-course-${course.slug}-manage-testimonials`}
+          >
+            Save and manage Home Testimonials
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+      </Panel>
+
+      <Panel
+        id={courseSectionKey(course.slug, "faqs")}
+        eyebrow={`${course.name} / Section 8`}
+        title="FAQs"
+        testId={`panel-admin-course-${course.slug}-faqs`}
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field
+            label="Eyebrow text"
+            value={faqSettings.eyebrow}
+            onChange={(value) => patchCoursePreviewContent("courseFaqs", "eyebrow", value)}
+            testId={`input-course-${course.slug}-faqs-eyebrow`}
+          />
+          <Field
+            label="Section heading"
+            value={faqSettings.title}
+            onChange={(value) => patchCoursePreviewContent("courseFaqs", "title", value)}
+            testId={`input-course-${course.slug}-faqs-title`}
+          />
+          <div className="md:col-span-2">
+            <Field
+              label="Introduction"
+              value={faqSettings.description}
+              onChange={(value) => patchCoursePreviewContent("courseFaqs", "description", value)}
+              multiline
+              testId={`textarea-course-${course.slug}-faqs-description`}
+            />
+          </div>
+        </div>
+        <div className="mt-5 border-t border-slate-100 pt-4">
+          <SectionToggle
+            label="Show FAQs on this course page"
+            checked={faqSettings.isVisible}
+            onChange={(value) => patchCoursePreviewContent("courseFaqs", "isVisible", value)}
+            testId={`checkbox-course-${course.slug}-faqs-visible`}
+          />
+        </div>
+        <div className="mt-5 flex justify-end">
+          <button
+            type="button"
+            onClick={() => void save(undefined, "faqs")}
+            disabled={saving || uploadsInProgress > 0 || updateSection.isPending || createItem.isPending || updateItemMutation.isPending || deleteItem.isPending}
+            className="focus-ring inline-flex items-center gap-2 rounded-xl border border-[#0b3472]/20 bg-white px-4 py-2.5 text-sm font-bold text-[#0b3472] transition hover:bg-[#f4f7fb]"
+            data-testid={`button-course-${course.slug}-manage-faqs`}
+          >
+            Save and manage FAQs
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </button>
         </div>
       </Panel>
 

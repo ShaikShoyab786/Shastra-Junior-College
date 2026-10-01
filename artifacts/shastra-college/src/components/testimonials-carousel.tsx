@@ -8,6 +8,11 @@ import {
 import { ChevronLeft, ChevronRight, Pause, Play, Quote } from "lucide-react";
 import type { ContentItem, ContentSection } from "@workspace/api-client-react";
 
+type TestimonialsSection = Pick<
+  ContentSection,
+  "content" | "title" | "subtitle"
+> & { sectionKey?: string };
+
 type CmsRecord = Record<string, unknown>;
 
 function record(value: unknown): CmsRecord {
@@ -36,7 +41,7 @@ export default function TestimonialsCarousel({
   section,
   items,
 }: {
-  section: ContentSection;
+  section: TestimonialsSection;
   items: ContentItem[];
 }) {
   const ordered = useMemo(
@@ -153,17 +158,29 @@ export default function TestimonialsCarousel({
 
   const content = record(section.content);
   const eyebrow = text(content.eyebrow, "FROM OUR COMMUNITY");
+  const isCourseSection =
+    section.sectionKey?.startsWith("course-") === true &&
+    section.sectionKey.endsWith("-testimonials");
+  const sectionId = isCourseSection ? section.sectionKey : "testimonials";
+  const headingId = isCourseSection
+    ? `${sectionId}-heading`
+    : "homepage-testimonials-title";
+  const sectionTestId = isCourseSection
+    ? `section-course-testimonials-${section.sectionKey
+        ?.replace(/^course-/, "")
+        .replace(/-testimonials$/, "")}`
+    : "section-home-testimonials";
 
   if (ordered.length === 0) return null;
 
   return (
     <section
-      id="testimonials"
+      id={sectionId}
       className="overflow-hidden border-y border-[#0b3472]/10 bg-[#f1eee6] px-5 py-14 sm:px-8 sm:py-18"
-      aria-labelledby="homepage-testimonials-title"
+      aria-labelledby={headingId}
       aria-roledescription="carousel"
       role="region"
-      data-testid="section-home-testimonials"
+      data-testid={sectionTestId}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setFocused(true)}
@@ -178,7 +195,7 @@ export default function TestimonialsCarousel({
               {eyebrow}
             </p>
             <h2
-              id="homepage-testimonials-title"
+              id={headingId}
               className="mt-3 font-display text-3xl font-extrabold leading-tight tracking-tight text-[#0b3472] sm:text-4xl"
               data-testid="text-testimonials-title"
             >

@@ -9,10 +9,15 @@ import {
 } from "@workspace/api-client-react";
 import type { ContentItem, ContentSection } from "@workspace/api-client-react";
 import { Footer, Header } from "./public-home";
+import FaqSection from "@/components/faq-section";
 import {
   ProfileModal,
   profileData,
 } from "@/components/faculty-profile-modal";
+import TestimonialsCarousel from "@/components/testimonials-carousel";
+import {
+  courseFaqPageTarget,
+} from "@/lib/faq-page-targets";
 import {
   courseSectionKey,
   getCourseMentorSubjectsForCourse,
@@ -22,6 +27,11 @@ import {
   readCourseEnrollmentProcess,
   type CourseEnrollmentProcessContent,
 } from "./course-enrollment-process";
+import {
+  DEFAULT_COURSE_FAQ_SETTINGS,
+  DEFAULT_COURSE_TESTIMONIALS_SETTINGS,
+  readCoursePageSectionSettings,
+} from "./course-page-section-settings";
 
 function recordValue(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -693,6 +703,35 @@ export default function PublicCourseDetailPage({ course }: { course: CourseDetai
   const enrollmentProcess = readCourseEnrollmentProcess(
     curriculumContent.courseEnrollmentProcess,
   );
+  const testimonialsSettings = readCoursePageSectionSettings(
+    curriculumContent.courseTestimonials,
+    DEFAULT_COURSE_TESTIMONIALS_SETTINGS,
+  );
+  const faqSettings = readCoursePageSectionSettings(
+    curriculumContent.courseFaqs,
+    DEFAULT_COURSE_FAQ_SETTINGS,
+  );
+  const courseTestimonials = (home.data?.items ?? []).filter((item) => {
+    const itemContent = recordValue(item.content);
+    return (
+      item.itemType === "testimonial" &&
+      item.isVisible &&
+      itemContent.showOnCoursePages === true
+    );
+  });
+  const testimonialsSection = {
+    sectionKey: courseSectionKey(course.slug, "testimonials"),
+    title: testimonialsSettings.title,
+    subtitle: testimonialsSettings.description,
+    content: { eyebrow: testimonialsSettings.eyebrow },
+  };
+  const faqSection = {
+    id: courseSectionKey(course.slug, "faqs"),
+    title: faqSettings.title,
+    subtitle: faqSettings.description,
+    content: { eyebrow: faqSettings.eyebrow },
+    isVisible: faqSettings.isVisible,
+  };
   const gallerySection = gallery.data?.sections.find(
     (section) => section.sectionKey.toLocaleLowerCase() === "gallery",
   );
@@ -736,6 +775,17 @@ export default function PublicCourseDetailPage({ course }: { course: CourseDetai
               logoUrl={home.data.settings.logoUrl}
             />
           ) : null}
+          {testimonialsSettings.isVisible ? (
+            <TestimonialsCarousel
+              section={testimonialsSection}
+              items={courseTestimonials}
+            />
+          ) : null}
+          <FaqSection
+            section={faqSection}
+            items={home.data.items}
+            pageTarget={courseFaqPageTarget(course.slug)}
+          />
         </main>
       ) : <CourseNotPublished course={course} />}
       <Footer home={home.data} />

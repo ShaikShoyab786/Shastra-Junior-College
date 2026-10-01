@@ -7,7 +7,10 @@ import {
 } from "@/lib/faq-page-targets";
 
 type FaqSectionProps = {
-  section?: ContentSection;
+  section?: Pick<
+    ContentSection,
+    "id" | "isVisible" | "title" | "subtitle" | "content"
+  >;
   items: ContentItem[];
   pageTarget: FaqPageTarget;
 };
@@ -31,6 +34,7 @@ export default function FaqSection({
 
   return (
     <section
+      id={section.id}
       className="relative overflow-hidden bg-[#fbfaf6] px-5 py-14 sm:px-8 sm:py-20"
       aria-labelledby={`faq-heading-${section.id}`}
       data-testid={`section-faq-${pageTarget}-${section.id}`}

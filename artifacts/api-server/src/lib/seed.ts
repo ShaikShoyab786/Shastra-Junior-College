@@ -3386,9 +3386,71 @@ async function seedHomeFaqs(): Promise<void> {
       pageTargets: ["contact", "courses"],
     },
   ];
+  const courseFaqs = [
+    {
+      question: "Which subjects are included in the MPC pathway?",
+      answer:
+        "The MPC pathway centers on Mathematics, Physics, and Chemistry, as listed on the course page.",
+      pageTargets: ["course:mpc"],
+    },
+    {
+      question: "Which exam-specific pathways can MPC students explore?",
+      answer:
+        "Shastra lists IIT-JEE Main and MPC + EAMCET pathways. Open those course pages for their current highlights and curriculum.",
+      pageTargets: ["course:mpc"],
+    },
+    {
+      question: "Which subjects are included in the BiPC pathway?",
+      answer:
+        "The BiPC pathway centers on Biology, Physics, and Chemistry, as listed on the course page.",
+      pageTargets: ["course:bipc"],
+    },
+    {
+      question: "Where can I find information about the BiPC and NEET pathway?",
+      answer:
+        "Shastra lists a dedicated BiPC + NEET pathway. See the NEET course page for its current highlights and curriculum.",
+      pageTargets: ["course:bipc"],
+    },
+    {
+      question: "Does the IIT-JEE pathway include JEE Main?",
+      answer:
+        "The IIT-JEE course highlights list JEE Main as an exam pathway. See that page for the current curriculum and details.",
+      pageTargets: ["course:iit-jee"],
+    },
+    {
+      question: "Which core subjects are part of the IIT-JEE pathway?",
+      answer:
+        "The course highlights identify Mathematics, Physics, and Chemistry as core subjects in the IIT-JEE pathway.",
+      pageTargets: ["course:iit-jee"],
+    },
+    {
+      question: "Which stream is paired with NEET in Shastra's course listings?",
+      answer:
+        "Shastra lists BiPC with NEET. See the NEET course page for its current highlights and curriculum.",
+      pageTargets: ["course:neet"],
+    },
+    {
+      question: "Which subjects are associated with the BiPC + NEET pathway?",
+      answer:
+        "The BiPC + NEET pathway is based on Biology, Physics, and Chemistry, as shown in the course listings.",
+      pageTargets: ["course:neet"],
+    },
+    {
+      question: "What does the MPC + EAMCET pathway combine?",
+      answer:
+        "The course listing combines the MPC pathway with EAMCET preparation. See its course page for the current highlights and curriculum.",
+      pageTargets: ["course:mpc-eamcet"],
+    },
+    {
+      question: "Which subjects are included in the MPC part of this pathway?",
+      answer:
+        "The MPC portion centers on Mathematics, Physics, and Chemistry, as listed on the course page.",
+      pageTargets: ["course:mpc-eamcet"],
+    },
+  ];
 
   await db.transaction(async (tx) => {
-    const [existingSection] = await tx
+    let [section] = await tx
       .select()
       .from(contentSectionsTable)
       .where(
@@ -3399,38 +3461,118 @@ async function seedHomeFaqs(): Promise<void> {
       )
       .limit(1);
 
-    if (existingSection) return;
+    if (!section) {
+      [section] = await tx
+        .insert(contentSectionsTable)
+        .values({
+          pageSlug: "home",
+          sectionKey: "faqs",
+          title: "Frequently Asked Questions",
+          subtitle: "Answers about courses and getting in touch with the college.",
+          content: {
+            eyebrow: "COMMON QUESTIONS",
+            courseFaqDefaultsVersion: 1,
+          },
+          isVisible: true,
+          position: 15,
+        })
+        .onConflictDoNothing()
+        .returning();
 
-    const [section] = await tx
-      .insert(contentSectionsTable)
-      .values({
-        pageSlug: "home",
-        sectionKey: "faqs",
-        title: "Frequently Asked Questions",
-        subtitle: "Answers about courses and getting in touch with the college.",
-        content: { eyebrow: "COMMON QUESTIONS" },
-        isVisible: true,
-        position: 15,
-      })
-      .onConflictDoNothing()
-      .returning();
+      if (!section) return;
 
-    if (!section) return;
+      await tx.insert(contentItemsTable).values(
+        [...defaultFaqs, ...courseFaqs].map((faq, index) => ({
+          sectionId: section.id,
+          itemType: "faq",
+          title: faq.question,
+          description: faq.answer,
+          imageUrl: null,
+          linkPath: null,
+          label: null,
+          content: { pageTargets: faq.pageTargets },
+          isVisible: true,
+          position: index,
+        })),
+      );
+      return;
+    }
 
-    await tx.insert(contentItemsTable).values(
-      defaultFaqs.map((faq, index) => ({
-        sectionId: section.id,
-        itemType: "faq",
-        title: faq.question,
-        description: faq.answer,
-        imageUrl: null,
-        linkPath: null,
-        label: null,
-        content: { pageTargets: faq.pageTargets },
-        isVisible: true,
-        position: index,
-      })),
+    const sectionContent = isCmsRecord(section.content) ? section.content : {};
+    if (sectionContent.courseFaqDefaultsVersion === 1) return;
+
+    const existingItems = await tx
+      .select()
+      .from(contentItemsTable)
+      .where(
+        and(
+          eq(contentItemsTable.sectionId, section.id),
+          eq(contentItemsTable.itemType, "faq"),
+        ),
+      );
+    const nextPosition =
+      existingItems.length > 0
+        ? Math.max(...existingItems.map((item) => item.position)) + 1
+        : 0;
+    const existingByQuestion = new Map(
+      existingItems.map((item) => [item.title.trim().toLocaleLowerCase(), item]),
     );
+    const newItems: Array<{
+      sectionId: string;
+      itemType: string;
+      title: string;
+      description: string;
+      imageUrl: null;
+      linkPath: null;
+      label: null;
+      content: { pageTargets: string[] };
+      isVisible: boolean;
+      position: number;
+    }> = [];
+
+    for (const faq of courseFaqs) {
+      const existing = existingByQuestion.get(
+        faq.question.trim().toLocaleLowerCase(),
+      );
+      if (!existing) {
+        newItems.push({
+          sectionId: section.id,
+          itemType: "faq",
+          title: faq.question,
+          description: faq.answer,
+          imageUrl: null,
+          linkPath: null,
+          label: null,
+          content: { pageTargets: [...faq.pageTargets] },
+          isVisible: true,
+          position: nextPosition + newItems.length,
+        });
+        continue;
+      }
+
+      const itemContent = isCmsRecord(existing.content) ? existing.content : {};
+      const oldTargets = Array.isArray(itemContent.pageTargets)
+        ? itemContent.pageTargets.filter(
+            (target): target is string => typeof target === "string",
+          )
+        : [];
+      const pageTargets = [...new Set([...oldTargets, ...faq.pageTargets])];
+      await tx
+        .update(contentItemsTable)
+        .set({ content: { ...itemContent, pageTargets } })
+        .where(eq(contentItemsTable.id, existing.id));
+    }
+
+    if (newItems.length > 0) {
+      await tx.insert(contentItemsTable).values(newItems);
+    }
+    await tx
+      .update(contentSectionsTable)
+      .set({
+        content: { ...sectionContent, courseFaqDefaultsVersion: 1 },
+        updatedAt: new Date(),
+      })
+      .where(eq(contentSectionsTable.id, section.id));
   });
 }
 

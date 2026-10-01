@@ -202,6 +202,9 @@ function TestimonialForm({
   const [altText, setAltText] = useState(text(initialContent.altText));
   const [imageUrl, setImageUrl] = useState(initial?.imageUrl || "");
   const [showOnHome, setShowOnHome] = useState(initialContent.showOnHome !== false);
+  const [showOnCoursePages, setShowOnCoursePages] = useState(
+    initialContent.showOnCoursePages === true,
+  );
   const [isDemo, setIsDemo] = useState(initialContent.isDemo === true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -217,6 +220,7 @@ function TestimonialForm({
     setAltText(text(content.altText));
     setImageUrl(initial?.imageUrl || "");
     setShowOnHome(content.showOnHome !== false);
+    setShowOnCoursePages(content.showOnCoursePages === true);
     setIsDemo(content.isDemo === true);
     setSelectedFile(null);
     setPreviewUrl("");
@@ -268,7 +272,7 @@ function TestimonialForm({
     if (!feedback.trim()) { setError("Feedback is required."); return; }
     if (imageUrl && !altText.trim()) { setError("Useful alt text is required when a portrait is present."); return; }
     if (selectedFile) { setError("Upload the selected portrait before saving."); return; }
-    const content: CmsRecord = { ...initialContent, role, course: course.trim(), showOnHome, isDemo, altText: imageUrl ? altText.trim() : "" };
+    const content: CmsRecord = { ...initialContent, role, course: course.trim(), showOnHome, showOnCoursePages, isDemo, altText: imageUrl ? altText.trim() : "" };
     const common = {
       title: name.trim(),
       description: feedback.trim(),
@@ -322,6 +326,7 @@ function TestimonialForm({
       </div>
       <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3">
         <label className="flex items-center gap-2 text-sm font-semibold text-slate-700"><input type="checkbox" checked={showOnHome} onChange={(event) => setShowOnHome(event.target.checked)} className="h-4 w-4 accent-[#0b3472]" data-testid={`checkbox-testimonial-home-${initial?.id || "new"}`} /> Show on Home</label>
+        <label className="flex items-center gap-2 text-sm font-semibold text-slate-700"><input type="checkbox" checked={showOnCoursePages} onChange={(event) => setShowOnCoursePages(event.target.checked)} className="h-4 w-4 accent-[#0b3472]" data-testid={`checkbox-testimonial-courses-${initial?.id || "new"}`} /> Show on all course pages</label>
         <label className="flex items-center gap-2 text-sm font-semibold text-slate-700"><input type="checkbox" checked={isDemo} onChange={(event) => setIsDemo(event.target.checked)} className="h-4 w-4 accent-[#0b3472]" data-testid={`checkbox-testimonial-demo-${initial?.id || "new"}`} /> Starter record</label>
       </div>
       {error ? <p className="mt-3 text-sm font-semibold text-red-700" role="alert" data-testid={`error-testimonial-${initial?.id || "new"}`}>{error}</p> : null}
@@ -374,7 +379,7 @@ function TestimonialItems({ section, items, onFlash }: { section: ContentSection
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7" data-testid="panel-testimonial-items">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div><p className="eyebrow text-[#e3212b]">Stories</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Testimonial records</h2><p className="mt-1 max-w-2xl text-sm leading-5 text-slate-500">Only records that are published and marked Show on Home appear in the public carousel. Hidden records stay here for review.</p></div>
+        <div><p className="eyebrow text-[#e3212b]">Stories</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Testimonial records</h2><p className="mt-1 max-w-2xl text-sm leading-5 text-slate-500">Published records use separate Show on Home and Show on all course pages settings. Hidden records stay here for review.</p></div>
         <button type="button" onClick={() => setEditing((current) => current === "new" ? null : "new")} className="inline-flex items-center gap-2 rounded-xl border border-[#0b3472]/15 bg-white px-3.5 py-2.5 text-sm font-bold text-[#0b3472] hover:bg-[#0b3472]/5" data-testid="button-add-testimonial"><Plus className="h-4 w-4" />{editing === "new" ? "Close form" : "Add testimonial"}</button>
       </div>
       {editing === "new" ? <TestimonialForm sectionId={section.id} position={nextPosition} onFlash={onFlash} onClose={() => setEditing(null)} /> : null}
@@ -387,7 +392,7 @@ function TestimonialItems({ section, items, onFlash }: { section: ContentSection
             <div key={item.id} className={`rounded-2xl border border-slate-200 p-4 ${item.isVisible ? "bg-white" : "bg-slate-50"}`} data-testid={`row-testimonial-${item.id}`}>
               <div className="flex flex-wrap items-center gap-3">
                 <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[#e9eef7]">{item.imageUrl ? <img src={assetUrl(item.imageUrl)} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center text-xs font-extrabold text-[#0b3472]">{item.title.slice(0, 2).toUpperCase()}</span>}</div>
-                <div className="min-w-0 flex-1"><p className="truncate font-bold text-[#0b3472]" data-testid={`text-admin-testimonial-name-${item.id}`}>{item.title}</p><p className="mt-1 truncate text-xs text-slate-500">{role} · {item.isVisible ? "Published" : "Unpublished"} · {content.showOnHome === true ? "On Home" : "Off Home"}</p>{content.isDemo === true ? <span className="mt-2 inline-flex rounded-full border border-[#e3212b]/20 bg-[#e3212b]/[.07] px-2 py-1 text-[10px] font-bold uppercase tracking-[.13em] text-[#c71927]" data-testid={`badge-testimonial-demo-${item.id}`}>Demo record</span> : null}</div>
+                <div className="min-w-0 flex-1"><p className="truncate font-bold text-[#0b3472]" data-testid={`text-admin-testimonial-name-${item.id}`}>{item.title}</p><p className="mt-1 truncate text-xs text-slate-500">{role} · {item.isVisible ? "Published" : "Unpublished"} · {content.showOnHome === true ? "On Home" : "Off Home"} · {content.showOnCoursePages === true ? "On course pages" : "Off course pages"}</p>{content.isDemo === true ? <span className="mt-2 inline-flex rounded-full border border-[#e3212b]/20 bg-[#e3212b]/[.07] px-2 py-1 text-[10px] font-bold uppercase tracking-[.13em] text-[#c71927]" data-testid={`badge-testimonial-demo-${item.id}`}>Demo record</span> : null}</div>
                 <div className="flex flex-wrap items-center gap-1">
                   <button type="button" onClick={() => toggle(item)} disabled={update.isPending} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30" aria-label={`${item.isVisible ? "Unpublish" : "Publish"} ${item.title}`} data-testid={`button-toggle-testimonial-${item.id}`}>{item.isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
                   <button type="button" onClick={() => void move(item, -1)} disabled={index === 0 || update.isPending} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30" aria-label={`Move ${item.title} up`} data-testid={`button-move-testimonial-up-${item.id}`}><ArrowUp className="h-4 w-4" /></button>

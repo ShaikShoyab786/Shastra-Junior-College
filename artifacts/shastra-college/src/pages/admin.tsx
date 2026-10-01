@@ -381,7 +381,7 @@ function Shell({
                 ? "Pages / Courses"
             : "Pages";
   const selectedCourse = COURSE_DETAILS.find((course) => course.adminView === activeView);
-  const [activeCourseSection, setActiveCourseSection] = useState<"hero" | "highlights" | "faculty-preview" | "curriculum" | "gallery-preview" | "enrollment-process">("hero");
+  const [activeCourseSection, setActiveCourseSection] = useState<"hero" | "highlights" | "faculty-preview" | "curriculum" | "gallery-preview" | "enrollment-process" | "testimonials" | "faqs">("hero");
   useEffect(() => {
     setActiveCourseSection("hero");
   }, [selectedCourse?.slug]);
@@ -471,7 +471,7 @@ function Shell({
     setMobileNav(false);
   };
 
-  const jumpToCourseSection = (section: "hero" | "highlights" | "faculty-preview" | "curriculum" | "gallery-preview" | "enrollment-process") => {
+  const jumpToCourseSection = (section: "hero" | "highlights" | "faculty-preview" | "curriculum" | "gallery-preview" | "enrollment-process" | "testimonials" | "faqs") => {
     if (!selectedCourse) return;
     setActiveCourseSection(section);
     document
@@ -717,6 +717,8 @@ function Shell({
                             <NavRow icon={BookOpenCheck} label="Curriculum" nested active={activeCourseSection === "curriculum"} onClick={() => jumpToCourseSection("curriculum")} />
                                 <NavRow icon={ImagePlus} label="Gallery Preview" nested active={activeCourseSection === "gallery-preview"} onClick={() => jumpToCourseSection("gallery-preview")} />
                                 <NavRow icon={ClipboardList} label="Enrollment Process" nested active={activeCourseSection === "enrollment-process"} onClick={() => jumpToCourseSection("enrollment-process")} />
+                                <NavRow icon={MessageSquareQuote} label="Testimonials" nested active={activeCourseSection === "testimonials"} onClick={() => jumpToCourseSection("testimonials")} />
+                                <NavRow icon={CircleHelp} label="FAQs" nested active={activeCourseSection === "faqs"} onClick={() => jumpToCourseSection("faqs")} />
                               </>
                             ) : null}
                             <div className="my-2 border-t border-white/10" />

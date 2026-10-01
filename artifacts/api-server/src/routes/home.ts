@@ -175,9 +175,25 @@ async function loadCmsPage(pageSlug: ManagedPageSlug, includeHidden: boolean) {
           .filter((section) => section.sectionKey === "faculty")
           .map((section) => section.id)
       : [];
+  const publicCourseContentSectionIds =
+    !includeHidden && pageSlug === homePageSlug
+      ? allSections
+          .filter(
+            (section) =>
+              section.sectionKey === "testimonials" ||
+              section.sectionKey === "faqs",
+          )
+          .map((section) => section.id)
+      : [];
   const sectionIdsToLoad = includeHidden
     ? allSections.map((section) => section.id)
-    : [...new Set([...visibleSectionIds, ...publicMentorSectionIds])];
+    : [
+        ...new Set([
+          ...visibleSectionIds,
+          ...publicMentorSectionIds,
+          ...publicCourseContentSectionIds,
+        ]),
+      ];
   const allItems =
     sectionIdsToLoad.length > 0
       ? await db
@@ -188,13 +204,45 @@ async function loadCmsPage(pageSlug: ManagedPageSlug, includeHidden: boolean) {
       : [];
   const visibleSectionIdSet = new Set(visibleSectionIds);
   const publicMentorSectionIdSet = new Set(publicMentorSectionIds);
+  const publicCourseContentSectionIdSet = new Set(
+    publicCourseContentSectionIds,
+  );
   const items = includeHidden
     ? allItems
     : allItems.filter(
-        (item) =>
-          (item.isVisible && visibleSectionIdSet.has(item.sectionId)) ||
-          (publicMentorSectionIdSet.has(item.sectionId) &&
-            isCourseMentorProfile(item)),
+        (item) => {
+          if (item.isVisible && visibleSectionIdSet.has(item.sectionId)) {
+            return true;
+          }
+          if (
+            publicMentorSectionIdSet.has(item.sectionId) &&
+            isCourseMentorProfile(item)
+          ) {
+            return true;
+          }
+          if (
+            !item.isVisible ||
+            !publicCourseContentSectionIdSet.has(item.sectionId)
+          ) {
+            return false;
+          }
+
+          const content = item.content as Record<string, unknown>;
+          if (
+            item.itemType === "testimonial" &&
+            content.showOnCoursePages === true
+          ) {
+            return true;
+          }
+          return (
+            item.itemType === "faq" &&
+            Array.isArray(content.pageTargets) &&
+            content.pageTargets.some(
+              (target) =>
+                typeof target === "string" && target.startsWith("course:"),
+            )
+          );
+        },
       );
 
   return {
