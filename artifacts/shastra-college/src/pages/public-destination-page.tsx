@@ -1,4 +1,5 @@
-import { ArrowRight, RefreshCw } from "lucide-react";
+import { ArrowRight, Mail, Map, MapPin, Phone, RefreshCw } from "lucide-react";
+import { SiWhatsapp } from "react-icons/si";
 import { Link } from "wouter";
 import {
   getGetCmsPageQueryKey,
@@ -13,6 +14,13 @@ import {
   Header,
 } from "./public-home";
 import FaqSection from "../components/faq-section";
+import {
+  getPhoneHref,
+  getWhatsAppHref,
+  isGoogleMapsEmbedUrl,
+  isValidPublicEmail,
+  readContactDetails,
+} from "../lib/contact-details";
 
 type Destination = "courses" | "knowledge-hub" | "contact";
 
@@ -165,26 +173,187 @@ function ContactContent({
   const heroCopy = contentRecord(heroSection.content);
   const eyebrow =
     typeof heroCopy.eyebrow === "string" ? heroCopy.eyebrow : "";
+  const details = readContactDetails(heroCopy);
+  const phoneNumbers = details.mobileNumbers
+    .filter((number) => getPhoneHref(number))
+    .slice(0, 5);
+  const publicEmail = isValidPublicEmail(details.email)
+    ? details.email.trim()
+    : "";
+  const whatsappHref = getWhatsAppHref(details.whatsappNumber);
+  const mapEmbedUrl = isGoogleMapsEmbedUrl(details.mapEmbedUrl)
+    ? details.mapEmbedUrl.trim()
+    : "";
+  const hasContactDetails = Boolean(
+    details.address || publicEmail || phoneNumbers.length || whatsappHref,
+  );
 
   return (
     <main
-      className="min-h-[65vh] bg-[#f7f5ef] px-5 py-14 sm:px-8 sm:py-20"
+      className="min-h-[65vh] bg-[#f7f5ef]"
       data-testid="page-public-contact"
     >
-      <div className="mx-auto grid max-w-7xl items-start gap-10 lg:grid-cols-[minmax(0,.8fr)_minmax(360px,1fr)] lg:gap-16">
-        <header className="pt-2">
-          <p className="eyebrow text-[#c07823]">{eyebrow}</p>
-          <h1 className="mt-3 font-display text-[clamp(2.7rem,6vw,5.2rem)] font-extrabold leading-[.95] tracking-[-.065em] text-[#0b3472]">
-            {heroSection.title}
-          </h1>
-          {heroSection.subtitle ? (
-            <p className="mt-5 text-base leading-7 text-[#52647c] sm:text-lg">
-              {heroSection.subtitle}
-            </p>
+      <section
+        className="relative overflow-hidden bg-[#0b3472] px-5 py-14 text-white sm:px-8 sm:py-20"
+        data-testid="section-contact-hero"
+      >
+        <div className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full border border-white/10" />
+        <div className="pointer-events-none absolute -right-8 -top-12 h-56 w-56 rounded-full border border-white/10" />
+        <div
+          className={`relative mx-auto max-w-7xl ${
+            hasContactDetails
+              ? "grid items-center gap-10 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] lg:gap-14"
+              : "max-w-4xl text-center"
+          }`}
+        >
+          <header className={hasContactDetails ? "pt-2" : ""}>
+            <p className="eyebrow text-[#ffc7a0]">{eyebrow}</p>
+            <h1 className="mt-3 font-display text-[clamp(2.7rem,6vw,5.2rem)] font-extrabold leading-[.95] tracking-[-.065em]">
+              {heroSection.title}
+            </h1>
+            {heroSection.subtitle ? (
+              <p
+                className={`mt-5 text-base leading-7 text-blue-100/85 sm:text-lg ${
+                  hasContactDetails ? "max-w-2xl" : "mx-auto max-w-2xl"
+                }`}
+              >
+                {heroSection.subtitle}
+              </p>
+            ) : null}
+          </header>
+
+          {hasContactDetails ? (
+            <div
+              className="grid gap-3 sm:grid-cols-2"
+              data-testid="list-contact-hero-details"
+            >
+              {details.address ? (
+                <div
+                  className="flex gap-4 rounded-2xl bg-white p-5 text-[#0b3472] shadow-[0_18px_38px_rgba(0,0,0,.12)] sm:col-span-2 sm:p-6"
+                  data-testid="card-contact-address"
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0b3472]/[.07]">
+                    <MapPin className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-extrabold uppercase tracking-[.14em] text-[#c07823]">
+                      College address
+                    </p>
+                    <address className="mt-2 whitespace-pre-line text-base font-bold not-italic leading-7 sm:text-lg">
+                      {details.address}
+                    </address>
+                  </div>
+                </div>
+              ) : null}
+
+              {publicEmail ? (
+                <a
+                  href={`mailto:${publicEmail}`}
+                  className="focus-ring flex min-w-0 items-center gap-4 rounded-2xl bg-white p-4 text-[#0b3472] shadow-[0_18px_38px_rgba(0,0,0,.12)] transition hover:bg-blue-50"
+                  data-testid="link-contact-email"
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0b3472]/[.07]">
+                    <Mail className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-xs font-extrabold uppercase tracking-[.14em] text-[#c07823]">
+                      Email
+                    </span>
+                    <span className="mt-1 block break-all text-sm font-bold sm:text-base">
+                      {publicEmail}
+                    </span>
+                  </span>
+                </a>
+              ) : null}
+
+              {phoneNumbers.map((number, index) => (
+                <a
+                  key={`${number}-${index}`}
+                  href={getPhoneHref(number)}
+                  className="focus-ring flex min-w-0 items-center gap-4 rounded-2xl bg-white p-4 text-[#0b3472] shadow-[0_18px_38px_rgba(0,0,0,.12)] transition hover:bg-blue-50"
+                  data-testid={`link-contact-phone-${index}`}
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0b3472]/[.07]">
+                    <Phone className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-xs font-extrabold uppercase tracking-[.14em] text-[#c07823]">
+                      Call us
+                    </span>
+                    <span className="mt-1 block break-all text-sm font-bold sm:text-base">
+                      {number}
+                    </span>
+                  </span>
+                </a>
+              ))}
+
+              {whatsappHref ? (
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Chat with Shastra Junior College on WhatsApp at ${details.whatsappNumber}`}
+                  className="focus-ring flex min-w-0 items-center gap-4 rounded-2xl bg-[#e8f8ee] p-4 text-[#075e36] shadow-[0_18px_38px_rgba(0,0,0,.12)] transition hover:bg-[#d9f2e3]"
+                  data-testid="link-contact-whatsapp"
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#25d366] text-white">
+                    <SiWhatsapp className="h-6 w-6" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-xs font-extrabold uppercase tracking-[.14em]">
+                      WhatsApp
+                    </span>
+                    <span className="mt-1 block break-all text-sm font-bold sm:text-base">
+                      {details.whatsappNumber}
+                    </span>
+                  </span>
+                </a>
+              ) : null}
+            </div>
           ) : null}
-        </header>
-        <EnquiryForm section={enquirySection} />
-      </div>
+        </div>
+      </section>
+
+      {mapEmbedUrl ? (
+        <section
+          className="px-5 pb-2 pt-8 sm:px-8 sm:pt-10"
+          data-testid="section-contact-map"
+        >
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-4 flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0b3472]/[.07] text-[#0b3472]">
+                <Map className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="eyebrow text-[#c07823]">LOCATION</p>
+                <h2 className="font-display text-xl font-extrabold text-[#0b3472] sm:text-2xl">
+                  College location
+                </h2>
+              </div>
+            </div>
+            <div className="aspect-[4/3] overflow-hidden rounded-[1.75rem] border border-[#0b3472]/10 bg-white shadow-[0_18px_45px_rgba(11,52,114,.08)] sm:aspect-[3/1]">
+              <iframe
+                src={mapEmbedUrl}
+                title="Map showing the college location"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+                className="h-full w-full border-0"
+                data-testid="iframe-contact-map"
+              />
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section
+        className="px-5 pb-14 pt-10 sm:px-8 sm:pb-20 sm:pt-14"
+        data-testid="section-contact-enquiry"
+      >
+        <div className="mx-auto max-w-5xl">
+          <EnquiryForm section={enquirySection} />
+        </div>
+      </section>
     </main>
   );
 }

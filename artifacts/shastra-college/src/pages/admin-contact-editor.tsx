@@ -5,9 +5,16 @@ import {
   CircleHelp,
   FileText,
   LoaderCircle,
+  Map,
+  MapPin,
   Mail,
+  Plus,
   Save,
+  Trash2,
 } from "lucide-react";
+import { useFieldArray, useForm, type UseFormReturn } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   getGetAdminCmsPageQueryKey,
   getGetCmsPageQueryKey,
@@ -15,6 +22,19 @@ import {
   useUpdateContentSection,
 } from "@workspace/api-client-react";
 import type { ContentSection } from "@workspace/api-client-react";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  isGoogleMapsEmbedUrl,
+  readContactDetails,
+} from "@/lib/contact-details";
 
 type Flash = { tone: "success" | "error"; message: string };
 type CmsRecord = Record<string, unknown>;
@@ -35,6 +55,59 @@ type EnquiryFormCopy = CmsRecord & {
   successMessage: string;
   fields: EnquiryField[];
 };
+
+const contactHeroSchema = z.object({
+  eyebrow: z.string().max(120),
+  title: z.string().trim().min(1, "Add a title before saving."),
+  subtitle: z.string().max(600),
+  address: z.string().max(600),
+  email: z
+    .string()
+    .trim()
+    .refine(
+      (value) => !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+      "Enter a valid email address.",
+    ),
+  mobileNumbers: z
+    .array(
+      z.object({
+        number: z.string().refine((value) => {
+          const digits = value.replace(/\D/g, "").length;
+          return (
+            !value.trim() ||
+            (/^[+\d\s().-]+$/.test(value.trim()) &&
+              digits >= 7 &&
+              digits <= 15)
+          );
+        }, "Enter a valid phone number."),
+      }),
+    )
+    .max(5, "Add no more than five mobile numbers."),
+  whatsappNumber: z.string().refine((value) => {
+    const digits = value.replace(/\D/g, "").length;
+    return (
+      !value.trim() ||
+      (/^[+\d\s().-]+$/.test(value.trim()) && digits >= 8 && digits <= 15)
+    );
+  }, "Enter a WhatsApp number with its country code."),
+  mapEmbedUrl: z
+    .string()
+    .trim()
+    .refine(
+      (value) => !value || isGoogleMapsEmbedUrl(value),
+      "Enter a secure Google Maps embed URL.",
+    ),
+});
+
+type ContactHeroFormValues = z.infer<typeof contactHeroSchema>;
+type ContactHeroTextField =
+  | "eyebrow"
+  | "title"
+  | "subtitle"
+  | "address"
+  | "email"
+  | "whatsappNumber"
+  | "mapEmbedUrl";
 
 function record(value: unknown): CmsRecord {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -165,6 +238,62 @@ function SaveButton({
   );
 }
 
+function ContactHeroField({
+  form,
+  name,
+  label,
+  testId,
+  type = "text",
+  multiline = false,
+  hint,
+  placeholder,
+}: {
+  form: UseFormReturn<ContactHeroFormValues>;
+  name: ContactHeroTextField;
+  label: string;
+  testId: string;
+  type?: "text" | "email" | "tel" | "url";
+  multiline?: boolean;
+  hint?: string;
+  placeholder?: string;
+}) {
+  return (
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel className="block text-sm font-bold text-slate-700">
+            {label}
+          </FormLabel>
+          <FormControl>
+            {multiline ? (
+              <textarea
+                {...field}
+                value={String(field.value ?? "")}
+                rows={3}
+                className="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-[#fffefa] px-3.5 py-3 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#0b3472]/50 focus:ring-4 focus:ring-[#0b3472]/10"
+                data-testid={testId}
+              />
+            ) : (
+              <input
+                {...field}
+                value={String(field.value ?? "")}
+                type={type}
+                placeholder={placeholder}
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-[#fffefa] px-3.5 py-3 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#0b3472]/50 focus:ring-4 focus:ring-[#0b3472]/10"
+                data-testid={testId}
+              />
+            )}
+          </FormControl>
+          {hint ? <FormDescription>{hint}</FormDescription> : null}
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
 function SectionMessage({ message }: { message: string }) {
   return message ? (
     <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800" role="alert">
@@ -183,62 +312,232 @@ function HeroEditor({
   const client = useQueryClient();
   const update = useUpdateContentSection();
   const content = record(section.content);
-  const [eyebrow, setEyebrow] = useState(stringValue(content.eyebrow));
-  const [title, setTitle] = useState(section.title);
-  const [subtitle, setSubtitle] = useState(section.subtitle || "");
+  const details = readContactDetails(content);
+  const form = useForm<ContactHeroFormValues>({
+    resolver: zodResolver(contactHeroSchema),
+    defaultValues: {
+      eyebrow: stringValue(content.eyebrow),
+      title: section.title,
+      subtitle: section.subtitle || "",
+      ...details,
+      mobileNumbers: details.mobileNumbers.map((number) => ({ number })),
+    },
+  });
+  const mobileNumbers = useFieldArray({
+    control: form.control,
+    name: "mobileNumbers",
+  });
+  const { reset } = form;
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setEyebrow(stringValue(record(section.content).eyebrow));
-    setTitle(section.title);
-    setSubtitle(section.subtitle || "");
+    const nextContent = record(section.content);
+    const nextDetails = readContactDetails(nextContent);
+    reset({
+      eyebrow: stringValue(nextContent.eyebrow),
+      title: section.title,
+      subtitle: section.subtitle || "",
+      ...nextDetails,
+      mobileNumbers: nextDetails.mobileNumbers.map((number) => ({ number })),
+    });
     setError("");
-  }, [section.id, section.updatedAt]);
+  }, [section.id, section.updatedAt, reset]);
 
-  const save = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!title.trim()) {
-      setError("Add a title before saving.");
-      return;
-    }
+  const save = form.handleSubmit(async (values) => {
     setError("");
     try {
       await update.mutateAsync({
         id: section.id,
         data: {
-          title: title.trim(),
-          subtitle: subtitle.trim() || null,
-          content: { ...content, eyebrow: eyebrow.trim() },
+          title: values.title.trim(),
+          subtitle: values.subtitle.trim() || null,
+          content: {
+            ...content,
+            eyebrow: values.eyebrow.trim(),
+            address: values.address.trim(),
+            email: values.email.trim(),
+            mobileNumbers: values.mobileNumbers
+              .map(({ number }) => number.trim())
+              .filter(Boolean),
+            whatsappNumber: values.whatsappNumber.trim(),
+            mapEmbedUrl: values.mapEmbedUrl.trim(),
+          },
         },
       });
       invalidateContact(client);
-      onFlash({ tone: "success", message: "Contact introduction saved." });
+      onFlash({ tone: "success", message: "Contact details saved." });
     } catch (failure) {
       setError(errorMessage(failure));
     }
-  };
+  });
 
   return (
     <EditorCard
-      icon={<FileText className="h-5 w-5" aria-hidden="true" />}
+      icon={<MapPin className="h-5 w-5" aria-hidden="true" />}
       eyebrow="Contact page · introduction"
-      title="Hero copy"
-      description="The opening message visitors see when they reach the Contact page."
+      title="Hero and contact details"
+      description="Manage the opening message, visitor contact details, and map shown on the Contact page."
       testId="card-contact-hero-editor"
     >
-      <form onSubmit={(event) => void save(event)}>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Eyebrow" value={eyebrow} onChange={setEyebrow} testId="input-contact-hero-eyebrow" />
-          <Field label="Title" value={title} onChange={setTitle} testId="input-contact-hero-title" />
-          <div className="md:col-span-2">
-            <Field label="Supporting text" value={subtitle} onChange={setSubtitle} multiline testId="textarea-contact-hero-subtitle" />
+      <Form {...form}>
+        <form onSubmit={(event) => void save(event)}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <ContactHeroField
+              form={form}
+              name="eyebrow"
+              label="Eyebrow"
+              testId="input-contact-hero-eyebrow"
+            />
+            <ContactHeroField
+              form={form}
+              name="title"
+              label="Title"
+              testId="input-contact-hero-title"
+            />
+            <div className="md:col-span-2">
+              <ContactHeroField
+                form={form}
+                name="subtitle"
+                label="Supporting text"
+                testId="textarea-contact-hero-subtitle"
+                multiline
+              />
+            </div>
           </div>
-        </div>
-        <SectionMessage message={error} />
-        <div className="mt-5 flex justify-end">
-          <SaveButton pending={update.isPending} testId="button-save-contact-hero">Save introduction</SaveButton>
-        </div>
-      </form>
+          <div className="my-6 border-t border-[#0b3472]/10" />
+          <div className="mb-4 flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0b3472]/[.07] text-[#0b3472]">
+              <MapPin className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div>
+              <h3 className="font-display text-lg font-extrabold text-[#0b3472]">
+                Visitor contact details
+              </h3>
+              <p className="text-sm text-slate-500">
+                These details appear prominently in the Contact hero.
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <ContactHeroField
+                form={form}
+                name="address"
+                label="College address"
+                testId="textarea-contact-address"
+                multiline
+              />
+            </div>
+            <ContactHeroField
+              form={form}
+              name="email"
+              label="Public email"
+              testId="input-contact-email"
+              type="email"
+              placeholder="name@example.com"
+            />
+            <ContactHeroField
+              form={form}
+              name="whatsappNumber"
+              label="WhatsApp number"
+              testId="input-contact-whatsapp"
+              type="tel"
+              hint="Include the country code for the chat link."
+            />
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-[#0b3472]/10 bg-[#f8f8f4] p-4 sm:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h4 className="font-bold text-[#0b3472]">Mobile numbers</h4>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Add up to five numbers visitors can call.
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={mobileNumbers.fields.length >= 5}
+                onClick={() => mobileNumbers.append({ number: "" })}
+                className="focus-ring inline-flex items-center gap-2 rounded-xl border border-[#0b3472]/20 bg-white px-3.5 py-2.5 text-sm font-bold text-[#0b3472] transition hover:border-[#0b3472]/40 disabled:cursor-not-allowed disabled:opacity-50"
+                data-testid="button-add-contact-mobile"
+              >
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                Add mobile number
+              </button>
+            </div>
+            {mobileNumbers.fields.length ? (
+              <div className="mt-4 space-y-3">
+                {mobileNumbers.fields.map((field, index) => (
+                  <div
+                    key={field.id}
+                    className="flex items-start gap-3"
+                    data-testid={`row-contact-mobile-${index}`}
+                  >
+                    <FormField
+                      control={form.control}
+                      name={`mobileNumbers.${index}.number`}
+                      render={({ field: numberField }) => (
+                        <FormItem className="min-w-0 flex-1">
+                          <FormLabel className="block text-sm font-bold text-slate-700">
+                            Mobile number {index + 1}
+                          </FormLabel>
+                          <FormControl>
+                            <input
+                              {...numberField}
+                              type="tel"
+                              className="mt-2 w-full rounded-xl border border-slate-200 bg-[#fffefa] px-3.5 py-3 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#0b3472]/50 focus:ring-4 focus:ring-[#0b3472]/10"
+                              data-testid={`input-contact-mobile-${index}`}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => mobileNumbers.remove(index)}
+                      aria-label={`Remove mobile number ${index + 1}`}
+                      className="focus-ring mt-8 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-red-200 bg-white text-red-700 transition hover:bg-red-50"
+                      data-testid={`button-remove-contact-mobile-${index}`}
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p
+                className="mt-4 rounded-xl border border-dashed border-[#0b3472]/20 bg-white px-4 py-3 text-sm text-slate-500"
+                data-testid="empty-contact-mobile-numbers"
+              >
+                No mobile numbers have been added.
+              </p>
+            )}
+          </div>
+
+          <div className="mt-5">
+            <ContactHeroField
+              form={form}
+              name="mapEmbedUrl"
+              label="Google Maps embed URL"
+              testId="input-contact-map-url"
+              type="url"
+              placeholder="https://www.google.com/maps/embed?..."
+              hint="Paste the URL from Google Maps’ “Embed a map” option. The preview appears below the hero."
+            />
+          </div>
+
+          <SectionMessage message={error} />
+          <div className="mt-5 flex justify-end">
+            <SaveButton
+              pending={update.isPending}
+              testId="button-save-contact-hero"
+            >
+              Save contact details
+            </SaveButton>
+          </div>
+        </form>
+      </Form>
     </EditorCard>
   );
 }
@@ -592,7 +891,7 @@ export default function AdminContactEditor({
           <p className="eyebrow text-[#ffc7a0]">Public website · Contact</p>
           <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">A clear way to connect.</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100/85">
-            Maintain the contact introduction, enquiry form, and FAQ section heading. Changes are saved to the existing page sections.
+            Maintain the hero, address, email, phone and WhatsApp numbers, map, enquiry form, and FAQ heading. Changes are saved to Contact page settings.
           </p>
         </div>
       </header>
