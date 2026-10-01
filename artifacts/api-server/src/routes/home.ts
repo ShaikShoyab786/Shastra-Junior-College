@@ -32,8 +32,15 @@ import { requireAdmin } from "../middlewares/requireAdmin";
 const router: IRouter = Router();
 const adminRouter: IRouter = Router();
 const homePageSlug = "home";
-const managedPageSlugs = ["home", "about", "faculty", "gallery", "courses"] as const;
-const publicPageSlugs = ["about", "faculty", "gallery", "courses"] as const;
+const managedPageSlugs = [
+  "home",
+  "about",
+  "faculty",
+  "gallery",
+  "courses",
+  "contact",
+] as const;
+const publicPageSlugs = ["about", "faculty", "gallery", "courses", "contact"] as const;
 type ManagedPageSlug = (typeof managedPageSlugs)[number];
 type PublicPageSlug = (typeof publicPageSlugs)[number];
 
@@ -96,7 +103,7 @@ function validateSectionContent(content: CmsRecord): string | null {
       /(path|href|link)$/i.test(key) &&
       !isSafeInternalPath(value)
     ) {
-      return "Homepage links must use a same-site path or an in-page anchor.";
+      return "Page links must use a same-site path or an in-page anchor.";
     }
   }
 
@@ -234,14 +241,10 @@ async function loadCmsPage(pageSlug: ManagedPageSlug, includeHidden: boolean) {
           ) {
             return true;
           }
-          return (
-            item.itemType === "faq" &&
-            Array.isArray(content.pageTargets) &&
-            content.pageTargets.some(
-              (target) =>
-                typeof target === "string" && target.startsWith("course:"),
-            )
-          );
+          // The Home FAQ section is also the storage source for page-targeted
+          // questions. Return visible FAQ items even when its Home heading is
+          // hidden so About, Contact, and Courses remain independently targetable.
+          return item.itemType === "faq" && Array.isArray(content.pageTargets);
         },
       );
 
@@ -441,7 +444,7 @@ adminRouter.post("/admin/sections", async (req, res): Promise<void> => {
   }
 
   if (!isManagedPageSlug(parsed.data.pageSlug)) {
-    res.status(400).json({ error: "Choose Home, Faculty, or Gallery as the page." });
+    res.status(400).json({ error: "Choose a supported CMS page." });
     return;
   }
 
@@ -461,7 +464,12 @@ adminRouter.post("/admin/sections", async (req, res): Promise<void> => {
   const [existing] = await db
     .select({ id: contentSectionsTable.id })
     .from(contentSectionsTable)
-    .where(eq(contentSectionsTable.sectionKey, parsed.data.sectionKey))
+    .where(
+      and(
+        eq(contentSectionsTable.pageSlug, parsed.data.pageSlug),
+        eq(contentSectionsTable.sectionKey, parsed.data.sectionKey),
+      ),
+    )
     .limit(1);
   if (existing) {
     res.status(400).json({ error: "That section key is already in use." });
@@ -488,7 +496,7 @@ adminRouter.patch("/admin/sections/:id", async (req, res): Promise<void> => {
     return;
   }
   if (parsed.data.pageSlug && !isManagedPageSlug(parsed.data.pageSlug)) {
-    res.status(400).json({ error: "Choose Home, Faculty, or Gallery as the page." });
+    res.status(400).json({ error: "Choose a supported CMS page." });
     return;
   }
   if (
@@ -516,6 +524,22 @@ adminRouter.patch("/admin/sections/:id", async (req, res): Promise<void> => {
   if (!existingSection || !isManagedPageSlug(existingSection.pageSlug)) {
     res.status(404).json({ error: "Section not found." });
     return;
+  }
+  if (parsed.data.sectionKey) {
+    const [sectionWithKey] = await db
+      .select({ id: contentSectionsTable.id })
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, existingSection.pageSlug),
+          eq(contentSectionsTable.sectionKey, parsed.data.sectionKey),
+        ),
+      )
+      .limit(1);
+    if (sectionWithKey && sectionWithKey.id !== existingSection.id) {
+      res.status(400).json({ error: "That section key is already in use on this page." });
+      return;
+    }
   }
   if (parsed.data.pageSlug && parsed.data.pageSlug !== existingSection.pageSlug) {
     res.status(400).json({ error: "Sections cannot be moved between pages." });

@@ -74,10 +74,10 @@ export const GetHomePageResponse = zod.object({
 
 
 /**
- * @summary Get published About, Faculty, Gallery, or Courses content
+ * @summary Get published About, Faculty, Gallery, Courses, or Contact content
  */
 export const GetCmsPageParams = zod.object({
-  "pageSlug": zod.enum(['about', 'faculty', 'gallery', 'courses'])
+  "pageSlug": zod.enum(['about', 'faculty', 'gallery', 'courses', 'contact'])
 })
 
 export const getCmsPageResponseSettingsNavigationItemLabelMax = 80;
@@ -908,10 +908,10 @@ export const UpdateAdminCoursesMenuResponse = zod.object({
 
 
 /**
- * @summary Get About, Faculty, Gallery, or Courses content for authorized staff
+ * @summary Get About, Faculty, Gallery, Courses, or Contact content for authorized staff
  */
 export const GetAdminCmsPageParams = zod.object({
-  "pageSlug": zod.enum(['about', 'faculty', 'gallery', 'courses'])
+  "pageSlug": zod.enum(['about', 'faculty', 'gallery', 'courses', 'contact'])
 })
 
 export const getAdminCmsPageResponseSettingsNavigationItemLabelMax = 80;

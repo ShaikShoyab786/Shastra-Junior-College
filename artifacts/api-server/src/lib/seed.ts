@@ -2240,6 +2240,7 @@ export async function seedInitialHomeContent(): Promise<void> {
   await seedHomeKnowledgeHubPreview();
   await seedHomeFaqs();
   await seedAboutPage();
+  await seedContactPage();
 }
 
 type AboutCollectionSeed = {
@@ -2678,6 +2679,72 @@ async function seedAboutPage(): Promise<void> {
       heroSectionContent = {
         ...heroSectionContent,
         aboutCoursesPreviewSeedVersion: 1,
+      };
+      await tx
+        .update(contentSectionsTable)
+        .set({
+          content: heroSectionContent as CmsJson,
+          updatedAt: new Date(),
+        })
+        .where(eq(contentSectionsTable.id, heroSection.id));
+    }
+
+    if (heroSectionContent.aboutFaqCtaSeedVersion !== 1) {
+      const finalSections = [
+        {
+          sectionKey: "faqs",
+          title: "Frequently Asked Questions",
+          subtitle:
+            "Answers to common questions about Shastra Junior College.",
+          content: { eyebrow: "ABOUT SHASTRA" },
+          position: 7,
+        },
+        {
+          sectionKey: "cta",
+          title: "Ready to take the next step?",
+          subtitle:
+            "Explore our academic pathways and get in touch with the college team.",
+          content: {
+            eyebrow: "YOUR NEXT STEP",
+            primaryLabel: "Explore Courses",
+            primaryPath: "/courses",
+            secondaryLabel: "Contact Us",
+            secondaryPath: "/contact",
+          },
+          position: 8,
+        },
+      ];
+
+      for (const section of finalSections) {
+        const [existingSection] = await tx
+          .select({ id: contentSectionsTable.id })
+          .from(contentSectionsTable)
+          .where(
+            and(
+              eq(contentSectionsTable.pageSlug, "about"),
+              eq(contentSectionsTable.sectionKey, section.sectionKey),
+            ),
+          )
+          .limit(1);
+        if (existingSection) continue;
+
+        await tx
+          .insert(contentSectionsTable)
+          .values({
+            pageSlug: "about",
+            sectionKey: section.sectionKey,
+            title: section.title,
+            subtitle: section.subtitle,
+            content: section.content,
+            isVisible: true,
+            position: section.position,
+          })
+          .onConflictDoNothing();
+      }
+
+      heroSectionContent = {
+        ...heroSectionContent,
+        aboutFaqCtaSeedVersion: 1,
       };
       await tx
         .update(contentSectionsTable)
@@ -3399,6 +3466,85 @@ async function seedHomeKnowledgeHubPreview(): Promise<void> {
   });
 }
 
+async function seedContactPage(): Promise<void> {
+  await db.transaction(async (tx) => {
+    const [homeHero] = await tx
+      .select({ content: contentSectionsTable.content })
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "home"),
+          eq(contentSectionsTable.sectionKey, "hero"),
+        ),
+      )
+      .limit(1);
+    const homeHeroContent =
+      homeHero && isCmsRecord(homeHero.content) ? homeHero.content : {};
+    const enquiryForm = isCmsRecord(homeHeroContent.enquiryForm)
+      ? homeHeroContent.enquiryForm
+      : null;
+
+    const defaults = [
+      {
+        sectionKey: "hero",
+        title: "Get in touch with Shastra Junior College",
+        subtitle:
+          "Send an enquiry to the college team using the form below.",
+        content: { eyebrow: "GET IN TOUCH" },
+        position: 0,
+      },
+      {
+        sectionKey: "enquiry-form",
+        title: "Enquiry form",
+        subtitle: null,
+        content: enquiryForm ? { enquiryForm } : null,
+        position: 1,
+      },
+      {
+        sectionKey: "faqs",
+        title: "Frequently Asked Questions",
+        subtitle:
+          "Answers to common questions about contacting Shastra Junior College.",
+        content: { eyebrow: "COMMON QUESTIONS" },
+        position: 2,
+      },
+    ] as const;
+
+    for (const section of defaults) {
+      const [existingSection] = await tx
+        .select({ id: contentSectionsTable.id })
+        .from(contentSectionsTable)
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "contact"),
+            eq(contentSectionsTable.sectionKey, section.sectionKey),
+          ),
+        )
+        .limit(1);
+      if (existingSection) continue;
+
+      if (section.sectionKey === "enquiry-form" && !enquiryForm) {
+        throw new Error(
+          "The Contact page enquiry form could not be seeded because the Home form configuration is missing.",
+        );
+      }
+
+      await tx
+        .insert(contentSectionsTable)
+        .values({
+          pageSlug: "contact",
+          sectionKey: section.sectionKey,
+          title: section.title,
+          subtitle: section.subtitle,
+          content: section.content ?? {},
+          isVisible: true,
+          position: section.position,
+        })
+        .onConflictDoNothing();
+    }
+  });
+}
+
 async function seedHomeFaqs(): Promise<void> {
   const defaultFaqs = [
     {
@@ -3488,6 +3634,46 @@ async function seedHomeFaqs(): Promise<void> {
       pageTargets: ["course:mpc-eamcet"],
     },
   ];
+  const homeFaqs = [
+    {
+      question: "Where can I explore the college's course pathways?",
+      answer:
+        "Visit the Courses page to compare the subject pathways and preparation options shared by Shastra Junior College.",
+      pageTargets: ["home"],
+    },
+    {
+      question: "Where can I find learning resources and college updates?",
+      answer:
+        "Visit the Knowledge Hub to explore learning resources and updates shared by Shastra Junior College.",
+      pageTargets: ["home"],
+    },
+    {
+      question: "How can I contact the college team?",
+      answer:
+        "Use the Contact page to submit an enquiry and the college team can follow up.",
+      pageTargets: ["home"],
+    },
+  ];
+  const aboutFaqs = [
+    {
+      question: "What is Shastra Junior College's approach to learning?",
+      answer:
+        "Shastra focuses on subject foundations, thoughtful teaching, and academic guidance to help students prepare for their next steps.",
+      pageTargets: ["about"],
+    },
+    {
+      question: "Where can I learn about the college's academic pathways?",
+      answer:
+        "Explore the Courses page for subject combinations and preparation details, or contact the college team with a question.",
+      pageTargets: ["about"],
+    },
+    {
+      question: "Where can I learn about Shastra's leadership and community?",
+      answer:
+        "The About page shares information about the college's leadership, board, strengths, and values.",
+      pageTargets: ["about"],
+    },
+  ];
 
   await db.transaction(async (tx) => {
     let [section] = await tx
@@ -3512,6 +3698,8 @@ async function seedHomeFaqs(): Promise<void> {
           content: {
             eyebrow: "COMMON QUESTIONS",
             courseFaqDefaultsVersion: 1,
+            homeFaqDefaultsVersion: 1,
+            aboutFaqDefaultsVersion: 1,
           },
           isVisible: true,
           position: 15,
@@ -3522,7 +3710,7 @@ async function seedHomeFaqs(): Promise<void> {
       if (!section) return;
 
       await tx.insert(contentItemsTable).values(
-        [...defaultFaqs, ...courseFaqs].map((faq, index) => ({
+        [...defaultFaqs, ...courseFaqs, ...homeFaqs, ...aboutFaqs].map((faq, index) => ({
           sectionId: section.id,
           itemType: "faq",
           title: faq.question,
@@ -3538,8 +3726,7 @@ async function seedHomeFaqs(): Promise<void> {
       return;
     }
 
-    const sectionContent = isCmsRecord(section.content) ? section.content : {};
-    if (sectionContent.courseFaqDefaultsVersion === 1) return;
+    let sectionContent = isCmsRecord(section.content) ? section.content : {};
 
     const existingItems = await tx
       .select()
@@ -3550,13 +3737,53 @@ async function seedHomeFaqs(): Promise<void> {
           eq(contentItemsTable.itemType, "faq"),
         ),
       );
-    const nextPosition =
+    let nextPosition =
       existingItems.length > 0
         ? Math.max(...existingItems.map((item) => item.position)) + 1
         : 0;
     const existingByQuestion = new Map(
       existingItems.map((item) => [item.title.trim().toLocaleLowerCase(), item]),
     );
+    for (const [marker, defaults] of [
+      ["homeFaqDefaultsVersion", homeFaqs],
+      ["aboutFaqDefaultsVersion", aboutFaqs],
+    ] as const) {
+      if (sectionContent[marker] === 1) continue;
+      for (const faq of defaults) {
+        const questionKey = faq.question.trim().toLocaleLowerCase();
+        if (existingByQuestion.has(questionKey)) continue;
+
+        const [created] = await tx
+          .insert(contentItemsTable)
+          .values({
+            sectionId: section.id,
+            itemType: "faq",
+            title: faq.question,
+            description: faq.answer,
+            imageUrl: null,
+            linkPath: null,
+            label: null,
+            content: { pageTargets: faq.pageTargets },
+            isVisible: true,
+            position: nextPosition,
+          })
+          .returning();
+        if (created) {
+          existingByQuestion.set(questionKey, created);
+          nextPosition += 1;
+        }
+      }
+      sectionContent = { ...sectionContent, [marker]: 1 };
+    }
+
+    if (sectionContent.courseFaqDefaultsVersion === 1) {
+      await tx
+        .update(contentSectionsTable)
+        .set({ content: sectionContent as CmsJson, updatedAt: new Date() })
+        .where(eq(contentSectionsTable.id, section.id));
+      return;
+    }
+
     const newItems: Array<{
       sectionId: string;
       itemType: string;

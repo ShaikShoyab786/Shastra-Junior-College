@@ -14,6 +14,71 @@ import { AboutInstitutionalStrengthsSection } from "./about-institutional-streng
 import { AboutCoreValuesSection } from "./about-core-values-section";
 import { AboutCoursesPreviewSection } from "./about-courses-preview-section";
 import { Footer, Header } from "./public-home";
+import FaqSection from "../components/faq-section";
+import type { ContentSection } from "@workspace/api-client-react";
+
+type CmsRecord = Record<string, unknown>;
+
+function record(value: unknown): CmsRecord {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as CmsRecord)
+    : {};
+}
+
+function text(value: unknown) {
+  return typeof value === "string" ? value : "";
+}
+
+function AboutCtaSection({ section }: { section: ContentSection }) {
+  const content = record(section.content);
+  const primaryLabel = text(content.primaryLabel);
+  const primaryPath = text(content.primaryPath);
+  const secondaryLabel = text(content.secondaryLabel);
+  const secondaryPath = text(content.secondaryPath);
+
+  return (
+    <section
+      className="bg-[#f7f5ef] px-5 pb-16 pt-8 sm:px-8 sm:pb-24"
+      data-testid="section-about-final-cta"
+    >
+      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-[#0b3472] px-6 py-12 text-white shadow-[0_24px_60px_rgba(11,52,114,.16)] sm:px-12 sm:py-16">
+        <div className="pointer-events-none absolute -right-12 -top-20 h-72 w-72 rounded-full border border-white/10" />
+        <div className="pointer-events-none absolute -right-2 -top-10 h-52 w-52 rounded-full border border-white/10" />
+        <div className="relative max-w-3xl">
+          <p className="eyebrow text-[#ffc7a0]">{text(content.eyebrow)}</p>
+          <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-5xl">
+            {section.title}
+          </h2>
+          {section.subtitle ? (
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-blue-100/85 sm:text-base">
+              {section.subtitle}
+            </p>
+          ) : null}
+          <div className="mt-7 flex flex-wrap gap-3">
+            {primaryLabel && primaryPath ? (
+              <Link
+                href={primaryPath}
+                className="focus-ring inline-flex items-center justify-center rounded-full bg-[#e3212b] px-6 py-3.5 text-sm font-extrabold text-white transition hover:bg-[#c81c25]"
+                data-testid="link-about-cta-primary"
+              >
+                {primaryLabel}
+              </Link>
+            ) : null}
+            {secondaryLabel && secondaryPath ? (
+              <Link
+                href={secondaryPath}
+                className="focus-ring inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3.5 text-sm font-extrabold text-white transition hover:bg-white/10"
+                data-testid="link-about-cta-secondary"
+              >
+                {secondaryLabel}
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function AboutLoading() {
   return (
@@ -89,6 +154,12 @@ export default function AboutPage() {
   }
 
   const sections = page.data?.sections || [];
+  const faqSection = sections.find((section) => section.sectionKey === "faqs");
+  const ctaSection = sections.find((section) => section.sectionKey === "cta");
+  const faqItems = home.data.items.filter((item) => item.itemType === "faq");
+  const bodySections = sections.filter(
+    (section) => section.sectionKey !== "faqs" && section.sectionKey !== "cta",
+  );
   const hasAboutContent = sections.some(
     (section) =>
       section.sectionKey === "hero" ||
@@ -97,7 +168,9 @@ export default function AboutPage() {
       section.sectionKey === "board-of-directors" ||
       section.sectionKey === "institutional-strengths" ||
       section.sectionKey === "core-values" ||
-      section.sectionKey === "courses-preview",
+      section.sectionKey === "courses-preview" ||
+      section.sectionKey === "faqs" ||
+      section.sectionKey === "cta",
   );
 
   return (
@@ -124,7 +197,7 @@ export default function AboutPage() {
           </section>
         ) : hasAboutContent ? (
           <>
-            {sections.map((section) => {
+            {bodySections.map((section) => {
               if (section.sectionKey === "hero") {
                 return (
                   <AboutHeroSection
@@ -184,6 +257,17 @@ export default function AboutPage() {
               }
               return null;
             })}
+            {faqSection ? (
+              <FaqSection
+                key={faqSection.id}
+                section={faqSection}
+                items={faqItems}
+                pageTarget="about"
+              />
+            ) : null}
+            {ctaSection?.isVisible ? (
+              <AboutCtaSection key={ctaSection.id} section={ctaSection} />
+            ) : null}
           </>
         ) : (
           <section

@@ -363,8 +363,8 @@ export function PublicCoursesPage() {
          {hero ? <Hero section={hero} /> : null}
          {pathways ? <Pathways section={pathways} cards={cards} /> : null}
          {batchSchedule ? <BatchSchedule section={batchSchedule} items={cms.data.items} /> : null}
-         {admissions ? <AdmissionsCta section={admissions} /> : null}
           <FaqSection section={faqSection} items={faqItems} pageTarget="courses" />
+          {admissions ? <AdmissionsCta section={admissions} /> : null}
        </main>
       <Footer home={home.data} />
     </div>

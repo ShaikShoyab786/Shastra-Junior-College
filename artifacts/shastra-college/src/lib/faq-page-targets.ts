@@ -5,10 +5,16 @@ import {
 } from "@/pages/course-detail-config";
 
 export type CourseFaqPageTarget = `course:${CourseDetailSlug}`;
-export type FaqPageTarget = "home" | "contact" | "courses" | CourseFaqPageTarget;
+export type FaqPageTarget =
+  | "home"
+  | "about"
+  | "contact"
+  | "courses"
+  | CourseFaqPageTarget;
 
 export const FAQ_PAGE_TARGETS: Array<{ value: FaqPageTarget; label: string }> = [
   { value: "home", label: "Home" },
+  { value: "about", label: "About" },
   { value: "contact", label: "Contact" },
   { value: "courses", label: "All Courses" },
   ...COURSE_DETAILS.map((course) => ({

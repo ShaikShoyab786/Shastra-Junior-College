@@ -1,7 +1,9 @@
 import { ArrowRight, RefreshCw } from "lucide-react";
 import { Link } from "wouter";
 import {
+  getGetCmsPageQueryKey,
   getGetHomePageQueryKey,
+  useGetCmsPage,
   useGetHomePage,
 } from "@workspace/api-client-react";
 import type { ContentSection } from "@workspace/api-client-react";
@@ -147,17 +149,130 @@ function DestinationContent({
   );
 }
 
+function contentRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function ContactContent({
+  heroSection,
+  enquirySection,
+}: {
+  heroSection: ContentSection;
+  enquirySection: ContentSection;
+}) {
+  const heroCopy = contentRecord(heroSection.content);
+  const eyebrow =
+    typeof heroCopy.eyebrow === "string" ? heroCopy.eyebrow : "";
+
+  return (
+    <main
+      className="min-h-[65vh] bg-[#f7f5ef] px-5 py-14 sm:px-8 sm:py-20"
+      data-testid="page-public-contact"
+    >
+      <div className="mx-auto grid max-w-7xl items-start gap-10 lg:grid-cols-[minmax(0,.8fr)_minmax(360px,1fr)] lg:gap-16">
+        <header className="pt-2">
+          <p className="eyebrow text-[#c07823]">{eyebrow}</p>
+          <h1 className="mt-3 font-display text-[clamp(2.7rem,6vw,5.2rem)] font-extrabold leading-[.95] tracking-[-.065em] text-[#0b3472]">
+            {heroSection.title}
+          </h1>
+          {heroSection.subtitle ? (
+            <p className="mt-5 text-base leading-7 text-[#52647c] sm:text-lg">
+              {heroSection.subtitle}
+            </p>
+          ) : null}
+        </header>
+        <EnquiryForm section={enquirySection} />
+      </div>
+    </main>
+  );
+}
+
 function PublicDestinationPage({ destination }: { destination: Destination }) {
   const query = useGetHomePage({
     query: { queryKey: getGetHomePageQueryKey() },
   });
+  const contactPage = useGetCmsPage("contact", {
+    query: {
+      queryKey: getGetCmsPageQueryKey("contact"),
+      enabled: destination === "contact",
+    },
+  });
 
-  if (query.isLoading) return <PageLoading />;
-  if (query.isError || !query.data) {
-    return <PageError retry={() => void query.refetch()} />;
+  if (query.isLoading || (destination === "contact" && contactPage.isLoading)) {
+    return <PageLoading />;
+  }
+  if (
+    query.isError ||
+    !query.data ||
+    (destination === "contact" &&
+      (contactPage.isError || !contactPage.data))
+  ) {
+    return (
+      <PageError
+        retry={() => {
+          void query.refetch();
+          if (destination === "contact") void contactPage.refetch();
+        }}
+      />
+    );
   }
 
   const home = query.data;
+  if (destination === "contact") {
+    const contactSections = contactPage.data?.sections ?? [];
+    const contactHero = contactSections.find(
+      (section) => section.sectionKey === "hero",
+    );
+    const enquirySection = contactSections.find(
+      (section) => section.sectionKey === "enquiry-form",
+    );
+    const contactFaqSection = contactSections.find(
+      (section) => section.sectionKey === "faqs",
+    );
+
+    if (!contactHero || !enquirySection) {
+      return (
+        <PageError
+          retry={() => {
+            void query.refetch();
+            void contactPage.refetch();
+          }}
+        />
+      );
+    }
+
+    const faqItems = home.items.filter((item) => item.itemType === "faq");
+
+    return (
+      <div
+        className="min-h-[100dvh] bg-[#f7f5ef]"
+        data-college-theme
+        style={
+          {
+            "--college-primary": home.settings.primaryColor,
+            "--college-accent": home.settings.accentColor,
+          } as React.CSSProperties
+        }
+      >
+        <Header home={home} />
+        <ContactContent
+          heroSection={contactHero}
+          enquirySection={enquirySection}
+        />
+        {contactFaqSection ? (
+          <FaqSection
+            section={contactFaqSection}
+            items={faqItems}
+            pageTarget="contact"
+          />
+        ) : null}
+        <Footer home={home} />
+      </div>
+    );
+  }
+
   const heroSection = home.sections.find(
     (section) => section.sectionKey.toLowerCase() === "hero",
   );
@@ -189,13 +304,6 @@ function PublicDestinationPage({ destination }: { destination: Destination }) {
         destination={destination}
         heroSection={heroSection}
       />
-      {destination === "contact" ? (
-        <FaqSection
-          section={faqSection}
-          items={faqItems}
-          pageTarget="contact"
-        />
-      ) : null}
       <Footer home={home} />
     </div>
   );

@@ -69,6 +69,9 @@ import AdminCoursesEditor from "./admin-courses-editor";
 import AdminCoursesPageEditor from "./admin-courses-page-editor";
 import AdminCourseDetailEditor from "./admin-course-detail-editor";
 import AdminFaqEditor from "./admin-faq-editor";
+import AdminFaqTextSettingsEditor from "./admin-faq-text-settings-editor";
+import AdminAboutCtaEditor from "./admin-about-cta-editor";
+import AdminContactEditor from "./admin-contact-editor";
 import {
   COURSE_DETAILS,
   courseSectionKey,
@@ -101,9 +104,13 @@ type WorkspaceView =
   | "about-institutional-strengths"
   | "about-core-values"
   | "about-courses-preview"
+  | "about-faqs"
+  | "about-cta"
+  | "home-faqs"
   | "faqs"
   | "faculty"
   | "courses"
+  | "contact"
   | "courses-explore"
   | CourseDetailAdminView
   | "gallery";
@@ -118,6 +125,7 @@ const pageItems: Array<{
   { key: "gallery", label: "Gallery", icon: ImagePlus },
   { key: "faqs", label: "FAQs", icon: CircleHelp },
   { key: "courses", label: "Courses", icon: BookOpenCheck },
+  { key: "contact", label: "Contact", icon: FileText },
 ];
 
 function errorMessage(error: unknown) {
@@ -348,7 +356,9 @@ function Shell({
       activeView === "about-board" ||
       activeView === "about-institutional-strengths" ||
       activeView === "about-core-values" ||
-      activeView === "about-courses-preview",
+      activeView === "about-courses-preview" ||
+      activeView === "about-faqs" ||
+      activeView === "about-cta",
   );
   useEffect(() => {
     if (
@@ -367,7 +377,8 @@ function Shell({
     activeView === "faculty-preview" ||
     activeView === "testimonials" ||
     activeView === "knowledge-hub-preview" ||
-    activeView === "placement-records";
+    activeView === "placement-records" ||
+    activeView === "home-faqs";
   const aboutSectionActive =
     activeView === "about" ||
     activeView === "about-hero" ||
@@ -376,7 +387,9 @@ function Shell({
     activeView === "about-board" ||
     activeView === "about-institutional-strengths" ||
     activeView === "about-core-values" ||
-    activeView === "about-courses-preview";
+    activeView === "about-courses-preview" ||
+    activeView === "about-faqs" ||
+    activeView === "about-cta";
   const activePage =
     activeView === "dashboard"
       ? "Dashboard"
@@ -386,6 +399,8 @@ function Shell({
           ? "Pages / Knowledge Hub"
           : activeView === "faqs"
             ? "Pages / FAQs"
+        : activeView === "contact"
+          ? "Pages / Contact"
         : aboutSectionActive
           ? "Pages / About"
           : homeSectionActive
@@ -425,6 +440,10 @@ function Shell({
                       ? "About · Core Values"
                       : activeView === "about-courses-preview"
                         ? "About · Courses Preview"
+                        : activeView === "about-faqs"
+                          ? "About · FAQs"
+                          : activeView === "about-cta"
+                            ? "About · CTA"
         : activeView === "hero"
           ? "Home · Hero"
           : activeView === "programs"
@@ -441,6 +460,8 @@ function Shell({
                         ? "Home · Testimonials"
                         : activeView === "knowledge-hub-preview"
                           ? "Home · Knowledge Hub Preview"
+                          : activeView === "home-faqs"
+                            ? "Home · FAQs"
                           : activeView === "knowledge-hub-settings"
                             ? "Knowledge Hub settings"
                       : pageItems.find((item) => item.key === activeView)?.label ||
@@ -601,6 +622,7 @@ function Shell({
                        <NavRow icon={UserRound} label="Faculty Preview" nested active={activeView === "faculty-preview"} onClick={() => go("faculty-preview")} />
                         <NavRow icon={MessageSquareQuote} label="Testimonials" nested active={activeView === "testimonials"} onClick={() => go("testimonials")} />
                         <NavRow icon={BookOpenCheck} label="Knowledge Hub Preview" nested active={activeView === "knowledge-hub-preview"} onClick={() => go("knowledge-hub-preview")} />
+                      <NavRow icon={CircleHelp} label="FAQs" nested active={activeView === "home-faqs"} onClick={() => go("home-faqs")} />
                     </div>
                   ) : null}
                 </div>
@@ -701,6 +723,20 @@ function Shell({
                               nested
                               active={activeView === "about-courses-preview"}
                               onClick={() => go("about-courses-preview")}
+                            />
+                            <NavRow
+                              icon={CircleHelp}
+                              label="FAQs"
+                              nested
+                              active={activeView === "about-faqs"}
+                              onClick={() => go("about-faqs")}
+                            />
+                            <NavRow
+                              icon={Link2}
+                              label="CTA"
+                              nested
+                              active={activeView === "about-cta"}
+                              onClick={() => go("about-cta")}
                             />
                           </div>
                         ) : null}
@@ -1229,6 +1265,22 @@ function AdminWorkspace() {
                 "Edit the About introduction and visibility. Course records stay connected to Courses settings.",
               action: "Edit Courses Preview",
             },
+            {
+              key: "about-faqs" as const,
+              number: "08",
+              title: "FAQs",
+              description:
+                "Edit the About FAQ section text and open the shared FAQ manager to choose About questions.",
+              action: "Edit About FAQ settings",
+            },
+            {
+              key: "about-cta" as const,
+              number: "09",
+              title: "Final CTA",
+              description:
+                "Edit the distinct call to action that appears after the About FAQs.",
+              action: "Edit final CTA",
+            },
           ].map((subsection) => (
             <button
               key={subsection.key}
@@ -1260,6 +1312,16 @@ function AdminWorkspace() {
         </div>
       </div>
     );
+  } else if (activeView === "about-faqs") {
+    body = (
+      <AdminFaqTextSettingsEditor
+        pageSlug="about"
+        onFlash={showFlash}
+        onOpenManager={() => setActiveView("faqs")}
+      />
+    );
+  } else if (activeView === "about-cta") {
+    body = <AdminAboutCtaEditor onFlash={showFlash} />;
   } else if (activeView === "about-hero") {
     body = (
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
@@ -1425,6 +1487,16 @@ function AdminWorkspace() {
       </div>
     );
   } else if (
+    activeView === "home-faqs"
+  ) {
+    body = (
+      <AdminFaqTextSettingsEditor
+        pageSlug="home"
+        onFlash={showFlash}
+        onOpenManager={() => setActiveView("faqs")}
+      />
+    );
+  } else if (
     activeView === "hero" ||
     activeView === "programs" ||
     activeView === "statistics" ||
@@ -1468,9 +1540,23 @@ function AdminWorkspace() {
         <PageIntro
           eyebrow="Pages / FAQs"
           title="Manage shared questions and answers."
-          description="Write clear answers once, then choose whether each one appears on Home, Contact, or All Courses."
+          description="Write clear answers once, then choose where each one appears, including Home, About, Contact, Courses, or an individual course page."
         />
         <AdminFaqEditor home={home} onFlash={showFlash} />
+      </div>
+    );
+  } else if (activeView === "contact") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / Contact"
+          title="Manage Contact page content."
+          description="Edit the introduction, enquiry form, and Contact FAQ heading. FAQ answers stay in the shared FAQ manager."
+        />
+        <AdminContactEditor
+          onFlash={showFlash}
+          onNavigate={() => setActiveView("faqs")}
+        />
       </div>
     );
   } else if (activeView === "knowledge-hub-settings") {

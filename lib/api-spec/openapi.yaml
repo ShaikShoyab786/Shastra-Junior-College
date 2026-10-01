@@ -48,14 +48,14 @@ paths:
     get:
       operationId: getCmsPage
       tags: [home]
-      summary: Get published About, Faculty, Gallery, or Courses content
+      summary: Get published About, Faculty, Gallery, Courses, or Contact content
       parameters:
         - name: pageSlug
           in: path
           required: true
           schema:
             type: string
-            enum: [about, faculty, gallery, courses]
+            enum: [about, faculty, gallery, courses, contact]
       responses:
         "200":
           description: Published page content
@@ -256,14 +256,14 @@ paths:
     get:
       operationId: getAdminCmsPage
       tags: [admin]
-      summary: Get About, Faculty, Gallery, or Courses content for authorized staff
+      summary: Get About, Faculty, Gallery, Courses, or Contact content for authorized staff
       parameters:
         - name: pageSlug
           in: path
           required: true
           schema:
             type: string
-            enum: [about, faculty, gallery, courses]
+            enum: [about, faculty, gallery, courses, contact]
       responses:
         "200":
           description: Page content including unpublished sections and items
