@@ -18,6 +18,10 @@ import {
   getCourseMentorSubjectsForCourse,
   type CourseDetail,
 } from "./course-detail-config";
+import {
+  readCourseEnrollmentProcess,
+  type CourseEnrollmentProcessContent,
+} from "./course-enrollment-process";
 
 function recordValue(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -569,6 +573,78 @@ function CourseGalleryPreview({
   );
 }
 
+function CourseEnrollmentProcessSection({
+  course,
+  content,
+  logoUrl,
+}: {
+  course: CourseDetail;
+  content: CourseEnrollmentProcessContent;
+  logoUrl?: string | null;
+}) {
+  if (!content.isVisible || !content.steps.length) return null;
+
+  return (
+    <section
+      id={courseSectionKey(course.slug, "enrollment-process")}
+      className="site-grid bg-[#f2f3f8] px-5 py-14 sm:px-8 sm:py-20"
+      aria-labelledby={`course-${course.slug}-enrollment-process-heading`}
+      data-testid={`section-course-enrollment-process-${course.slug}`}
+    >
+      <div className="mx-auto w-full max-w-7xl">
+        <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#0b3472]/10 bg-white p-2 shadow-sm">
+            <img
+              src={assetUrl(logoUrl || "/shastra-college-logo.png")}
+              alt=""
+              className="max-h-full max-w-full object-contain"
+            />
+          </div>
+          <p className="eyebrow text-[#e3212b]">{content.eyebrow}</p>
+          <h2
+            id={`course-${course.slug}-enrollment-process-heading`}
+            className="mt-3 font-display text-3xl font-extrabold tracking-[-.045em] text-[#0b3472] sm:text-4xl"
+          >
+            {content.title}
+          </h2>
+          {content.description ? (
+            <p className="mt-3 text-sm leading-7 text-[#53657d] sm:text-base">
+              {content.description}
+            </p>
+          ) : null}
+        </div>
+        <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {content.steps.map((step, index) => (
+            <li
+              key={step.id}
+              className="relative flex min-h-48 flex-col items-center rounded-2xl border border-[#0b3472]/10 bg-white px-4 py-5 text-center shadow-[0_10px_26px_rgba(11,52,114,.05)]"
+              data-testid={`card-course-enrollment-step-${step.id}`}
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e3212b] text-sm font-extrabold text-white">
+                <span className="sr-only">Step </span>{index + 1}
+              </span>
+              <h3 className="mt-3 font-display text-base font-extrabold text-[#0b3472]">
+                {step.title}
+              </h3>
+              {step.description ? (
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {step.description}
+                </p>
+              ) : null}
+              {index < content.steps.length - 1 ? (
+                <ArrowRight
+                  className="absolute -right-2 top-1/2 z-10 hidden h-4 w-4 -translate-y-1/2 rounded-full bg-[#f2f3f8] p-0.5 text-[#e3212b] lg:block"
+                  aria-hidden="true"
+                />
+              ) : null}
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
 export default function PublicCourseDetailPage({ course }: { course: CourseDetail }) {
   const home = useGetHomePage({ query: { queryKey: getGetHomePageQueryKey() } });
   const cms = useGetCmsPage("courses", { query: { queryKey: getGetCmsPageQueryKey("courses") } });
@@ -581,6 +657,9 @@ export default function PublicCourseDetailPage({ course }: { course: CourseDetai
   const curriculumContent = recordValue(curriculum?.content);
   const facultyPreviewCopy = recordValue(curriculumContent.courseFacultyPreview);
   const galleryPreviewCopy = recordValue(curriculumContent.courseGalleryPreview);
+  const enrollmentProcess = readCourseEnrollmentProcess(
+    curriculumContent.courseEnrollmentProcess,
+  );
   const gallerySection = gallery.data?.sections.find(
     (section) => section.sectionKey.toLocaleLowerCase() === "gallery",
   );
@@ -615,6 +694,13 @@ export default function PublicCourseDetailPage({ course }: { course: CourseDetai
               section={gallerySection}
               items={gallery.data.items}
               copy={galleryPreviewCopy}
+            />
+          ) : null}
+          {!gallery.isLoading ? (
+            <CourseEnrollmentProcessSection
+              course={course}
+              content={enrollmentProcess}
+              logoUrl={home.data.settings.logoUrl}
             />
           ) : null}
         </main>
