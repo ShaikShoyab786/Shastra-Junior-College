@@ -367,11 +367,6 @@ function CourseCurriculum({ course, section, items }: { course: CourseDetail; se
             <h2 className="mt-4 max-w-[18ch] font-display text-4xl font-extrabold leading-[1.04] tracking-[-.055em] text-[#0b3472] sm:text-5xl">{section.title}</h2>
             {section.subtitle ? <p className="mt-4 max-w-2xl text-sm leading-7 text-[#53657d] sm:text-base">{section.subtitle}</p> : null}
           </div>
-          {content.isSample === true ? (
-            <p className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-950" role="note" data-testid={`notice-course-${course.slug}-curriculum-sample`}>
-              This is sample curriculum content. Please contact the college to confirm the current subject and topic information.
-            </p>
-          ) : null}
           {subjects.length ? (
             <div className="space-y-3">
               {subjects.map((subject, index) => {
@@ -399,11 +394,7 @@ function CourseCurriculum({ course, section, items }: { course: CourseDetail; se
                 );
               })}
             </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-[#17478f]/25 bg-white/55 px-5 py-8 text-sm text-[#53657d]" role="status" data-testid={`empty-course-curriculum-${course.slug}`}>
-              Subject details are being prepared. Please contact the college for current curriculum information.
-            </div>
-          )}
+          ) : null}
         </div>
         <aside className="space-y-3 lg:pt-1">
           <div className="relative overflow-hidden rounded-[1.5rem] bg-[#092f70] p-6 text-white shadow-[0_18px_40px_rgba(11,52,114,.16)] sm:p-7">

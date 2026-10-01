@@ -763,11 +763,6 @@ export default function AdminCourseDetailEditor({
       </Panel>
 
       <Panel id={`course-${course.slug}-curriculum`} eyebrow={`${course.name} / Section 4`} title="Curriculum" testId={`panel-admin-course-${course.slug}-curriculum`}>
-        {stringValue(curriculum.content, "isSample") === "true" || recordValue(curriculum.content).isSample === true ? (
-          <p className="mb-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-950" role="status" data-testid={`notice-course-${course.slug}-curriculum-sample`}>
-            Sample curriculum content — replace with verified course information before publishing.
-          </p>
-        ) : null}
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Section label" value={stringValue(curriculum.content, "eyebrow")} onChange={(value) => patchCurriculumContent("eyebrow", value)} testId={`input-course-${course.slug}-curriculum-eyebrow`} />
           <Field label="Section heading" value={curriculum.title} onChange={(value) => setCurriculum((current) => current ? { ...current, title: value } : current)} testId={`input-course-${course.slug}-curriculum-title`} />
@@ -789,8 +784,7 @@ export default function AdminCourseDetailEditor({
           <p className="md:col-span-2 -mt-2 text-xs text-slate-500">{stringValue(curriculum.content, "pdfFileName") || "PDF not selected"}</p>
         </div>
         <div className="mt-5 border-t border-slate-100 pt-4">
-          <SectionToggle label="Mark this curriculum as sample content" checked={recordValue(curriculum.content).isSample === true} onChange={(value) => patchCurriculumContent("isSample", value)} testId={`checkbox-course-${course.slug}-curriculum-sample`} />
-          <div className="mt-3"><SectionToggle label="Publish Curriculum section" checked={curriculum.isVisible} onChange={(value) => setCurriculum((current) => current ? { ...current, isVisible: value } : current)} testId={`checkbox-course-${course.slug}-curriculum-visible`} /></div>
+          <SectionToggle label="Publish Curriculum section" checked={curriculum.isVisible} onChange={(value) => setCurriculum((current) => current ? { ...current, isVisible: value } : current)} testId={`checkbox-course-${course.slug}-curriculum-visible`} />
         </div>
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs font-semibold text-slate-500">{subjects.length} subject{subjects.length === 1 ? "" : "s"} · reorder to change public sequence</p>
