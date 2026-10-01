@@ -39,6 +39,14 @@ type HighlightDraft = {
   description: string;
   isVisible: boolean;
 };
+type CurriculumDraft = {
+  clientKey: string;
+  id?: string;
+  title: string;
+  description: string;
+  topics: string[];
+  isVisible: boolean;
+};
 
 const inputClass = "mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#0b3472]/50 focus:ring-4 focus:ring-[#0b3472]/10";
 
@@ -69,6 +77,9 @@ function errorMessage(error: unknown) {
 
 function newId() {
   return `course-highlight-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+}
+function newCurriculumId() {
+  return `course-subject-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
 function draftFromSection(section: ContentSection): SectionDraft {
@@ -362,6 +373,8 @@ export default function AdminCourseDetailEditor({
   const [hero, setHero] = useState<SectionDraft | null>(null);
   const [highlightsSection, setHighlightsSection] = useState<SectionDraft | null>(null);
   const [items, setItems] = useState<HighlightDraft[]>([]);
+  const [curriculum, setCurriculum] = useState<SectionDraft | null>(null);
+  const [subjects, setSubjects] = useState<CurriculumDraft[]>([]);
   const [hydratedCourse, setHydratedCourse] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -369,6 +382,7 @@ export default function AdminCourseDetailEditor({
 
   const heroSource = page.data?.sections.find((section) => section.sectionKey === courseSectionKey(course.slug, "hero"));
   const highlightsSource = page.data?.sections.find((section) => section.sectionKey === courseSectionKey(course.slug, "highlights"));
+  const curriculumSource = page.data?.sections.find((section) => section.sectionKey === `course-${course.slug}-curriculum`);
   const facultySection = facultyPage.data?.sections.find((section) => section.sectionKey === "faculty");
   const courseMentorSubjects = new Set<string>(
     getCourseMentorSubjectsForCourse(course.slug),
@@ -402,7 +416,7 @@ export default function AdminCourseDetailEditor({
   );
 
   useEffect(() => {
-    if (!page.data || !heroSource || !highlightsSource || hydratedCourse === course.slug) return;
+    if (!page.data || !heroSource || !highlightsSource || !curriculumSource || hydratedCourse === course.slug) return;
     setHero(draftFromSection(heroSource));
     setHighlightsSection(draftFromSection(highlightsSource));
     setItems(
@@ -411,9 +425,24 @@ export default function AdminCourseDetailEditor({
         .sort((a, b) => a.position - b.position)
         .map(draftFromItem),
     );
+    setCurriculum(draftFromSection(curriculumSource));
+    setSubjects(page.data.items
+      .filter((item) => item.sectionId === curriculumSource.id && item.itemType === "course-curriculum-subject")
+      .sort((a, b) => a.position - b.position)
+      .map((item) => {
+        const itemContent = recordValue(item.content);
+        return {
+          clientKey: item.id,
+          id: item.id,
+          title: item.title,
+          description: item.description || "",
+          topics: Array.isArray(itemContent.topics) ? itemContent.topics.filter((topic): topic is string => typeof topic === "string") : [],
+          isVisible: item.isVisible,
+        };
+      }));
     setError("");
     setHydratedCourse(course.slug);
-  }, [course.slug, page.data, heroSource, highlightsSource, hydratedCourse]);
+  }, [course.slug, page.data, heroSource, highlightsSource, curriculumSource, hydratedCourse]);
 
   const upload = async (file: File) => {
     setUploadsInProgress((count) => count + 1);
@@ -428,6 +457,27 @@ export default function AdminCourseDetailEditor({
       setUploadsInProgress((count) => Math.max(0, count - 1));
     }
   };
+  const uploadPdf = async (file: File) => {
+    setUploadsInProgress((count) => count + 1);
+    try {
+      const fileType = file.type.toLowerCase();
+      if (!file.name.toLowerCase().endsWith(".pdf") || (fileType && !["application/pdf", "application/x-pdf"].includes(fileType))) {
+        throw new Error("Choose a PDF file with a .pdf extension.");
+      }
+      if (file.size > 10 * 1024 * 1024) throw new Error("Curriculum PDFs must be 10 MB or smaller.");
+      if (await file.slice(0, 5).text() !== "%PDF-") throw new Error("The selected file does not appear to be a valid PDF.");
+      const info = await requestUpload.mutateAsync({ data: { name: file.name, size: file.size, contentType: "application/pdf" } });
+      const response = await fetch(info.uploadURL, { method: "PUT", headers: { "Content-Type": "application/pdf" }, body: file });
+      if (!response.ok) throw new Error("The curriculum PDF upload could not be completed.");
+      patchCurriculumContent("pdfPath", info.objectPath);
+      patchCurriculumContent("pdfFileName", file.name);
+      setError("");
+    } catch (failure) {
+      setError(errorMessage(failure));
+    } finally {
+      setUploadsInProgress((count) => Math.max(0, count - 1));
+    }
+  };
 
   const patchSectionContent = (
     section: "hero" | "highlights",
@@ -437,9 +487,18 @@ export default function AdminCourseDetailEditor({
     const setter = section === "hero" ? setHero : setHighlightsSection;
     setter((current) => current ? { ...current, content: { ...current.content, [key]: value } } : current);
   };
+  const patchCurriculumContent = (key: string, value: unknown) =>
+    setCurriculum((current) => current ? { ...current, content: { ...current.content, [key]: value } } : current);
 
   const updateHighlightDraft = (next: HighlightDraft) => setItems((current) => current.map((item) => item.clientKey === next.clientKey ? next : item));
   const moveItem = (index: number, direction: -1 | 1) => setItems((current) => {
+    const target = index + direction;
+    if (target < 0 || target >= current.length) return current;
+    const next = current.slice();
+    [next[index], next[target]] = [next[target], next[index]];
+    return next;
+  });
+  const moveSubject = (index: number, direction: -1 | 1) => setSubjects((current) => {
     const target = index + direction;
     if (target < 0 || target >= current.length) return current;
     const next = current.slice();
@@ -451,7 +510,7 @@ export default function AdminCourseDetailEditor({
     event.preventDefault();
     setError("");
     const currentPage = page.data;
-    if (!currentPage || !heroSource || !highlightsSource || !hero || !highlightsSection) {
+    if (!currentPage || !heroSource || !highlightsSource || !curriculumSource || !hero || !highlightsSection || !curriculum) {
       setError("This course page is still loading. Please try again.");
       return;
     }
@@ -489,6 +548,16 @@ export default function AdminCourseDetailEditor({
         return;
       }
     }
+    if (curriculum.isVisible && (!curriculum.title.trim() || !curriculum.subtitle.trim() || !stringValue(curriculum.content, "eyebrow").trim())) {
+      setError("For a published Curriculum, complete the section label, heading, and introduction.");
+      return;
+    }
+    for (const subject of subjects) {
+      if (!subject.title.trim() || !subject.description.trim()) {
+        setError(`Complete or remove the subject “${subject.title || "New subject"}”.`);
+        return;
+      }
+    }
 
     setSaving(true);
     try {
@@ -499,6 +568,10 @@ export default function AdminCourseDetailEditor({
       await updateSection.mutateAsync({
         id: highlightsSource.id,
         data: { title: highlightsSection.title.trim(), subtitle: highlightsSection.subtitle.trim() || null, content: highlightsSection.content, isVisible: highlightsSection.isVisible },
+      });
+      await updateSection.mutateAsync({
+        id: curriculumSource.id,
+        data: { title: curriculum.title.trim(), subtitle: curriculum.subtitle.trim() || null, content: curriculum.content, isVisible: curriculum.isVisible },
       });
 
       const savedItemIds = new Set(items.flatMap((item) => item.id ? [item.id] : []));
@@ -526,6 +599,28 @@ export default function AdminCourseDetailEditor({
           await createItem.mutateAsync({ data: input });
         }
       }
+      const savedSubjectIds = new Set(subjects.flatMap((subject) => subject.id ? [subject.id] : []));
+      for (const existing of currentPage.items) {
+        if (existing.sectionId === curriculumSource.id && existing.itemType === "course-curriculum-subject" && !savedSubjectIds.has(existing.id)) {
+          await deleteItem.mutateAsync({ id: existing.id });
+        }
+      }
+      for (const [position, subject] of subjects.entries()) {
+        const input: ContentItemInput = {
+          sectionId: curriculumSource.id,
+          itemType: "course-curriculum-subject",
+          title: subject.title.trim(),
+          description: subject.description.trim(),
+          imageUrl: null,
+          linkPath: null,
+          label: null,
+          content: { topics: subject.topics.map((topic) => topic.trim()).filter(Boolean) },
+          isVisible: subject.isVisible,
+          position,
+        };
+        if (subject.id) await updateItemMutation.mutateAsync({ id: subject.id, data: input });
+        else await createItem.mutateAsync({ data: input });
+      }
       await client.invalidateQueries({ queryKey: getGetAdminCmsPageQueryKey("courses") });
       await client.invalidateQueries({ queryKey: getGetCmsPageQueryKey("courses") });
       onFlash({ tone: "success", message: `${course.name} course page saved.` });
@@ -541,10 +636,10 @@ export default function AdminCourseDetailEditor({
   if (page.isLoading) {
     return <div className="space-y-6"><CoursePathwaySelector course={course} onCourseChange={onCourseChange} /><div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500" aria-busy="true" data-testid={`status-admin-course-${course.slug}-loading`}>Loading {course.name} course content…</div></div>;
   }
-  if (page.isError || !page.data || !heroSource || !highlightsSource) {
+  if (page.isError || !page.data || !heroSource || !highlightsSource || !curriculumSource) {
     return <div className="space-y-6"><CoursePathwaySelector course={course} onCourseChange={onCourseChange} /><div className="rounded-2xl border border-red-200 bg-white p-6 text-sm text-red-700" role="alert" data-testid={`status-admin-course-${course.slug}-error`}>The saved course sections are unavailable. Restart the site content service and reload this page.</div></div>;
   }
-  if (!hero || !highlightsSection || hydratedCourse !== course.slug) {
+  if (!hero || !highlightsSection || !curriculum || hydratedCourse !== course.slug) {
     return <div className="space-y-6"><CoursePathwaySelector course={course} onCourseChange={onCourseChange} /><div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500" aria-busy="true" data-testid={`status-admin-course-${course.slug}-loading`}>Loading {course.name} course content…</div></div>;
   }
 
@@ -665,6 +760,65 @@ export default function AdminCourseDetailEditor({
             <p className="mt-1 text-sm text-slate-500">Enable course mentor eligibility and choose matching subjects in Faculty settings.</p>
           </div>
         )}
+      </Panel>
+
+      <Panel id={`course-${course.slug}-curriculum`} eyebrow={`${course.name} / Section 4`} title="Curriculum" testId={`panel-admin-course-${course.slug}-curriculum`}>
+        {stringValue(curriculum.content, "isSample") === "true" || recordValue(curriculum.content).isSample === true ? (
+          <p className="mb-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-950" role="status" data-testid={`notice-course-${course.slug}-curriculum-sample`}>
+            Sample curriculum content — replace with verified course information before publishing.
+          </p>
+        ) : null}
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Section label" value={stringValue(curriculum.content, "eyebrow")} onChange={(value) => patchCurriculumContent("eyebrow", value)} testId={`input-course-${course.slug}-curriculum-eyebrow`} />
+          <Field label="Section heading" value={curriculum.title} onChange={(value) => setCurriculum((current) => current ? { ...current, title: value } : current)} testId={`input-course-${course.slug}-curriculum-title`} />
+          <div className="md:col-span-2"><Field label="Introduction" value={curriculum.subtitle} onChange={(value) => setCurriculum((current) => current ? { ...current, subtitle: value } : current)} multiline testId={`textarea-course-${course.slug}-curriculum-introduction`} /></div>
+          <Field label="Guide heading" value={stringValue(curriculum.content, "downloadHeading")} onChange={(value) => patchCurriculumContent("downloadHeading", value)} testId={`input-course-${course.slug}-curriculum-download-heading`} />
+          <Field label="Guide description" value={stringValue(curriculum.content, "downloadDescription")} onChange={(value) => patchCurriculumContent("downloadDescription", value)} testId={`input-course-${course.slug}-curriculum-download-description`} />
+          <Field label="Download button label" value={stringValue(curriculum.content, "downloadButtonLabel")} onChange={(value) => patchCurriculumContent("downloadButtonLabel", value)} testId={`input-course-${course.slug}-curriculum-download-label`} />
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="inline-flex h-[42px] cursor-pointer items-center gap-2 rounded-xl border border-[#0b3472]/15 bg-white px-4 text-sm font-bold text-[#0b3472]">
+              <Upload className="h-4 w-4" aria-hidden="true" /> {uploadsInProgress ? "Uploading PDF…" : "Upload / replace PDF"}
+              <input type="file" accept=".pdf,application/pdf" className="sr-only" disabled={uploadsInProgress > 0} onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) void uploadPdf(file); event.currentTarget.value = ""; }} data-testid={`input-course-${course.slug}-curriculum-pdf`} />
+            </label>
+            {stringValue(curriculum.content, "pdfPath") ? (
+              <button type="button" onClick={() => { patchCurriculumContent("pdfPath", ""); patchCurriculumContent("pdfFileName", ""); }} className="inline-flex h-[42px] items-center gap-2 rounded-xl border border-red-200 px-4 text-sm font-bold text-red-700" data-testid={`button-remove-course-${course.slug}-curriculum-pdf`}>
+                <Trash2 className="h-4 w-4" aria-hidden="true" /> Remove PDF
+              </button>
+            ) : <span className="pb-3 text-xs text-slate-500">No guide attached</span>}
+          </div>
+          <p className="md:col-span-2 -mt-2 text-xs text-slate-500">{stringValue(curriculum.content, "pdfFileName") || "PDF not selected"}</p>
+        </div>
+        <div className="mt-5 border-t border-slate-100 pt-4">
+          <SectionToggle label="Mark this curriculum as sample content" checked={recordValue(curriculum.content).isSample === true} onChange={(value) => patchCurriculumContent("isSample", value)} testId={`checkbox-course-${course.slug}-curriculum-sample`} />
+          <div className="mt-3"><SectionToggle label="Publish Curriculum section" checked={curriculum.isVisible} onChange={(value) => setCurriculum((current) => current ? { ...current, isVisible: value } : current)} testId={`checkbox-course-${course.slug}-curriculum-visible`} /></div>
+        </div>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs font-semibold text-slate-500">{subjects.length} subject{subjects.length === 1 ? "" : "s"} · reorder to change public sequence</p>
+          <button type="button" onClick={() => setSubjects((current) => [...current, { clientKey: newCurriculumId(), title: "", description: "", topics: [], isVisible: false }])} className="inline-flex items-center gap-2 rounded-lg border border-[#0b3472]/15 bg-white px-3 py-2 text-xs font-bold text-[#0b3472]" data-testid={`button-add-course-${course.slug}-curriculum-subject`}><Plus className="h-3.5 w-3.5" aria-hidden="true" /> Add subject</button>
+        </div>
+        <div className="mt-4 space-y-3">
+          {subjects.map((subject, index) => (
+            <article key={subject.clientKey} className="rounded-2xl border border-slate-200 bg-slate-50 p-4" data-testid={`row-course-${course.slug}-curriculum-subject-${subject.clientKey}`}>
+              <div className="mb-4 flex items-center gap-2">
+                <span className="min-w-0 flex-1 text-xs font-bold uppercase tracking-wider text-slate-500">Subject {String(index + 1).padStart(2, "0")} · {subject.isVisible ? "Published" : "Hidden"}</span>
+                <button type="button" disabled={index === 0} onClick={() => moveSubject(index, -1)} className="rounded-lg p-2 text-slate-600 disabled:opacity-30" aria-label={`Move ${subject.title || "subject"} up`} data-testid={`button-move-curriculum-subject-up-${subject.clientKey}`}><ArrowUp className="h-4 w-4" /></button>
+                <button type="button" disabled={index === subjects.length - 1} onClick={() => moveSubject(index, 1)} className="rounded-lg p-2 text-slate-600 disabled:opacity-30" aria-label={`Move ${subject.title || "subject"} down`} data-testid={`button-move-curriculum-subject-down-${subject.clientKey}`}><ArrowDown className="h-4 w-4" /></button>
+                <button type="button" onClick={() => setSubjects((current) => current.map((entry) => entry.clientKey === subject.clientKey ? { ...entry, isVisible: !entry.isVisible } : entry))} className="rounded-lg p-2 text-slate-600" aria-label={`${subject.isVisible ? "Hide" : "Publish"} ${subject.title || "subject"}`} data-testid={`button-toggle-curriculum-subject-${subject.clientKey}`}>{subject.isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
+                <button type="button" onClick={() => setSubjects((current) => current.filter((entry) => entry.clientKey !== subject.clientKey))} className="rounded-lg p-2 text-red-700" aria-label={`Delete ${subject.title || "subject"}`} data-testid={`button-delete-curriculum-subject-${subject.clientKey}`}><Trash2 className="h-4 w-4" /></button>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field label="Subject name" value={subject.title} onChange={(value) => setSubjects((current) => current.map((entry) => entry.clientKey === subject.clientKey ? { ...entry, title: value } : entry))} testId={`input-curriculum-subject-title-${subject.clientKey}`} />
+                <Field label="Short summary" value={subject.description} onChange={(value) => setSubjects((current) => current.map((entry) => entry.clientKey === subject.clientKey ? { ...entry, description: value } : entry))} testId={`input-curriculum-subject-summary-${subject.clientKey}`} />
+                <div className="md:col-span-2"><Field label="Topics (one per line)" value={subject.topics.join("\n")} onChange={(value) => setSubjects((current) => current.map((entry) => entry.clientKey === subject.clientKey ? { ...entry, topics: value.split("\n") } : entry))} multiline testId={`textarea-curriculum-subject-topics-${subject.clientKey}`} hint="List the key concepts covered in this subject." /></div>
+              </div>
+            </article>
+          ))}
+          {!subjects.length ? <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-7 text-center text-sm text-slate-500">No subjects have been added to this curriculum.</div> : null}
+        </div>
+        <div className="mt-5 rounded-xl border border-[#0b3472]/10 bg-[#f7f9fc] p-4">
+          <p className="eyebrow text-[#0b3472]">Built for competitive success</p>
+          <p className="mt-2 text-xs leading-5 text-slate-600">The public benefits panel is fixed: Comprehensive Syllabus, Exam-Oriented Focus, Structured Progression, and Regular Updates.</p>
+        </div>
       </Panel>
 
       {error ? <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800" role="alert" data-testid={`error-admin-course-${course.slug}`}>{error}</p> : null}

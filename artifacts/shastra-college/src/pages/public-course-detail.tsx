@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowRight, BookOpen, CircleAlert, RefreshCw } from "lucide-react";
+import { ArrowDownRight, ArrowRight, BookOpen, CircleAlert, RefreshCw, Download, FileText, ChevronDown, BookOpenCheck, Target, Layers3, RefreshCw as UpdatesIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import {
@@ -32,6 +32,22 @@ function textValue(content: Record<string, unknown>, key: string, fallback = "")
 
 function assetUrl(value: string) {
   return value.startsWith("/objects/") ? `/api/storage${value}` : value;
+}
+
+function curriculumPdfUrl(value: string) {
+  if (value.startsWith("/objects/")) return `/api/storage${value}`;
+  if (value.startsWith("/curriculum-guides/")) {
+    const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+    return `${basePath}${value}`;
+  }
+  try {
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password
+      ? url.toString()
+      : "";
+  } catch {
+    return "";
+  }
 }
 
 function CourseLoading() {
@@ -324,6 +340,104 @@ function CourseFacultyPreview({
   );
 }
 
+const curriculumBenefits = [
+  { title: "Comprehensive Syllabus", description: "Key topics organized by subject.", Icon: BookOpenCheck },
+  { title: "Exam-Oriented Focus", description: "A clear focus for each course pathway.", Icon: Target },
+  { title: "Structured Progression", description: "Move from core ideas to applications.", Icon: Layers3 },
+  { title: "Regular Updates", description: "Subject details managed by the college.", Icon: UpdatesIcon },
+];
+
+function CourseCurriculum({ course, section, items }: { course: CourseDetail; section: ContentSection; items: ContentItem[] }) {
+  const content = recordValue(section.content);
+  const subjects = items
+    .filter((item) => item.sectionId === section.id && item.itemType === "course-curriculum-subject" && item.isVisible)
+    .sort((a, b) => a.position - b.position);
+  const pdfPath = textValue(content, "pdfPath");
+  const pdfFileName = textValue(content, "pdfFileName");
+  const pdfHref = pdfPath ? curriculumPdfUrl(pdfPath) : "";
+  const externalPdf = /^https?:\/\//i.test(pdfPath);
+  return (
+    <section id={courseSectionKey(course.slug, "curriculum")} className="bg-[#f2f3f8] px-5 py-14 sm:px-8 sm:py-20" data-testid={`section-course-curriculum-${course.slug}`}>
+      <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.55fr_.95fr] lg:gap-10">
+        <div>
+          <div className="mb-7">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#e3212b]/20 bg-[#e3212b]/[.07] px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[.15em] text-[#b71927]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#e3212b]" aria-hidden="true" /> {textValue(content, "eyebrow", "Curriculum")}
+            </span>
+            <h2 className="mt-4 max-w-[18ch] font-display text-4xl font-extrabold leading-[1.04] tracking-[-.055em] text-[#0b3472] sm:text-5xl">{section.title}</h2>
+            {section.subtitle ? <p className="mt-4 max-w-2xl text-sm leading-7 text-[#53657d] sm:text-base">{section.subtitle}</p> : null}
+          </div>
+          {content.isSample === true ? (
+            <p className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-950" role="note" data-testid={`notice-course-${course.slug}-curriculum-sample`}>
+              This is sample curriculum content. Please contact the college to confirm the current subject and topic information.
+            </p>
+          ) : null}
+          {subjects.length ? (
+            <div className="space-y-3">
+              {subjects.map((subject, index) => {
+                const itemContent = recordValue(subject.content);
+                const topics = Array.isArray(itemContent.topics) ? itemContent.topics.filter((topic): topic is string => typeof topic === "string" && topic.trim().length > 0) : [];
+                return (
+                  <details key={subject.id} open={index === 0} className="group overflow-hidden rounded-2xl border border-[#17478f]/35 bg-white/65 open:border-[#e3212b]/35 open:bg-white" data-testid={`accordion-curriculum-subject-${subject.id}`}>
+                    <summary className="focus-ring flex cursor-pointer list-none items-center gap-3 px-4 py-4 marker:hidden sm:px-5 [&::-webkit-details-marker]:hidden">
+                      <span className="font-display text-3xl font-extrabold leading-none tracking-[-.06em] text-[#0b3472]/30 sm:text-4xl">{String(index + 1).padStart(2, "0")}</span>
+                      <span className="h-9 w-px bg-[#17478f]/20" aria-hidden="true" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-display text-lg font-extrabold text-[#0b3472] sm:text-xl">{subject.title}</span>
+                        {subject.description ? <span className="mt-1 block text-xs leading-5 text-[#53657d] sm:text-sm">{subject.description}</span> : null}
+                      </span>
+                      <ChevronDown className="h-5 w-5 shrink-0 rounded-full bg-[#eaf0f8] p-1 text-[#0b3472] transition-transform group-open:rotate-180" aria-hidden="true" />
+                    </summary>
+                    {topics.length ? (
+                      <div className="border-t border-[#17478f]/20 px-5 py-4 sm:px-6">
+                        <ul className="grid gap-x-5 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+                          {topics.map((topic, topicIndex) => <li key={`${topic}-${topicIndex}`} className="flex items-start gap-2 text-xs leading-5 text-[#31445f] sm:text-sm"><span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#bd3036]" aria-hidden="true" />{topic}</li>)}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </details>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-[#17478f]/25 bg-white/55 px-5 py-8 text-sm text-[#53657d]" role="status" data-testid={`empty-course-curriculum-${course.slug}`}>
+              Subject details are being prepared. Please contact the college for current curriculum information.
+            </div>
+          )}
+        </div>
+        <aside className="space-y-3 lg:pt-1">
+          <div className="relative overflow-hidden rounded-[1.5rem] bg-[#092f70] p-6 text-white shadow-[0_18px_40px_rgba(11,52,114,.16)] sm:p-7">
+            <div className="pointer-events-none absolute -bottom-16 -right-12 h-48 w-48 rounded-full border border-white/10" aria-hidden="true" />
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-[#f3a0a0]"><FileText className="h-4 w-4" aria-hidden="true" /></span>
+            <p className="eyebrow mt-4 text-blue-100/65">Curriculum guide</p>
+            {textValue(content, "downloadHeading") ? <h3 className="mt-2 max-w-[15ch] font-display text-2xl font-extrabold leading-tight">{textValue(content, "downloadHeading")}</h3> : null}
+            {textValue(content, "downloadDescription") ? <p className="mt-3 text-sm leading-6 text-blue-100/75">{textValue(content, "downloadDescription")}</p> : null}
+            {pdfHref ? (
+              <a href={pdfHref} download={pdfFileName || undefined} target={externalPdf ? "_blank" : undefined} rel={externalPdf ? "noreferrer" : undefined} className="focus-ring mt-5 flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#c73b36] px-4 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#ad2d2a]" data-testid={`link-download-curriculum-${course.slug}`}>
+                <Download className="h-4 w-4" aria-hidden="true" />{textValue(content, "downloadButtonLabel", pdfFileName || "Download PDF")}<ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </a>
+            ) : (
+              <p className="mt-5 rounded-full border border-white/15 bg-white/[.06] px-4 py-3 text-center text-xs font-semibold text-blue-100/70" role="status" data-testid={`status-curriculum-pdf-unavailable-${course.slug}`}>Curriculum guide not available yet</p>
+            )}
+            {pdfHref && pdfFileName ? <p className="mt-3 truncate text-[10px] text-blue-100/55">{pdfFileName}</p> : null}
+          </div>
+          <div className="rounded-[1.5rem] border border-[#17478f]/35 bg-white/55 p-5 sm:p-6">
+            <p className="eyebrow text-[#0b3472]">Built for competitive success</p>
+            <div className="mt-4 grid grid-cols-1 divide-y divide-[#17478f]/20 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+              {curriculumBenefits.map(({ title, description, Icon }, index) => (
+                <div key={title} className={`flex gap-3 py-4 ${index > 1 ? "sm:border-t sm:border-[#17478f]/20" : ""} ${index % 2 ? "sm:pl-4" : "sm:pr-4"} ${index < 2 ? "sm:pt-1" : ""}`}>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e3212b]/[.08] text-[#b71927]"><Icon className="h-4 w-4" aria-hidden="true" /></span>
+                  <span><span className="block text-xs font-extrabold text-[#0b3472]">{title}</span><span className="mt-1 block text-[10px] leading-4 text-[#53657d]">{description}</span></span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
 export default function PublicCourseDetailPage({ course }: { course: CourseDetail }) {
   const home = useGetHomePage({ query: { queryKey: getGetHomePageQueryKey() } });
   const cms = useGetCmsPage("courses", { query: { queryKey: getGetCmsPageQueryKey("courses") } });
@@ -331,6 +445,7 @@ export default function PublicCourseDetailPage({ course }: { course: CourseDetai
   const sections = useMemo(() => cms.data?.sections ?? [], [cms.data?.sections]);
   const hero = sections.find((section) => section.sectionKey === courseSectionKey(course.slug, "hero"));
   const highlights = sections.find((section) => section.sectionKey === courseSectionKey(course.slug, "highlights"));
+  const curriculum = sections.find((section) => section.sectionKey === `course-${course.slug}-curriculum`);
 
   if (home.isLoading || cms.isLoading) return <CourseLoading />;
   if (home.isError || cms.isError || !home.data || !cms.data) {
@@ -351,6 +466,7 @@ export default function PublicCourseDetailPage({ course }: { course: CourseDetai
               Faculty previews are temporarily unavailable.
             </div>
           ) : null}
+          {curriculum?.isVisible ? <CourseCurriculum course={course} section={curriculum} items={cms.data.items} /> : null}
         </main>
       ) : <CourseNotPublished course={course} />}
       <Footer home={home.data} />

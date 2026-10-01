@@ -41,14 +41,16 @@ export function getCourseMentorSubjectsForCourse(slug: CourseDetailSlug) {
 
 export function courseSectionKey(
   slug: CourseDetailSlug,
-  section: "hero" | "highlights" | "faculty-preview",
+  section: "hero" | "highlights" | "faculty-preview" | "curriculum",
 ) {
   const suffix =
     section === "highlights"
       ? "highlights"
       : section === "faculty-preview"
         ? "faculty-preview"
-        : "hero";
+        : section === "curriculum"
+          ? "curriculum"
+          : "hero";
   return `course-${slug}-${suffix}`;
 }
 

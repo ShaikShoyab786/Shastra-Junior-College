@@ -592,6 +592,353 @@ export async function seedCoursesPageSections(): Promise<void> {
       seedMarkers.add(eamcetDetailSeedMarker);
     }
 
+    const courseCurriculumSeedMarker = "course-curriculum-v1";
+    if (!seedMarkers.has(courseCurriculumSeedMarker)) {
+      const sampleCurricula = [
+        {
+          slug: "mpc",
+          name: "MPC",
+          isVisible: true,
+          subjects: [
+            {
+              title: "Mathematics",
+              summary: "Build fluency in algebra, functions, geometry, and calculus.",
+              topics: [
+                "Algebraic expressions",
+                "Equations and functions",
+                "Trigonometric identities",
+                "Coordinate geometry",
+                "Sequences and series",
+                "Differential calculus",
+              ],
+            },
+            {
+              title: "Physics",
+              summary: "Connect mathematical models with physical principles.",
+              topics: [
+                "Units and measurement",
+                "Vectors",
+                "Motion and kinematics",
+                "Newton's laws",
+                "Work, energy, and power",
+                "Waves and oscillations",
+              ],
+            },
+            {
+              title: "Chemistry",
+              summary: "Explore physical, inorganic, and introductory organic chemistry.",
+              topics: [
+                "Atomic structure",
+                "Periodic properties",
+                "Chemical bonding",
+                "Mole concept and stoichiometry",
+                "Chemical equilibrium",
+                "Introductory organic chemistry",
+              ],
+            },
+          ],
+        },
+        {
+          slug: "bipc",
+          name: "BiPC",
+          isVisible: true,
+          subjects: [
+            {
+              title: "Botany",
+              summary: "Study plant diversity, structure, function, and heredity.",
+              topics: [
+                "Plant diversity",
+                "Cell structure and division",
+                "Plant anatomy",
+                "Plant physiology",
+                "Principles of genetics",
+                "Ecology and environment",
+              ],
+            },
+            {
+              title: "Zoology",
+              summary: "Build a foundation in animal biology and human systems.",
+              topics: [
+                "Animal diversity",
+                "Structural organisation",
+                "Human physiology",
+                "Reproduction",
+                "Genetics and evolution",
+                "Health and disease",
+              ],
+            },
+            {
+              title: "Physics",
+              summary: "Practice core principles through diagrams and problem solving.",
+              topics: [
+                "Units and measurement",
+                "Motion and forces",
+                "Work and energy",
+                "Electricity",
+                "Optics",
+                "Modern physics",
+              ],
+            },
+            {
+              title: "Chemistry",
+              summary: "Review essential chemical ideas and their applications.",
+              topics: [
+                "Atomic structure",
+                "Chemical bonding",
+                "Stoichiometry",
+                "States of matter",
+                "Introductory organic chemistry",
+                "Environmental chemistry",
+              ],
+            },
+          ],
+        },
+        {
+          slug: "iit-jee",
+          name: "IIT-JEE",
+          isVisible: true,
+          subjects: [
+            {
+              title: "Mathematics",
+              summary: "Develop accuracy and depth across advanced problem types.",
+              topics: [
+                "Functions and relations",
+                "Algebraic equations",
+                "Trigonometry",
+                "Coordinate geometry",
+                "Differential and integral calculus",
+                "Vectors and three-dimensional geometry",
+              ],
+            },
+            {
+              title: "Physics",
+              summary: "Apply concepts and mathematical reasoning to multi-step problems.",
+              topics: [
+                "Mechanics",
+                "Work, energy, and power",
+                "Rotational motion",
+                "Electrostatics",
+                "Current electricity",
+                "Optics and modern physics",
+              ],
+            },
+            {
+              title: "Chemistry",
+              summary: "Link numerical chemistry with inorganic and organic concepts.",
+              topics: [
+                "Stoichiometry",
+                "Chemical equilibrium",
+                "Thermodynamics",
+                "Chemical bonding",
+                "Organic reaction basics",
+                "Coordination compounds",
+              ],
+            },
+          ],
+        },
+        {
+          slug: "neet",
+          name: "NEET",
+          isVisible: true,
+          subjects: [
+            {
+              title: "Biology",
+              summary: "Organise key concepts across living systems and heredity.",
+              topics: [
+                "Cell biology",
+                "Plant physiology",
+                "Human physiology",
+                "Reproduction",
+                "Genetics and evolution",
+                "Ecology and environment",
+              ],
+            },
+            {
+              title: "Physics",
+              summary: "Strengthen concept recall and reliable numerical methods.",
+              topics: [
+                "Units and measurement",
+                "Mechanics",
+                "Thermodynamics",
+                "Electricity and magnetism",
+                "Optics",
+                "Modern physics",
+              ],
+            },
+            {
+              title: "Chemistry",
+              summary: "Build balanced coverage of physical, inorganic, and organic topics.",
+              topics: [
+                "Mole concept",
+                "Chemical equilibrium",
+                "Chemical bonding",
+                "Solutions and electrochemistry",
+                "Organic functional groups",
+                "Biomolecules",
+              ],
+            },
+          ],
+        },
+        {
+          slug: "mpc-eamcet",
+          name: "MPC + EAMCET",
+          isVisible: true,
+          subjects: [
+            {
+              title: "Mathematics",
+              summary: "Cover core mathematics with regular timed practice.",
+              topics: [
+                "Algebra and equations",
+                "Functions and graphs",
+                "Trigonometry",
+                "Coordinate geometry",
+                "Sequences and series",
+                "Differential calculus",
+              ],
+            },
+            {
+              title: "Physics",
+              summary: "Strengthen core concepts and speed on objective problems.",
+              topics: [
+                "Units and vectors",
+                "Motion and kinematics",
+                "Laws of motion",
+                "Work, energy, and power",
+                "Electricity and magnetism",
+                "Optics",
+              ],
+            },
+            {
+              title: "Chemistry",
+              summary: "Review high-frequency concepts across the main chemistry areas.",
+              topics: [
+                "Atomic structure",
+                "Periodic properties",
+                "Chemical bonding",
+                "Stoichiometry",
+                "Chemical equilibrium",
+                "Organic chemistry foundations",
+              ],
+            },
+          ],
+        },
+        {
+          slug: "integrated",
+          name: "Integrated",
+          isVisible: false,
+          subjects: [
+            {
+              title: "Mathematics",
+              summary: "Sample foundation topics for a coordinated course plan.",
+              topics: [
+                "Algebra",
+                "Functions and graphs",
+                "Trigonometry",
+                "Coordinate geometry",
+              ],
+            },
+            {
+              title: "Physics",
+              summary: "Sample foundations connecting measurement to physical models.",
+              topics: [
+                "Units and measurement",
+                "Vectors",
+                "Motion",
+                "Forces and energy",
+              ],
+            },
+            {
+              title: "Chemistry",
+              summary: "Sample introductory topics across core chemistry concepts.",
+              topics: [
+                "Atomic structure",
+                "Periodic table",
+                "Chemical bonding",
+                "Introductory reactions",
+              ],
+            },
+            {
+              title: "Biology",
+              summary: "Sample foundations in cells, living systems, and ecology.",
+              topics: [
+                "Cell structure",
+                "Plant and animal systems",
+                "Heredity",
+                "Ecology",
+              ],
+            },
+          ],
+        },
+      ] as const;
+
+      for (const [index, course] of sampleCurricula.entries()) {
+        const sectionKey = `course-${course.slug}-curriculum`;
+        await tx
+          .insert(contentSectionsTable)
+          .values({
+            pageSlug: "courses",
+            sectionKey,
+            title: "A clear path from concepts to confidence.",
+            subtitle:
+              "Explore the subjects, key topics, and preparation areas covered throughout the course.",
+            content: {
+              eyebrow: "CURRICULUM",
+              downloadHeading: "Take the curriculum with you.",
+              downloadDescription:
+                "Download the subject and topic guide for this course.",
+              downloadButtonLabel: "Download Curriculum",
+              pdfPath: `/curriculum-guides/${course.slug}-curriculum-sample.pdf`,
+              pdfFileName: `${course.slug}-curriculum-sample.pdf`,
+              isSample: true,
+            },
+            isVisible: course.isVisible,
+            position: 30 + index,
+          })
+          .onConflictDoNothing();
+
+        const [section] = await tx
+          .select({ id: contentSectionsTable.id })
+          .from(contentSectionsTable)
+          .where(
+            and(
+              eq(contentSectionsTable.pageSlug, "courses"),
+              eq(contentSectionsTable.sectionKey, sectionKey),
+            ),
+          )
+          .limit(1);
+        if (!section) continue;
+
+        const [existingCurriculumSubject] = await tx
+          .select({ id: contentItemsTable.id })
+          .from(contentItemsTable)
+          .where(
+            and(
+              eq(contentItemsTable.sectionId, section.id),
+              eq(contentItemsTable.itemType, "course-curriculum-subject"),
+            ),
+          )
+          .limit(1);
+        if (existingCurriculumSubject) continue;
+
+        await tx.insert(contentItemsTable).values(
+          course.subjects.map((subject, position) => ({
+            sectionId: section.id,
+            itemType: "course-curriculum-subject",
+            title: subject.title,
+            description: subject.summary,
+            imageUrl: null,
+            linkPath: null,
+            label: null,
+            content: { topics: [...subject.topics] },
+            isVisible: true,
+            position,
+          })),
+        );
+      }
+
+      seedMarkers.add(courseCurriculumSeedMarker);
+    }
+
     const starterSeedMarker = "courses-batches-schedule-admissions-v1";
     if (seedMarkers.has(starterSeedMarker)) {
       if (seedMarkers.size !== (seedableMenu.__seedMarkers?.length ?? 0)) {

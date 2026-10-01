@@ -22,6 +22,7 @@ const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
 const allowedImageTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
 const maxImageBytes = 2 * 1024 * 1024;
+const maxPdfBytes = 10 * 1024 * 1024;
 
 function streamResponse(
   response: Response,
@@ -49,13 +50,20 @@ router.post(
     }
 
     const { name, size, contentType } = parsed.data;
+    const isPdf = contentType === "application/pdf";
+    const isAllowedType = isPdf
+      ? name.toLowerCase().endsWith(".pdf")
+      : allowedImageTypes.has(contentType);
+    const maxFileBytes = isPdf ? maxPdfBytes : maxImageBytes;
     if (
       size < 1 ||
-      size > maxImageBytes ||
-      !allowedImageTypes.has(contentType)
+      size > maxFileBytes ||
+      !isAllowedType
     ) {
       res.status(400).json({
-        error: "Choose a PNG, JPEG, or WebP image no larger than 2 MB.",
+        error: isPdf
+          ? "Choose a PDF file with a .pdf extension no larger than 10 MB."
+          : "Choose a PNG, JPEG, or WebP image no larger than 2 MB.",
       });
       return;
     }
@@ -71,8 +79,8 @@ router.post(
         }),
       );
     } catch (error) {
-      req.log.error({ err: error }, "Could not generate image upload URL.");
-      res.status(500).json({ error: "Image upload could not be started." });
+      req.log.error({ err: error }, "Could not generate file upload URL.");
+      res.status(500).json({ error: "File upload could not be started." });
     }
   },
 );
@@ -230,6 +238,20 @@ router.get(
           ),
         )
         .limit(1);
+      const [courseCurriculumPdf] = await db
+        .select({ id: contentSectionsTable.id })
+        .from(contentSectionsTable)
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "courses"),
+            like(contentSectionsTable.sectionKey, "course-%-curriculum"),
+            or(
+              sql`${contentSectionsTable.content}->>'pdfPath' = ${`/objects/${objectPath}`}`,
+              sql`${contentSectionsTable.content}->>'pdfPath' = ${`/api/storage/objects/${objectPath}`}`,
+            ),
+          ),
+        )
+        .limit(1);
 
       if (
         logoDoesNotMatch &&
@@ -238,7 +260,8 @@ router.get(
         !facultyPortrait &&
         !aboutImageMatches &&
         !coursesMenuImageMatches &&
-        !courseHeroImage
+        !courseHeroImage &&
+        !courseCurriculumPdf
       ) {
         res.status(404).json({ error: "Object not found." });
         return;
