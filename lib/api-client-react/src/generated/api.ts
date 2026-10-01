@@ -23,6 +23,16 @@ import type {
   AdminEnquiries,
   AdminEnquiry,
   AdminHomeSummary,
+  Article,
+  ArticleCategory,
+  ArticleCategoryInput,
+  ArticleCategoryUpdate,
+  ArticleDetail,
+  ArticleHub,
+  ArticleHubSettings,
+  ArticleHubSettingsUpdate,
+  ArticleInput,
+  ArticleUpdate,
   CmsPage,
   ContentItem,
   ContentItemInput,
@@ -1267,6 +1277,827 @@ export const useUpdateAdminKnowledgeHubMenu = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getUpdateAdminKnowledgeHubMenuMutationOptions(options));
+    }
+
+export const getGetArticleHubUrl = () => {
+
+
+
+
+  return `/api/article-hub`
+}
+
+/**
+ * @summary Get published Article Hub content
+ */
+export const getArticleHub = async ( options?: Parameters<typeof customFetch>[1]): Promise<ArticleHub> => {
+
+  return customFetch<ArticleHub>(getGetArticleHubUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetArticleHubQueryKey = () => {
+    return [
+    `/api/article-hub`
+    ] as const;
+    }
+
+
+export const getGetArticleHubQueryOptions = <TData = Awaited<ReturnType<typeof getArticleHub>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getArticleHub>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetArticleHubQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getArticleHub>>> = ({ signal }) => getArticleHub({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getArticleHub>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetArticleHubQueryResult = NonNullable<Awaited<ReturnType<typeof getArticleHub>>>
+export type GetArticleHubQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get published Article Hub content
+ */
+
+export function useGetArticleHub<TData = Awaited<ReturnType<typeof getArticleHub>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getArticleHub>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetArticleHubQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetArticleBySlugUrl = (slug: string,) => {
+
+
+
+
+  return `/api/article-hub/articles/${slug}`
+}
+
+/**
+ * @summary Get a published Article Hub article
+ */
+export const getArticleBySlug = async (slug: string, options?: Parameters<typeof customFetch>[1]): Promise<ArticleDetail> => {
+
+  return customFetch<ArticleDetail>(getGetArticleBySlugUrl(slug),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetArticleBySlugQueryKey = (slug: string,) => {
+    return [
+    `/api/article-hub/articles/${slug}`
+    ] as const;
+    }
+
+
+export const getGetArticleBySlugQueryOptions = <TData = Awaited<ReturnType<typeof getArticleBySlug>>, TError = ErrorType<void>>(slug: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getArticleBySlug>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetArticleBySlugQueryKey(slug);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getArticleBySlug>>> = ({ signal }) => getArticleBySlug(slug, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: slug !== null && slug !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getArticleBySlug>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetArticleBySlugQueryResult = NonNullable<Awaited<ReturnType<typeof getArticleBySlug>>>
+export type GetArticleBySlugQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get a published Article Hub article
+ */
+
+export function useGetArticleBySlug<TData = Awaited<ReturnType<typeof getArticleBySlug>>, TError = ErrorType<void>>(
+ slug: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getArticleBySlug>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetArticleBySlugQueryOptions(slug,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminArticleHubUrl = () => {
+
+
+
+
+  return `/api/admin/article-hub`
+}
+
+/**
+ * @summary Get all Article Hub content for authorized staff
+ */
+export const getAdminArticleHub = async ( options?: Parameters<typeof customFetch>[1]): Promise<ArticleHub> => {
+
+  return customFetch<ArticleHub>(getGetAdminArticleHubUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminArticleHubQueryKey = () => {
+    return [
+    `/api/admin/article-hub`
+    ] as const;
+    }
+
+
+export const getGetAdminArticleHubQueryOptions = <TData = Awaited<ReturnType<typeof getAdminArticleHub>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminArticleHub>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminArticleHubQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminArticleHub>>> = ({ signal }) => getAdminArticleHub({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminArticleHub>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminArticleHubQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminArticleHub>>>
+export type GetAdminArticleHubQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get all Article Hub content for authorized staff
+ */
+
+export function useGetAdminArticleHub<TData = Awaited<ReturnType<typeof getAdminArticleHub>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminArticleHub>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminArticleHubQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateArticleHubSettingsUrl = () => {
+
+
+
+
+  return `/api/admin/article-hub/settings`
+}
+
+/**
+ * @summary Update Article Hub heading and hero image
+ */
+export const updateArticleHubSettings = async (articleHubSettingsUpdate: ArticleHubSettingsUpdate, options?: Parameters<typeof customFetch>[1]): Promise<ArticleHubSettings> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ArticleHubSettings>(getUpdateArticleHubSettingsUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(articleHubSettingsUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateArticleHubSettingsMutationKey = () => ['updateArticleHubSettings'] as const;
+
+export const getUpdateArticleHubSettingsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateArticleHubSettings>>, TError,UpdateArticleHubSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateArticleHubSettings>>, TError,UpdateArticleHubSettingsMutationVariables, TContext> => {
+
+const mutationKey = getUpdateArticleHubSettingsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateArticleHubSettings>>, UpdateArticleHubSettingsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateArticleHubSettings(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateArticleHubSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateArticleHubSettings>>>
+    export type UpdateArticleHubSettingsMutationBody = BodyType<ArticleHubSettingsUpdate>
+    export type UpdateArticleHubSettingsMutationError = ErrorType<void>
+    export type UpdateArticleHubSettingsMutationVariables = {data: BodyType<ArticleHubSettingsUpdate>}
+
+    /**
+ * @summary Update Article Hub heading and hero image
+ */
+export const useUpdateArticleHubSettings = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateArticleHubSettings>>, TError,UpdateArticleHubSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateArticleHubSettings>>,
+        TError,
+        UpdateArticleHubSettingsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateArticleHubSettingsMutationOptions(options));
+    }
+
+export const getCreateArticleCategoryUrl = () => {
+
+
+
+
+  return `/api/admin/article-hub/categories`
+}
+
+/**
+ * @summary Create an Article Hub category
+ */
+export const createArticleCategory = async (articleCategoryInput: ArticleCategoryInput, options?: Parameters<typeof customFetch>[1]): Promise<ArticleCategory> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ArticleCategory>(getCreateArticleCategoryUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(articleCategoryInput)
+  }
+);}
+
+
+
+
+
+export const getCreateArticleCategoryMutationKey = () => ['createArticleCategory'] as const;
+
+export const getCreateArticleCategoryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createArticleCategory>>, TError,CreateArticleCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createArticleCategory>>, TError,CreateArticleCategoryMutationVariables, TContext> => {
+
+const mutationKey = getCreateArticleCategoryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createArticleCategory>>, CreateArticleCategoryMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createArticleCategory(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateArticleCategoryMutationResult = NonNullable<Awaited<ReturnType<typeof createArticleCategory>>>
+    export type CreateArticleCategoryMutationBody = BodyType<ArticleCategoryInput>
+    export type CreateArticleCategoryMutationError = ErrorType<void>
+    export type CreateArticleCategoryMutationVariables = {data: BodyType<ArticleCategoryInput>}
+
+    /**
+ * @summary Create an Article Hub category
+ */
+export const useCreateArticleCategory = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createArticleCategory>>, TError,CreateArticleCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createArticleCategory>>,
+        TError,
+        CreateArticleCategoryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateArticleCategoryMutationOptions(options));
+    }
+
+export const getUpdateArticleCategoryUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/article-hub/categories/${id}`
+}
+
+/**
+ * @summary Update an Article Hub category
+ */
+export const updateArticleCategory = async (id: string,
+    articleCategoryUpdate: ArticleCategoryUpdate, options?: Parameters<typeof customFetch>[1]): Promise<ArticleCategory> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ArticleCategory>(getUpdateArticleCategoryUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(articleCategoryUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateArticleCategoryMutationKey = () => ['updateArticleCategory'] as const;
+
+export const getUpdateArticleCategoryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateArticleCategory>>, TError,UpdateArticleCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateArticleCategory>>, TError,UpdateArticleCategoryMutationVariables, TContext> => {
+
+const mutationKey = getUpdateArticleCategoryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateArticleCategory>>, UpdateArticleCategoryMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateArticleCategory(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateArticleCategoryMutationResult = NonNullable<Awaited<ReturnType<typeof updateArticleCategory>>>
+    export type UpdateArticleCategoryMutationBody = BodyType<ArticleCategoryUpdate>
+    export type UpdateArticleCategoryMutationError = ErrorType<void>
+    export type UpdateArticleCategoryMutationVariables = {id: string;data: BodyType<ArticleCategoryUpdate>}
+
+    /**
+ * @summary Update an Article Hub category
+ */
+export const useUpdateArticleCategory = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateArticleCategory>>, TError,UpdateArticleCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateArticleCategory>>,
+        TError,
+        UpdateArticleCategoryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateArticleCategoryMutationOptions(options));
+    }
+
+export const getDeleteArticleCategoryUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/article-hub/categories/${id}`
+}
+
+/**
+ * @summary Delete an unused Article Hub category
+ */
+export const deleteArticleCategory = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteArticleCategoryUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteArticleCategoryMutationKey = () => ['deleteArticleCategory'] as const;
+
+export const getDeleteArticleCategoryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteArticleCategory>>, TError,DeleteArticleCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteArticleCategory>>, TError,DeleteArticleCategoryMutationVariables, TContext> => {
+
+const mutationKey = getDeleteArticleCategoryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteArticleCategory>>, DeleteArticleCategoryMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteArticleCategory(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteArticleCategoryMutationResult = NonNullable<Awaited<ReturnType<typeof deleteArticleCategory>>>
+
+    export type DeleteArticleCategoryMutationError = ErrorType<void>
+    export type DeleteArticleCategoryMutationVariables = {id: string}
+
+    /**
+ * @summary Delete an unused Article Hub category
+ */
+export const useDeleteArticleCategory = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteArticleCategory>>, TError,DeleteArticleCategoryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteArticleCategory>>,
+        TError,
+        DeleteArticleCategoryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteArticleCategoryMutationOptions(options));
+    }
+
+export const getCreateArticleUrl = () => {
+
+
+
+
+  return `/api/admin/article-hub/articles`
+}
+
+/**
+ * @summary Create an Article Hub article
+ */
+export const createArticle = async (articleInput: ArticleInput, options?: Parameters<typeof customFetch>[1]): Promise<Article> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<Article>(getCreateArticleUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(articleInput)
+  }
+);}
+
+
+
+
+
+export const getCreateArticleMutationKey = () => ['createArticle'] as const;
+
+export const getCreateArticleMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createArticle>>, TError,CreateArticleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createArticle>>, TError,CreateArticleMutationVariables, TContext> => {
+
+const mutationKey = getCreateArticleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createArticle>>, CreateArticleMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createArticle(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateArticleMutationResult = NonNullable<Awaited<ReturnType<typeof createArticle>>>
+    export type CreateArticleMutationBody = BodyType<ArticleInput>
+    export type CreateArticleMutationError = ErrorType<void>
+    export type CreateArticleMutationVariables = {data: BodyType<ArticleInput>}
+
+    /**
+ * @summary Create an Article Hub article
+ */
+export const useCreateArticle = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createArticle>>, TError,CreateArticleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createArticle>>,
+        TError,
+        CreateArticleMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateArticleMutationOptions(options));
+    }
+
+export const getUpdateArticleUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/article-hub/articles/${id}`
+}
+
+/**
+ * @summary Update an Article Hub article
+ */
+export const updateArticle = async (id: string,
+    articleUpdate: ArticleUpdate, options?: Parameters<typeof customFetch>[1]): Promise<Article> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<Article>(getUpdateArticleUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(articleUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateArticleMutationKey = () => ['updateArticle'] as const;
+
+export const getUpdateArticleMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateArticle>>, TError,UpdateArticleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateArticle>>, TError,UpdateArticleMutationVariables, TContext> => {
+
+const mutationKey = getUpdateArticleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateArticle>>, UpdateArticleMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateArticle(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateArticleMutationResult = NonNullable<Awaited<ReturnType<typeof updateArticle>>>
+    export type UpdateArticleMutationBody = BodyType<ArticleUpdate>
+    export type UpdateArticleMutationError = ErrorType<void>
+    export type UpdateArticleMutationVariables = {id: string;data: BodyType<ArticleUpdate>}
+
+    /**
+ * @summary Update an Article Hub article
+ */
+export const useUpdateArticle = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateArticle>>, TError,UpdateArticleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateArticle>>,
+        TError,
+        UpdateArticleMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateArticleMutationOptions(options));
+    }
+
+export const getDeleteArticleUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/article-hub/articles/${id}`
+}
+
+/**
+ * @summary Delete an Article Hub article
+ */
+export const deleteArticle = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteArticleUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteArticleMutationKey = () => ['deleteArticle'] as const;
+
+export const getDeleteArticleMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteArticle>>, TError,DeleteArticleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteArticle>>, TError,DeleteArticleMutationVariables, TContext> => {
+
+const mutationKey = getDeleteArticleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteArticle>>, DeleteArticleMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteArticle(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteArticleMutationResult = NonNullable<Awaited<ReturnType<typeof deleteArticle>>>
+
+    export type DeleteArticleMutationError = ErrorType<void>
+    export type DeleteArticleMutationVariables = {id: string}
+
+    /**
+ * @summary Delete an Article Hub article
+ */
+export const useDeleteArticle = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteArticle>>, TError,DeleteArticleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteArticle>>,
+        TError,
+        DeleteArticleMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteArticleMutationOptions(options));
     }
 
 export const getGetAdminCmsPageUrl = (pageSlug: 'about' | 'faculty' | 'gallery' | 'courses' | 'knowledge-hub' | 'contact',) => {

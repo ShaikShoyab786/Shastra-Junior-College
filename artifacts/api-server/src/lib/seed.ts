@@ -4,6 +4,9 @@ import {
   contentItemsTable,
   contentSectionsTable,
   coursesMenuSettingsTable,
+  articleCategoriesTable,
+  articleHubSettingsTable,
+  articlesTable,
   knowledgeHubMenuSettingsTable,
   siteSettingsTable,
   type CmsJson,
@@ -4105,5 +4108,359 @@ async function seedHomeTestimonials(): Promise<void> {
         updatedAt: new Date(),
       })
       .where(eq(contentSectionsTable.id, section.id));
+  });
+}
+
+export async function seedArticleHub(): Promise<void> {
+  const articleHubSeedVersion = 2;
+  const categorySeeds = [
+    {
+      slug: "physics",
+      name: "Physics",
+      description: "Conceptual explanations and practical problem-solving methods.",
+      position: 0,
+    },
+    {
+      slug: "exam-preparation",
+      name: "Exam Preparation",
+      description: "Plan revision and use practice papers with purpose.",
+      position: 1,
+    },
+    {
+      slug: "biology",
+      name: "Biology",
+      description: "Active methods for learning biological systems and terms.",
+      position: 2,
+    },
+    {
+      slug: "study-skills",
+      name: "Study Skills",
+      description: "Build routines that support focused, consistent learning.",
+      position: 3,
+    },
+    {
+      slug: "career-guidance",
+      name: "Career Guidance",
+      description: "Explore academic interests and science-related pathways.",
+      position: 4,
+    },
+  ];
+
+  const articleSeeds = [
+    {
+      categorySlug: "physics",
+      slug: "from-diagram-to-equation-physics-problems",
+      title: "From Diagram to Equation: A Better Way to Solve Physics Problems",
+      excerpt:
+        "A careful sketch can reveal the forces, directions, and relationships that a long calculation hides.",
+      image: "article-cover-physics.jpg",
+      imageAlt: "Student sketching a ray diagram in a physics notebook",
+      position: 0,
+      featured: true,
+      publishedAt: "2026-08-18T09:00:00.000Z",
+      body: `When a physics question feels difficult, the first useful step is often to stop calculating. Read the situation once for the physical story, then draw it. A diagram turns objects, directions, and known quantities into something you can inspect before choosing an equation.
+
+Start with the system named in the question. Mark its position, motion, and relevant boundaries. Add arrows for forces or velocities, and label each arrow with a symbol rather than a guessed number. Choose axes that make the important directions easy to describe. For a block on a slope, for example, axes parallel and perpendicular to the slope usually produce simpler components than horizontal and vertical axes.
+
+Next, write down what is known and what must be found. Check units and distinguish a magnitude from a direction. Only then select a relationship that matches the diagram: Newton's second law for forces and acceleration, a conservation law when the system supports it, or a kinematic relation when acceleration is constant.
+
+As you solve, keep each substitution visible. It makes sign errors easier to locate and gives you a chance to check whether the answer has the right units and direction. A final estimate is useful too: if a result is many orders of magnitude away from what the situation suggests, revisit the assumptions and arithmetic.
+
+With practice, this sequence becomes quick: describe, sketch, label, choose, calculate, check. The drawing is not decoration. It is the first model of the problem.`,
+    },
+    {
+      categorySlug: "study-skills",
+      slug: "build-a-study-plan-you-can-follow",
+      title: "Build a Study Plan You Can Actually Follow",
+      excerpt:
+        "A useful timetable begins with real available time, clear priorities, and room to adjust after each week.",
+      image: "article-cover-study-plan.jpg",
+      imageAlt: "Student arranging a weekly study planner beside a notebook",
+      position: 1,
+      featured: false,
+      publishedAt: "2026-08-12T09:00:00.000Z",
+      body: `A study plan works when it describes the week you have, not an imaginary week with unlimited energy. Begin by marking classes, travel, meals, sleep, and other fixed commitments. The remaining time is your actual study capacity.
+
+List the topics you need to cover and give each one a next action. “Study chemistry” is hard to start; “solve ten equilibrium questions and correct them” is clear. Estimate the time honestly, then place shorter sessions across several days instead of assigning one long block to a difficult topic.
+
+Mix subjects and types of work. A day might include concept review, worked examples, independent practice, and a brief recall session. Returning to a topic after a gap helps you find what you remember and what still needs attention. Leave one flexible block in the week for work that took longer than expected.
+
+At the end of each week, compare the plan with what happened. Keep the parts that helped, move unfinished work deliberately, and reduce the next week's load if the plan was consistently too full. A timetable is a guide that should respond to evidence.
+
+Make the next action visible before you stop each session. Write down the question to resume, the page to review, or the exercise to attempt. This small step makes it easier to begin again and turns a schedule into a practical learning routine.`,
+    },
+    {
+      categorySlug: "biology",
+      slug: "revise-biology-with-retrieval-practice",
+      title: "Revise Biology with Retrieval Practice",
+      excerpt:
+        "Replace repeated rereading with short attempts to explain, draw, and compare key biological ideas from memory.",
+      image: "article-cover-biology.jpg",
+      imageAlt: "Student reviewing a leaf cross-section in a biology notebook",
+      position: 2,
+      featured: false,
+      publishedAt: "2026-08-06T09:00:00.000Z",
+      body: `Biology contains connected systems, precise vocabulary, and many details. Reading the same page several times can make it feel familiar without showing whether you can retrieve the information later. Retrieval practice gives you that evidence.
+
+After a short section, close the book and write what you remember. Recreate a labelled diagram, list the stages of a process, or explain how one structure supports a function. Do not check the source while you are trying. The effort to recall shows which links are secure and which need another look.
+
+Then compare your attempt with the text or class notes. Correct missing labels and inaccurate links in a different color. Turn each gap into a focused prompt: “What changes as blood passes through the lungs?” is more useful than “revise circulation.” Try the prompt again after a day or two, then later in the week.
+
+For similar terms, make a comparison table that records the feature that distinguishes each one. For processes, use a flow diagram with arrows and a short reason beside important transitions. These formats make relationships visible rather than leaving a list of disconnected facts.
+
+Keep sessions manageable. A few minutes of closed-book recall, careful checking, and a later review can reveal more than another uninterrupted reread. Your notes remain important, but use them to verify and repair memory, not only as material to look at.`,
+    },
+    {
+      categorySlug: "exam-preparation",
+      slug: "use-practice-tests-to-plan-your-revision",
+      title: "Use Practice Tests to Find What to Study Next",
+      excerpt:
+        "A practice paper becomes more useful when you examine your reasoning, not only the final score.",
+      image: "article-cover-exam.jpg",
+      imageAlt: "Student completing a timed practice paper at a desk",
+      position: 3,
+      featured: false,
+      publishedAt: "2026-07-30T09:00:00.000Z",
+      body: `A practice test can tell you more than how many questions you answered correctly. It can show whether a concept is unclear, a method is unreliable, or time is being spent in the wrong places. The review after the test is where that information becomes a plan.
+
+When you finish, sort missed or uncertain questions by cause. Did you forget a fact, misunderstand what was being asked, choose an unsuitable method, make an arithmetic slip, or run out of time? Keep these categories separate. Each calls for different practice.
+
+For a concept gap, return to the explanation and then solve a fresh question without looking at the worked answer. For a method issue, write the steps you should have considered and practise another problem of the same type. For a calculation error, locate the exact line where the result changed. If time was the issue, record how long you spent and decide what cue will help you move on next time.
+
+Maintain a short error log with the question topic, cause, correction, and a date to retry it. Reattempt the question later from a blank page. If you can explain the reasoning and complete a similar question, mark that skill as stronger; if not, schedule another focused review.
+
+Use full-length timed papers periodically, and shorter topic sets between them. This balance keeps exam conditions familiar without sacrificing the deliberate practice that closes specific gaps.`,
+    },
+    {
+      categorySlug: "biology",
+      slug: "make-chemical-bonding-easier-to-recall",
+      title: "Make Chemical Bonding Easier to Recall",
+      excerpt:
+        "Learn bonding by linking particle-level models to observable properties and practising comparisons.",
+      image: "article-cover-chemistry.jpg",
+      imageAlt: "Molecular model pieces beside a chemistry notebook",
+      position: 4,
+      featured: false,
+      publishedAt: "2026-07-22T09:00:00.000Z",
+      body: `Chemical bonding becomes easier to reason about when each model is connected to the particles involved and the properties it helps explain. Instead of memorising isolated descriptions, ask what is attracting what and how that arrangement behaves.
+
+For an ionic solid, describe the repeating arrangement of oppositely charged ions and the electrostatic attractions throughout the lattice. For a simple molecular substance, distinguish the covalent bonds within molecules from the forces between separate molecules. For a metal, picture positive ions arranged among delocalised electrons. These are different models, and choosing the right one matters.
+
+Make a comparison table with columns for particles, structure, bonding or attraction, and a property you can explain. Link each property back to the model: electrical conductivity depends on mobile charged particles; melting behavior depends on the energy needed to overcome the relevant attractions or bonds.
+
+Practise moving in both directions. Given a structure, explain a likely property. Given a property, identify which model could account for it and what evidence would support that model. If a question asks for an explanation, include the particle-level reason rather than stopping at the name of the bond.
+
+Diagrams can help, but label what the symbols represent and avoid treating a sketch as a photograph. After drawing a model from memory, check that it distinguishes the important particles and forces. Repeatedly explaining those links builds understanding that transfers to unfamiliar questions.`,
+    },
+    {
+      categorySlug: "exam-preparation",
+      slug: "break-down-multi-step-jee-problems",
+      title: "Break Down Multi-Step JEE Problems",
+      excerpt:
+        "Turn a complex question into smaller decisions by identifying the target, constraints, and useful intermediate results.",
+      image: "article-cover-jee.jpg",
+      imageAlt: "Student solving a mathematics problem with a compass and ruler nearby",
+      position: 5,
+      featured: false,
+      publishedAt: "2026-07-15T09:00:00.000Z",
+      body: `A multi-step entrance-exam problem often combines familiar ideas in an unfamiliar order. Trying to recall a matching solved example can be frustrating. A more reliable approach is to identify the target and work out what information would lead to it.
+
+Read the question for constraints, not just numbers. Note restrictions such as a positive value, a particular interval, a limiting case, or a relationship between variables. Then write the requested quantity clearly. These details can rule out approaches that look plausible but do not answer the question.
+
+Break the work into intermediate results. In mechanics, that may mean finding an acceleration before a time or distance. In algebra, it may mean reducing an expression before solving for a parameter. In geometry, it may mean establishing a relation between angles or lengths before applying a theorem. Record why each step follows, even briefly.
+
+When stuck, try a simpler representation: sketch the geometry, define a variable, check dimensions, or inspect a limiting case. These are ways to reveal structure, not shortcuts that replace the proof. Once the route is clear, calculate carefully and compare the answer with the constraints from the question.
+
+After practice, review the decision points. Mark where you chose the useful relation, where a condition mattered, and which unnecessary step cost time. Redoing selected problems later without notes builds flexibility and improves recognition of the underlying ideas.`,
+    },
+    {
+      categorySlug: "biology",
+      slug: "make-neet-biology-revision-more-active",
+      title: "Make NEET Biology Revision More Active",
+      excerpt:
+        "Pair careful textbook reading with diagrams, recall prompts, and regular checks on commonly confused concepts.",
+      image: "article-cover-neet.jpg",
+      imageAlt: "Student studying a human biology diagram with an open textbook",
+      position: 6,
+      featured: false,
+      publishedAt: "2026-07-08T09:00:00.000Z",
+      body: `Biology revision for a competitive examination needs both coverage and accurate recall. A routine built only around reading chapters can leave little time to test what you know. Add small retrieval tasks to every topic so that studying includes answering, not only reviewing.
+
+Before opening the textbook, list the ideas you remember from the previous session. Then read a manageable section with a question in mind: what structure, process, or comparison should you be able to explain afterward? Close the book and answer that question in your own words or with a labelled diagram.
+
+Use the text to verify exact terms and distinctions. Record corrections in a compact set of notes, and create a few prompts for details that are easy to confuse. For example, ask yourself to compare two structures by location, function, and a defining feature rather than copying their descriptions side by side.
+
+Question practice should follow the same learning loop. After checking an answer, identify the reason for the mistake. Was a keyword overlooked, a fact confused, or a relationship not understood? Return to that point, explain it, and solve a related question. This gives each question a purpose beyond its mark.
+
+Revisit topics on a spaced schedule. A brief attempt to recall yesterday's material, a later review in the week, and a mixed-topic session help you see what remains available without prompts. Keep the cycle steady: retrieve, verify, correct, and return.`,
+    },
+    {
+      categorySlug: "study-skills",
+      slug: "build-a-concept-map-that-tests-understanding",
+      title: "Build a Concept Map That Tests Understanding",
+      excerpt:
+        "A good concept map explains how ideas connect and makes missing links visible.",
+      image: "article-cover-memory.jpg",
+      imageAlt: "Student arranging colored study cards into a concept map",
+      position: 7,
+      featured: false,
+      publishedAt: "2026-07-01T09:00:00.000Z",
+      body: `A concept map is useful when its connections carry meaning. If it is only a collection of copied headings, it may look complete without showing how one idea affects another. Build the map from memory first, then use your notes to check and refine it.
+
+Choose a focused question or topic. Write the central idea, then add related concepts as separate nodes. Connect them with labelled arrows such as “increases,” “requires,” “is an example of,” or “leads to.” The label should make the relationship readable as a short statement.
+
+Keep different kinds of relationships distinct. A sequence can use arrows to show order; a comparison may need branches that identify shared and different features; a causal link should state the mechanism when you know it. If a link is difficult to label, that is a useful sign to revisit the explanation.
+
+Use the map to ask yourself questions. Can you explain each arrow without reading? Can you predict what changes if one node changes? Can you start at a smaller detail and connect it back to the main idea? These questions test understanding more deeply than recognizing familiar terms.
+
+After checking the map against a trusted source, correct missing or inaccurate links and leave the corrected map easy to review. Return to it later and redraw the main structure on a blank page. The goal is not a decorative poster; it is a compact model you can explain and use.`,
+    },
+    {
+      categorySlug: "career-guidance",
+      slug: "explore-science-careers-through-small-questions",
+      title: "Explore Science Careers Through Small Questions",
+      excerpt:
+        "Make career exploration practical by comparing the work, study routes, and daily activities behind different roles.",
+      image: "article-cover-career.jpg",
+      imageAlt: "Student discussing science study options with a teacher",
+      position: 8,
+      featured: false,
+      publishedAt: "2026-06-24T09:00:00.000Z",
+      body: `Career exploration can feel overwhelming when it begins with a long list of job titles. Start instead with the activities that interest you. Do you enjoy explaining ideas, working with data, solving technical problems, caring for people, designing systems, or conducting experiments?
+
+Choose two or three fields that connect with those interests and investigate what people in them do during a typical week. Look beyond the title: daily tasks, work settings, collaboration, and the kinds of questions they solve can differ substantially within the same broad field.
+
+For each field, note the education or training commonly required, the subjects that support it, and the skills people use. Check current information from universities, professional associations, and people working in the field. Requirements can vary by role and location, so compare more than one reliable source.
+
+Then run a small exploration. Attend a talk, ask a teacher for a reading suggestion, complete a short project, or speak with a practitioner about their work. Prepare specific questions, such as which parts of the job require careful communication or how the person developed a particular skill.
+
+Keep a simple comparison table of what you learn and what you still want to know. You do not need to make a permanent choice after one conversation. Each small investigation can clarify which subjects, experiences, and next questions are worth pursuing.`,
+    },
+    {
+      categorySlug: "exam-preparation",
+      slug: "turn-mistakes-into-a-weekly-revision-plan",
+      title: "Turn Mistakes into a Weekly Revision Plan",
+      excerpt:
+        "Use a short error log to decide what deserves another explanation, another example, or another attempt.",
+      image: "article-cover-revision.jpg",
+      imageAlt: "Student reviewing corrected practice questions and a formula sheet",
+      position: 9,
+      featured: false,
+      publishedAt: "2026-06-17T09:00:00.000Z",
+      body: `A corrected answer is easy to forget if you only look at the solution and move on. A brief error log turns mistakes into specific work for the next study session.
+
+For each question you miss or guess, record the topic, the reason, and the correction. Keep the reason concrete: a definition was confused, a condition was missed, a diagram was incomplete, or a calculation changed sign. Avoid writing only “careless,” because that does not tell you what action to take.
+
+Match the next step to the cause. Revisit a concept and explain it without notes if understanding was missing. Practise a comparable problem if the method was uncertain. For a reading error, underline the condition that changes the solution and practise scanning for similar cues. For arithmetic, check the working line by line and use a separate estimate to test the result.
+
+At the end of the week, group the log by topic and choose a small number of recurring gaps. Add a short focused session for each, then retry selected questions after a delay. Mark a topic as improving only when you can solve a fresh example and explain the reasoning.
+
+Keep the log brief enough to maintain. Its value comes from reviewing patterns and scheduling a next attempt, not from recording every detail. Over time, it helps you spend revision time where it can make the clearest difference.`,
+    },
+  ];
+
+  await db.transaction(async (tx) => {
+    let [settings] = await tx
+      .select()
+      .from(articleHubSettingsTable)
+      .where(eq(articleHubSettingsTable.id, "primary"))
+      .for("update")
+      .limit(1);
+
+    if (!settings) {
+      await tx
+        .insert(articleHubSettingsTable)
+        .values({
+          id: "primary",
+          eyebrow: "THE SHASTRA LEARNING JOURNAL",
+          title: "Ideas for learning with confidence",
+          introduction:
+            "Explore clear explanations, practical study methods, and guidance for your next academic step.",
+          heroImageUrl: "/article-images/article-hub-hero.jpg",
+          heroImageAlt:
+            "Student studying a science lesson in a bright classroom",
+        })
+        .onConflictDoNothing();
+      [settings] = await tx
+        .select()
+        .from(articleHubSettingsTable)
+        .where(eq(articleHubSettingsTable.id, "primary"))
+        .for("update")
+        .limit(1);
+    }
+
+    if (!settings) {
+      throw new Error("Article Hub settings could not be initialized.");
+    }
+    if (settings.contentSeedVersion >= articleHubSeedVersion) return;
+    if (settings.contentSeedVersion > 0) {
+      if (settings.contentSeedVersion === 1) {
+        for (const article of articleSeeds) {
+          const previousImagePath = `/article-images/${article.image.replace(/\.jpg$/, ".png")}`;
+          await tx
+            .update(articlesTable)
+            .set({ imageUrl: `/article-images/${article.image}`, updatedAt: new Date() })
+            .where(eq(articlesTable.imageUrl, previousImagePath));
+        }
+        await tx
+          .update(articleHubSettingsTable)
+          .set({
+            heroImageUrl: "/article-images/article-hub-hero.jpg",
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(articleHubSettingsTable.id, "primary"),
+              eq(
+                articleHubSettingsTable.heroImageUrl,
+                "/article-images/article-hub-hero.png",
+              ),
+            ),
+          );
+        await tx
+          .update(articleHubSettingsTable)
+          .set({ contentSeedVersion: articleHubSeedVersion, updatedAt: new Date() })
+          .where(eq(articleHubSettingsTable.id, "primary"));
+      }
+      return;
+    }
+
+    await tx
+      .insert(articleCategoriesTable)
+      .values(categorySeeds)
+      .onConflictDoNothing();
+    const categories = await tx.select().from(articleCategoriesTable);
+    const categoryIds = new Map(categories.map((category) => [category.slug, category.id]));
+    const missingCategory = articleSeeds.find(
+      (article) => !categoryIds.has(article.categorySlug),
+    );
+    if (missingCategory) {
+      throw new Error(`Article Hub category "${missingCategory.categorySlug}" is missing.`);
+    }
+
+    await tx
+      .insert(articlesTable)
+      .values(
+        articleSeeds.map((article) => ({
+          categoryId: categoryIds.get(article.categorySlug)!,
+          slug: article.slug,
+          title: article.title,
+          excerpt: article.excerpt,
+          body: article.body,
+          imageUrl: `/article-images/${article.image}`,
+          imageAlt: article.imageAlt,
+          author: "Shastra Academic Desk",
+          publishedAt: new Date(article.publishedAt),
+          isPublished: true,
+          isFeatured: article.featured,
+          position: article.position,
+        })),
+      )
+      .onConflictDoNothing();
+
+    await tx
+      .update(articleHubSettingsTable)
+      .set({ contentSeedVersion: articleHubSeedVersion, updatedAt: new Date() })
+      .where(eq(articleHubSettingsTable.id, "primary"));
   });
 }

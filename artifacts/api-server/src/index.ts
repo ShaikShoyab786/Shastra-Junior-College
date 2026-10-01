@@ -1,6 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import {
+  seedArticleHub,
   seedCoursesPageSections,
   seedInitialHomeContent,
 } from "./lib/seed";
@@ -22,6 +23,7 @@ if (Number.isNaN(port) || port <= 0) {
 async function start(): Promise<void> {
   await seedInitialHomeContent();
   await seedCoursesPageSections();
+  await seedArticleHub();
 
   app.listen(port, (err) => {
     if (err) {

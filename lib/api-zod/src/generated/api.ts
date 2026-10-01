@@ -1150,6 +1150,362 @@ export const UpdateAdminKnowledgeHubMenuResponse = zod.object({
 
 
 /**
+ * @summary Get published Article Hub content
+ */
+export const GetArticleHubResponse = zod.object({
+  "settings": zod.object({
+  "eyebrow": zod.string(),
+  "title": zod.string(),
+  "introduction": zod.string(),
+  "heroImageUrl": zod.string().nullable(),
+  "heroImageAlt": zod.string(),
+  "updatedAt": zod.coerce.date()
+}),
+  "categories": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "articles": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "categoryId": zod.string().uuid(),
+  "categoryName": zod.string(),
+  "categorySlug": zod.string(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "excerpt": zod.string(),
+  "body": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "imageAlt": zod.string(),
+  "author": zod.string(),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Get a published Article Hub article
+ */
+
+
+
+export const GetArticleBySlugParams = zod.object({
+  "slug": zod.coerce.string().min(1)
+})
+
+export const GetArticleBySlugResponse = zod.object({
+  "article": zod.object({
+  "id": zod.string().uuid(),
+  "categoryId": zod.string().uuid(),
+  "categoryName": zod.string(),
+  "categorySlug": zod.string(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "excerpt": zod.string(),
+  "body": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "imageAlt": zod.string(),
+  "author": zod.string(),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+})
+
+
+/**
+ * @summary Get all Article Hub content for authorized staff
+ */
+export const GetAdminArticleHubResponse = zod.object({
+  "settings": zod.object({
+  "eyebrow": zod.string(),
+  "title": zod.string(),
+  "introduction": zod.string(),
+  "heroImageUrl": zod.string().nullable(),
+  "heroImageAlt": zod.string(),
+  "updatedAt": zod.coerce.date()
+}),
+  "categories": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "articles": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "categoryId": zod.string().uuid(),
+  "categoryName": zod.string(),
+  "categorySlug": zod.string(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "excerpt": zod.string(),
+  "body": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "imageAlt": zod.string(),
+  "author": zod.string(),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Update Article Hub heading and hero image
+ */
+export const updateArticleHubSettingsBodyEyebrowMax = 120;
+
+export const updateArticleHubSettingsBodyTitleMax = 180;
+
+export const updateArticleHubSettingsBodyIntroductionMax = 1200;
+
+export const updateArticleHubSettingsBodyHeroImageUrlMax = 1000;
+
+export const updateArticleHubSettingsBodyHeroImageAltMax = 300;
+
+
+
+export const UpdateArticleHubSettingsBody = zod.object({
+  "eyebrow": zod.string().min(1).max(updateArticleHubSettingsBodyEyebrowMax).optional(),
+  "title": zod.string().min(1).max(updateArticleHubSettingsBodyTitleMax).optional(),
+  "introduction": zod.string().min(1).max(updateArticleHubSettingsBodyIntroductionMax).optional(),
+  "heroImageUrl": zod.string().max(updateArticleHubSettingsBodyHeroImageUrlMax).nullish(),
+  "heroImageAlt": zod.string().max(updateArticleHubSettingsBodyHeroImageAltMax).optional()
+})
+
+export const UpdateArticleHubSettingsResponse = zod.object({
+  "eyebrow": zod.string(),
+  "title": zod.string(),
+  "introduction": zod.string(),
+  "heroImageUrl": zod.string().nullable(),
+  "heroImageAlt": zod.string(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Create an Article Hub category
+ */
+export const createArticleCategoryBodySlugMax = 100;
+
+export const createArticleCategoryBodyNameMax = 120;
+
+export const createArticleCategoryBodyDescriptionMax = 500;
+
+export const createArticleCategoryBodyPositionMin = 0;
+
+
+
+export const CreateArticleCategoryBody = zod.object({
+  "slug": zod.string().min(1).max(createArticleCategoryBodySlugMax),
+  "name": zod.string().min(1).max(createArticleCategoryBodyNameMax),
+  "description": zod.string().max(createArticleCategoryBodyDescriptionMax),
+  "position": zod.number().int().min(createArticleCategoryBodyPositionMin)
+})
+
+export const CreateArticleCategoryResponse = zod.object({
+  "id": zod.string().uuid(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update an Article Hub category
+ */
+export const UpdateArticleCategoryParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const updateArticleCategoryBodySlugMax = 100;
+
+export const updateArticleCategoryBodyNameMax = 120;
+
+export const updateArticleCategoryBodyDescriptionMax = 500;
+
+export const updateArticleCategoryBodyPositionMin = 0;
+
+
+
+export const UpdateArticleCategoryBody = zod.object({
+  "slug": zod.string().min(1).max(updateArticleCategoryBodySlugMax).optional(),
+  "name": zod.string().min(1).max(updateArticleCategoryBodyNameMax).optional(),
+  "description": zod.string().max(updateArticleCategoryBodyDescriptionMax).optional(),
+  "position": zod.number().int().min(updateArticleCategoryBodyPositionMin).optional()
+})
+
+export const UpdateArticleCategoryResponse = zod.object({
+  "id": zod.string().uuid(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete an unused Article Hub category
+ */
+export const DeleteArticleCategoryParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const DeleteArticleCategoryResponse = zod.void()
+
+
+/**
+ * @summary Create an Article Hub article
+ */
+export const createArticleBodySlugMax = 160;
+
+export const createArticleBodyTitleMax = 220;
+
+export const createArticleBodyExcerptMax = 500;
+
+export const createArticleBodyBodyMax = 30000;
+
+export const createArticleBodyImageUrlMax = 1000;
+
+export const createArticleBodyImageAltMax = 300;
+
+export const createArticleBodyAuthorMax = 120;
+
+export const createArticleBodyPositionMin = 0;
+
+
+
+export const CreateArticleBody = zod.object({
+  "categoryId": zod.string().uuid(),
+  "slug": zod.string().min(1).max(createArticleBodySlugMax),
+  "title": zod.string().min(1).max(createArticleBodyTitleMax),
+  "excerpt": zod.string().min(1).max(createArticleBodyExcerptMax),
+  "body": zod.string().min(1).max(createArticleBodyBodyMax),
+  "imageUrl": zod.string().max(createArticleBodyImageUrlMax).nullable(),
+  "imageAlt": zod.string().max(createArticleBodyImageAltMax),
+  "author": zod.string().min(1).max(createArticleBodyAuthorMax),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "position": zod.number().int().min(createArticleBodyPositionMin)
+})
+
+export const CreateArticleResponse = zod.object({
+  "id": zod.string().uuid(),
+  "categoryId": zod.string().uuid(),
+  "categoryName": zod.string(),
+  "categorySlug": zod.string(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "excerpt": zod.string(),
+  "body": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "imageAlt": zod.string(),
+  "author": zod.string(),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update an Article Hub article
+ */
+export const UpdateArticleParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const updateArticleBodySlugMax = 160;
+
+export const updateArticleBodyTitleMax = 220;
+
+export const updateArticleBodyExcerptMax = 500;
+
+export const updateArticleBodyBodyMax = 30000;
+
+export const updateArticleBodyImageUrlMax = 1000;
+
+export const updateArticleBodyImageAltMax = 300;
+
+export const updateArticleBodyAuthorMax = 120;
+
+export const updateArticleBodyPositionMin = 0;
+
+
+
+export const UpdateArticleBody = zod.object({
+  "categoryId": zod.string().uuid().optional(),
+  "slug": zod.string().min(1).max(updateArticleBodySlugMax).optional(),
+  "title": zod.string().min(1).max(updateArticleBodyTitleMax).optional(),
+  "excerpt": zod.string().min(1).max(updateArticleBodyExcerptMax).optional(),
+  "body": zod.string().min(1).max(updateArticleBodyBodyMax).optional(),
+  "imageUrl": zod.string().max(updateArticleBodyImageUrlMax).nullish(),
+  "imageAlt": zod.string().max(updateArticleBodyImageAltMax).optional(),
+  "author": zod.string().min(1).max(updateArticleBodyAuthorMax).optional(),
+  "publishedAt": zod.coerce.date().nullish(),
+  "isPublished": zod.boolean().optional(),
+  "isFeatured": zod.boolean().optional(),
+  "position": zod.number().int().min(updateArticleBodyPositionMin).optional()
+})
+
+export const UpdateArticleResponse = zod.object({
+  "id": zod.string().uuid(),
+  "categoryId": zod.string().uuid(),
+  "categoryName": zod.string(),
+  "categorySlug": zod.string(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "excerpt": zod.string(),
+  "body": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "imageAlt": zod.string(),
+  "author": zod.string(),
+  "publishedAt": zod.coerce.date().nullable(),
+  "isPublished": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "position": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete an Article Hub article
+ */
+export const DeleteArticleParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const DeleteArticleResponse = zod.void()
+
+
+/**
  * @summary Get About, Faculty, Gallery, Courses, Knowledge Hub, or Contact content for authorized staff
  */
 export const GetAdminCmsPageParams = zod.object({

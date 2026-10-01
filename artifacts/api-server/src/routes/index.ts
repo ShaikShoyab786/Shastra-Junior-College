@@ -5,6 +5,7 @@ import enquiriesRouter from "./enquiries";
 import storageRouter from "./storage";
 import coursesMenuRouter from "./courses-menu";
 import knowledgeHubMenuRouter from "./knowledge-hub-menu";
+import articleHubRouter from "./article-hub";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(enquiriesRouter);
 router.use(storageRouter);
 router.use(coursesMenuRouter);
 router.use(knowledgeHubMenuRouter);
+router.use(articleHubRouter);
 
 export default router;

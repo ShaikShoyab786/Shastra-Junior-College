@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import {
+  ArrowRight,
   BookOpen,
   CalendarDays,
   FileText,
@@ -11,7 +12,7 @@ import {
   getGetCmsPageQueryKey,
   useGetCmsPage,
 } from "@workspace/api-client-react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Footer, Header } from "./public-home";
 import { themeVariables } from "../lib/theme-presets";
 
@@ -265,6 +266,16 @@ export default function KnowledgeHubPage() {
                       <p className="mt-2 max-w-lg text-sm leading-6 text-slate-600 sm:text-base">
                         {category.description}
                       </p>
+                      {category.key === "article-hub" ? (
+                        <Link
+                          href="/knowledge-hub/article-hub"
+                          className="focus-ring mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-[#0b3472] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#082859]"
+                          data-testid="link-open-article-hub"
+                        >
+                          Browse articles
+                          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                        </Link>
+                      ) : null}
                     </div>
                   </section>
                 );

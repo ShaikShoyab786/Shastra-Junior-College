@@ -72,6 +72,7 @@ import AdminPlacementRecordsEditor from "./admin-placement-records-editor";
 import AdminCoursesEditor from "./admin-courses-editor";
 import AdminKnowledgeHubMenuEditor from "./admin-knowledge-hub-menu-editor";
 import AdminKnowledgeHubPageEditor from "./admin-knowledge-hub-page-editor";
+import AdminArticleHubEditor from "./admin-article-hub-editor";
 import AdminCoursesPageEditor from "./admin-courses-page-editor";
 import AdminCourseDetailEditor from "./admin-course-detail-editor";
 import { isValidSocialProfileUrl } from "@/lib/social-profiles";
@@ -102,6 +103,7 @@ type WorkspaceView =
   | "testimonials"
   | "knowledge-hub-preview"
   | "knowledge-hub-settings"
+  | "article-hub-editor"
   | "knowledge-hub-mega-menu"
   | "identity"
   | "courses-mega-menu"
@@ -135,6 +137,7 @@ const pageItems: Array<{
   { key: "faqs", label: "FAQs", icon: CircleHelp },
   { key: "courses", label: "Courses", icon: BookOpenCheck },
   { key: "knowledge-hub-settings", label: "Knowledge Hub", icon: BookOpenCheck },
+  { key: "article-hub-editor", label: "Article Hub", icon: FileText },
   { key: "contact", label: "Contact", icon: FileText },
 ];
 
@@ -356,7 +359,8 @@ function Shell({
       activeView === "knowledge-hub-mega-menu",
   );
   const [pagesOpen, setPagesOpen] = useState(
-    activeView === "knowledge-hub-settings",
+    activeView === "knowledge-hub-settings" ||
+      activeView === "article-hub-editor",
   );
   const [coursesOpen, setCoursesOpen] = useState(
     activeView === "courses" ||
@@ -412,7 +416,8 @@ function Shell({
           activeView === "courses-mega-menu" ||
           activeView === "knowledge-hub-mega-menu"
         ? "Site settings"
-        : activeView === "knowledge-hub-settings"
+        : activeView === "knowledge-hub-settings" ||
+            activeView === "article-hub-editor"
           ? "Pages / Knowledge Hub"
           : activeView === "faqs"
             ? "Pages / FAQs"
@@ -483,6 +488,8 @@ function Shell({
                             ? "Home · FAQs"
                           : activeView === "knowledge-hub-settings"
                             ? "Knowledge Hub settings"
+                            : activeView === "article-hub-editor"
+                              ? "Article Hub"
                       : pageItems.find((item) => item.key === activeView)?.label ||
                         "Home";
 
@@ -500,7 +507,10 @@ function Shell({
     ) {
       setMegaMenusOpen(true);
     }
-    if (view === "knowledge-hub-settings") {
+    if (
+      view === "knowledge-hub-settings" ||
+      view === "article-hub-editor"
+    ) {
       setPagesOpen(true);
     }
     if (
@@ -1914,6 +1924,17 @@ function AdminWorkspace() {
           }
         />
         <AdminKnowledgeHubPageEditor onFlash={showFlash} />
+      </div>
+    );
+  } else if (activeView === "article-hub-editor") {
+    body = (
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        <PageIntro
+          eyebrow="Pages / Knowledge Hub / Article Hub"
+          title="Manage Article Hub content."
+          description="Edit the page introduction and hero, organize categories, and publish or update articles."
+        />
+        <AdminArticleHubEditor onFlash={showFlash} />
       </div>
     );
   } else if (activeView === "knowledge-hub-mega-menu") {

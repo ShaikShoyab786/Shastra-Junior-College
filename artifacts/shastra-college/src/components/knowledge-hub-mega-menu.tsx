@@ -297,12 +297,20 @@ export default function KnowledgeHubMegaMenu({
                         const Icon = itemIcons[item.key];
                         return (
                           <Link
-                            href={`/knowledge-hub#${item.key}`}
+                            href={
+                              item.key === "article-hub"
+                                ? "/knowledge-hub/article-hub"
+                                : `/knowledge-hub#${item.key}`
+                            }
                             key={item.key}
-                            onClick={(event) => {
-                              event.preventDefault();
-                              selectSection(item.key);
-                            }}
+                            onClick={
+                              item.key === "article-hub"
+                                ? undefined
+                                : (event) => {
+                                    event.preventDefault();
+                                    selectSection(item.key);
+                                  }
+                            }
                             className="group focus-ring relative flex min-h-28 items-start gap-4 overflow-hidden rounded-2xl border border-[#0b3472]/10 bg-white p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#e3212b]/35 hover:shadow-[0_14px_28px_rgba(11,52,114,.09)] sm:p-5"
                             data-testid={`link-knowledge-hub-menu-${item.key}`}
                           >

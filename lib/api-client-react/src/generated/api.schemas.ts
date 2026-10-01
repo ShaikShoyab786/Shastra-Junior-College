@@ -5,6 +5,201 @@
  * Shared API for Shastra Junior College public content and administration.
  * OpenAPI spec version: 0.1.0
  */
+export interface ArticleHubSettings {
+  eyebrow: string;
+  title: string;
+  introduction: string;
+  /** @nullable */
+  heroImageUrl: string | null;
+  heroImageAlt: string;
+  updatedAt: string;
+}
+
+export interface ArticleHubSettingsUpdate {
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  eyebrow?: string;
+  /**
+     * @minLength 1
+     * @maxLength 180
+     */
+  title?: string;
+  /**
+     * @minLength 1
+     * @maxLength 1200
+     */
+  introduction?: string;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  heroImageUrl?: string | null;
+  /** @maxLength 300 */
+  heroImageAlt?: string;
+}
+
+export interface ArticleCategory {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ArticleCategoryInput {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  slug: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name: string;
+  /** @maxLength 500 */
+  description: string;
+  /** @minimum 0 */
+  position: number;
+}
+
+export interface ArticleCategoryUpdate {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  slug?: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name?: string;
+  /** @maxLength 500 */
+  description?: string;
+  /** @minimum 0 */
+  position?: number;
+}
+
+export interface Article {
+  id: string;
+  categoryId: string;
+  categoryName: string;
+  categorySlug: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  body: string;
+  /** @nullable */
+  imageUrl: string | null;
+  imageAlt: string;
+  author: string;
+  /** @nullable */
+  publishedAt: string | null;
+  isPublished: boolean;
+  isFeatured: boolean;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ArticleInput {
+  categoryId: string;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  slug: string;
+  /**
+     * @minLength 1
+     * @maxLength 220
+     */
+  title: string;
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  excerpt: string;
+  /**
+     * @minLength 1
+     * @maxLength 30000
+     */
+  body: string;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  imageUrl: string | null;
+  /** @maxLength 300 */
+  imageAlt: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  author: string;
+  /** @nullable */
+  publishedAt: string | null;
+  isPublished: boolean;
+  isFeatured: boolean;
+  /** @minimum 0 */
+  position: number;
+}
+
+export interface ArticleUpdate {
+  categoryId?: string;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  slug?: string;
+  /**
+     * @minLength 1
+     * @maxLength 220
+     */
+  title?: string;
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  excerpt?: string;
+  /**
+     * @minLength 1
+     * @maxLength 30000
+     */
+  body?: string;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  imageUrl?: string | null;
+  /** @maxLength 300 */
+  imageAlt?: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  author?: string;
+  /** @nullable */
+  publishedAt?: string | null;
+  isPublished?: boolean;
+  isFeatured?: boolean;
+  /** @minimum 0 */
+  position?: number;
+}
+
+export interface ArticleHub {
+  settings: ArticleHubSettings;
+  categories: ArticleCategory[];
+  articles: Article[];
+}
+
+export interface ArticleDetail {
+  article: Article;
+}
+
 export interface HealthStatus {
   status: string;
 }

@@ -305,6 +305,237 @@ paths:
           description: Sign-in required
         "403":
           description: The signed-in account is not an authorized admin
+  /article-hub:
+    get:
+      operationId: getArticleHub
+      tags: [home]
+      summary: Get published Article Hub content
+      responses:
+        "200":
+          description: Article Hub settings, categories, and published articles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArticleHub"
+        "503":
+          description: Article Hub content is not available
+  /article-hub/articles/{slug}:
+    get:
+      operationId: getArticleBySlug
+      tags: [home]
+      summary: Get a published Article Hub article
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Published article
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArticleDetail"
+        "404":
+          description: Article not found
+  /admin/article-hub:
+    get:
+      operationId: getAdminArticleHub
+      tags: [admin]
+      summary: Get all Article Hub content for authorized staff
+      responses:
+        "200":
+          description: Article Hub settings, categories, and published or unpublished articles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArticleHub"
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+  /admin/article-hub/settings:
+    patch:
+      operationId: updateArticleHubSettings
+      tags: [admin]
+      summary: Update Article Hub heading and hero image
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArticleHubSettingsUpdate"
+      responses:
+        "200":
+          description: Updated Article Hub settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArticleHubSettings"
+        "400":
+          description: Invalid Article Hub settings
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+  /admin/article-hub/categories:
+    post:
+      operationId: createArticleCategory
+      tags: [admin]
+      summary: Create an Article Hub category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArticleCategoryInput"
+      responses:
+        "201":
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArticleCategory"
+        "400":
+          description: Invalid category
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+  /admin/article-hub/categories/{id}:
+    patch:
+      operationId: updateArticleCategory
+      tags: [admin]
+      summary: Update an Article Hub category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArticleCategoryUpdate"
+      responses:
+        "200":
+          description: Updated category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArticleCategory"
+        "400":
+          description: Invalid category
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+        "404":
+          description: Category not found
+    delete:
+      operationId: deleteArticleCategory
+      tags: [admin]
+      summary: Delete an unused Article Hub category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Category deleted
+        "400":
+          description: Category still contains articles
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+        "404":
+          description: Category not found
+  /admin/article-hub/articles:
+    post:
+      operationId: createArticle
+      tags: [admin]
+      summary: Create an Article Hub article
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArticleInput"
+      responses:
+        "201":
+          description: Created article
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Article"
+        "400":
+          description: Invalid article
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+  /admin/article-hub/articles/{id}:
+    patch:
+      operationId: updateArticle
+      tags: [admin]
+      summary: Update an Article Hub article
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArticleUpdate"
+      responses:
+        "200":
+          description: Updated article
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Article"
+        "400":
+          description: Invalid article
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+        "404":
+          description: Article not found
+    delete:
+      operationId: deleteArticle
+      tags: [admin]
+      summary: Delete an Article Hub article
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Article deleted
+        "401":
+          description: Sign-in required
+        "403":
+          description: The signed-in account is not an authorized admin
+        "404":
+          description: Article not found
   /admin/pages/{pageSlug}:
     get:
       operationId: getAdminCmsPage
@@ -631,6 +862,277 @@ paths:
           description: Item not found
 components:
   schemas:
+    ArticleHubSettings:
+      type: object
+      properties:
+        eyebrow:
+          type: string
+        title:
+          type: string
+        introduction:
+          type: string
+        heroImageUrl:
+          type: ["string", "null"]
+        heroImageAlt:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required: [eyebrow, title, introduction, heroImageUrl, heroImageAlt, updatedAt]
+    ArticleHubSettingsUpdate:
+      type: object
+      properties:
+        eyebrow:
+          type: string
+          minLength: 1
+          maxLength: 120
+        title:
+          type: string
+          minLength: 1
+          maxLength: 180
+        introduction:
+          type: string
+          minLength: 1
+          maxLength: 1200
+        heroImageUrl:
+          type: ["string", "null"]
+          maxLength: 1000
+        heroImageAlt:
+          type: string
+          maxLength: 300
+    ArticleCategory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        position:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, slug, name, description, position, createdAt, updatedAt]
+    ArticleCategoryInput:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 100
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 500
+        position:
+          type: integer
+          minimum: 0
+      required: [slug, name, description, position]
+    ArticleCategoryUpdate:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 100
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 500
+        position:
+          type: integer
+          minimum: 0
+    Article:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        categoryId:
+          type: string
+          format: uuid
+        categoryName:
+          type: string
+        categorySlug:
+          type: string
+        slug:
+          type: string
+        title:
+          type: string
+        excerpt:
+          type: string
+        body:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        imageAlt:
+          type: string
+        author:
+          type: string
+        publishedAt:
+          type: ["string", "null"]
+          format: date-time
+        isPublished:
+          type: boolean
+        isFeatured:
+          type: boolean
+        position:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - categoryId
+        - categoryName
+        - categorySlug
+        - slug
+        - title
+        - excerpt
+        - body
+        - imageUrl
+        - imageAlt
+        - author
+        - publishedAt
+        - isPublished
+        - isFeatured
+        - position
+        - createdAt
+        - updatedAt
+    ArticleInput:
+      type: object
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 160
+        title:
+          type: string
+          minLength: 1
+          maxLength: 220
+        excerpt:
+          type: string
+          minLength: 1
+          maxLength: 500
+        body:
+          type: string
+          minLength: 1
+          maxLength: 30000
+        imageUrl:
+          type: ["string", "null"]
+          maxLength: 1000
+        imageAlt:
+          type: string
+          maxLength: 300
+        author:
+          type: string
+          minLength: 1
+          maxLength: 120
+        publishedAt:
+          type: ["string", "null"]
+          format: date-time
+        isPublished:
+          type: boolean
+        isFeatured:
+          type: boolean
+        position:
+          type: integer
+          minimum: 0
+      required:
+        - categoryId
+        - slug
+        - title
+        - excerpt
+        - body
+        - imageUrl
+        - imageAlt
+        - author
+        - publishedAt
+        - isPublished
+        - isFeatured
+        - position
+    ArticleUpdate:
+      type: object
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 160
+        title:
+          type: string
+          minLength: 1
+          maxLength: 220
+        excerpt:
+          type: string
+          minLength: 1
+          maxLength: 500
+        body:
+          type: string
+          minLength: 1
+          maxLength: 30000
+        imageUrl:
+          type: ["string", "null"]
+          maxLength: 1000
+        imageAlt:
+          type: string
+          maxLength: 300
+        author:
+          type: string
+          minLength: 1
+          maxLength: 120
+        publishedAt:
+          type: ["string", "null"]
+          format: date-time
+        isPublished:
+          type: boolean
+        isFeatured:
+          type: boolean
+        position:
+          type: integer
+          minimum: 0
+    ArticleHub:
+      type: object
+      properties:
+        settings:
+          $ref: "#/components/schemas/ArticleHubSettings"
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/ArticleCategory"
+        articles:
+          type: array
+          items:
+            $ref: "#/components/schemas/Article"
+      required: [settings, categories, articles]
+    ArticleDetail:
+      type: object
+      properties:
+        article:
+          $ref: "#/components/schemas/Article"
+      required: [article]
     HealthStatus:
       type: object
       properties:

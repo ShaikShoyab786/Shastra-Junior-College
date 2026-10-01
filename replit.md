@@ -31,6 +31,7 @@ _Replace the heading above with the project's name, and this line with one sente
 - `artifacts/shastra-college` — public React/Vite site and `/admin` editor
 - `artifacts/api-server/src/routes/home.ts` — public homepage reads and protected CMS endpoints
 - `lib/db/src/schema/cms.ts` — site settings, page sections, and repeatable content items
+- `lib/db/src/schema/article-hub.ts` — Article Hub settings, categories, and articles
 - `lib/api-spec/openapi.yaml` — API source of truth; regenerate clients after changes
 
 ## Architecture decisions
@@ -39,10 +40,11 @@ _Replace the heading above with the project's name, and this line with one sente
 - Sections and items are reusable across page slugs, but this milestone exposes homepage editing only.
 - Public reads omit hidden sections and items; admin reads include them.
 - Admin access is deny-by-default; configure the Clerk user ID allowlist before editing content.
+- Article Hub seed content must be publication-ready and substantive. Never add sample/demo articles or invented warning/disclaimer text.
 
 ## Product
 
-The public homepage uses the supplied college logo and clearly marked demo copy for logo-confirmed preparation labels. Staff can sign in to manage homepage sections, repeatable items, visibility, order, images, and shared site settings. Other planned public pages are not implemented yet.
+The public homepage uses the supplied college logo and clearly marked demo copy for logo-confirmed preparation labels. Staff can sign in to manage homepage sections, repeatable items, visibility, order, images, and shared site settings. The Article Hub provides a searchable public directory and individual article pages, with protected staff tools for its page settings, categories, and articles.
 
 ## User preferences
 
