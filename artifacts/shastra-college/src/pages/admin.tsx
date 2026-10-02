@@ -454,6 +454,29 @@ function Shell({
               : activeView === "courses" || activeView === "courses-explore" || COURSE_DETAILS.some((course) => course.adminView === activeView)
                 ? "Pages / Courses"
             : "Pages";
+  useEffect(() => {
+    if (activePage.startsWith("Pages")) {
+      setPagesOpen(true);
+    }
+    if (activePage === "Site settings") {
+      setSettingsOpen(true);
+    }
+    if (
+      activeView === "knowledge-hub-settings" ||
+      activeView === "article-hub-editor" ||
+      activeView === "video-hub-editor" ||
+      activeView === "study-resources-editor" ||
+      activeView === "exam-updates-editor"
+    ) {
+      setKnowledgeHubOpen(true);
+    }
+    if (
+      activeView === "courses-mega-menu" ||
+      activeView === "knowledge-hub-mega-menu"
+    ) {
+      setMegaMenusOpen(true);
+    }
+  }, [activePage, activeView]);
   const selectedCourse = COURSE_DETAILS.find((course) => course.adminView === activeView);
   const [activeCourseSection, setActiveCourseSection] = useState<"hero" | "highlights" | "faculty-preview" | "curriculum" | "gallery-preview" | "enrollment-process" | "testimonials" | "faqs">("hero");
   useEffect(() => {

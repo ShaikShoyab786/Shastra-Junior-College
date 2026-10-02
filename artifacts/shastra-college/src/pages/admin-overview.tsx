@@ -153,6 +153,7 @@ function ShortcutGroup({
   onNavigate,
   testId,
   className = "",
+  gridClassName = "sm:grid-cols-2",
 }: {
   title: string;
   description: string;
@@ -160,6 +161,7 @@ function ShortcutGroup({
   onNavigate: (view: OverviewDestination) => void;
   testId: string;
   className?: string;
+  gridClassName?: string;
 }) {
   return (
     <section
@@ -172,7 +174,7 @@ function ShortcutGroup({
         </h3>
         <p className="mt-1 text-sm leading-5 text-slate-500">{description}</p>
       </div>
-      <div className="grid gap-2.5 sm:grid-cols-2">
+      <div className={`grid gap-2.5 ${gridClassName}`}>
         {shortcuts.map((shortcut) => (
           <ShortcutButton
             key={shortcut.destination}
@@ -280,6 +282,7 @@ export default function AdminOverview({
             ]}
             onNavigate={onNavigate}
             testId="overview-course-shortcuts"
+            gridClassName="grid-cols-1"
           />
         </div>
       </section>
@@ -291,6 +294,7 @@ export default function AdminOverview({
         onNavigate={onNavigate}
         testId="overview-website-content-shortcuts"
         className="mt-6"
+        gridClassName="sm:grid-cols-2 lg:grid-cols-3"
       />
     </main>
   );
