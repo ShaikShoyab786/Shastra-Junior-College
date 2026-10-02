@@ -9,4 +9,9 @@ import type { EnquiryStatus } from './enquiryStatus';
 
 export interface UpdateEnquiryStatus {
   status: EnquiryStatus;
+  /**
+     * @nullable
+     * @pattern ^\d{4}-\d{2}-\d{2}$
+     */
+  followUpDate?: string | null;
 }

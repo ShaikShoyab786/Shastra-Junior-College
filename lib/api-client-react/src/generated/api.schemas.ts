@@ -1133,9 +1133,18 @@ export interface SiteSettingsUpdate {
   cursorSparkleEnabled?: boolean;
 }
 
+export type PublicEnquirySubmissionSource = typeof PublicEnquirySubmissionSource[keyof typeof PublicEnquirySubmissionSource];
+
+
+export const PublicEnquirySubmissionSource = {
+  home: 'home',
+  contact: 'contact',
+} as const;
+
 export type PublicEnquirySubmissionValues = {[key: string]: string};
 
 export interface PublicEnquirySubmission {
+  source: PublicEnquirySubmissionSource;
   values: PublicEnquirySubmissionValues;
 }
 
@@ -1150,6 +1159,7 @@ export type EnquiryStatus = typeof EnquiryStatus[keyof typeof EnquiryStatus];
 
 export const EnquiryStatus = {
   new: 'new',
+  follow_up: 'follow_up',
   reviewed: 'reviewed',
 } as const;
 
@@ -1157,6 +1167,11 @@ export interface AdminEnquiry {
   id: string;
   answers: EnquiryAnswer[];
   status: EnquiryStatus;
+  /**
+     * @nullable
+     * @pattern ^\d{4}-\d{2}-\d{2}$
+     */
+  followUpDate: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1169,6 +1184,26 @@ export interface EnquiryActionResult {
   id: string;
 }
 
+export interface EnquiryNote {
+  id: string;
+  enquiryId: string;
+  authorId: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface AdminEnquiryNotes {
+  items: EnquiryNote[];
+}
+
+export interface EnquiryNoteInput {
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
+  body: string;
+}
+
 export interface EnquiryReceipt {
   id: string;
   receivedAt: string;
@@ -1176,6 +1211,11 @@ export interface EnquiryReceipt {
 
 export interface UpdateEnquiryStatus {
   status: EnquiryStatus;
+  /**
+     * @nullable
+     * @pattern ^\d{4}-\d{2}-\d{2}$
+     */
+  followUpDate?: string | null;
 }
 
 export interface UploadUrlRequest {

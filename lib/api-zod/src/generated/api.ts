@@ -216,6 +216,7 @@ export const createEnquiryBodyValuesMaxOne = 1000;
 
 
 export const CreateEnquiryBody = zod.object({
+  "source": zod.enum(['home', 'contact']),
   "values": zod.record(zod.string(), zod.string().max(createEnquiryBodyValuesMaxOne))
 })
 
@@ -228,6 +229,9 @@ export const CreateEnquiryResponse = zod.object({
 /**
  * @summary List admissions enquiries for authorized staff
  */
+export const getAdminEnquiriesResponseItemsItemFollowUpDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
 export const GetAdminEnquiriesResponse = zod.object({
   "items": zod.array(zod.object({
   "id": zod.string().uuid(),
@@ -236,7 +240,8 @@ export const GetAdminEnquiriesResponse = zod.object({
   "label": zod.string(),
   "value": zod.string()
 })),
-  "status": zod.enum(['new', 'reviewed']),
+  "status": zod.enum(['new', 'follow_up', 'reviewed']),
+  "followUpDate": zod.string().regex(getAdminEnquiriesResponseItemsItemFollowUpDateRegExp).nullable(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 }))
@@ -250,9 +255,16 @@ export const UpdateEnquiryParams = zod.object({
   "id": zod.coerce.string().uuid()
 })
 
+export const updateEnquiryBodyFollowUpDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
 export const UpdateEnquiryBody = zod.object({
-  "status": zod.enum(['new', 'reviewed'])
+  "status": zod.enum(['new', 'follow_up', 'reviewed']),
+  "followUpDate": zod.string().regex(updateEnquiryBodyFollowUpDateRegExp).nullish()
 })
+
+export const updateEnquiryResponseFollowUpDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
 
 export const UpdateEnquiryResponse = zod.object({
   "id": zod.string().uuid(),
@@ -261,7 +273,8 @@ export const UpdateEnquiryResponse = zod.object({
   "label": zod.string(),
   "value": zod.string()
 })),
-  "status": zod.enum(['new', 'reviewed']),
+  "status": zod.enum(['new', 'follow_up', 'reviewed']),
+  "followUpDate": zod.string().regex(updateEnquiryResponseFollowUpDateRegExp).nullable(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -276,6 +289,48 @@ export const DeleteEnquiryParams = zod.object({
 
 export const DeleteEnquiryResponse = zod.object({
   "id": zod.string().uuid()
+})
+
+
+/**
+ * @summary List private staff notes for an enquiry
+ */
+export const GetAdminEnquiryNotesParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const GetAdminEnquiryNotesResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "enquiryId": zod.string().uuid(),
+  "authorId": zod.string(),
+  "body": zod.string(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Add a private staff note to an enquiry
+ */
+export const CreateAdminEnquiryNoteParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const createAdminEnquiryNoteBodyBodyMax = 2000;
+
+
+
+export const CreateAdminEnquiryNoteBody = zod.object({
+  "body": zod.string().min(1).max(createAdminEnquiryNoteBodyBodyMax)
+})
+
+export const CreateAdminEnquiryNoteResponse = zod.object({
+  "id": zod.string().uuid(),
+  "enquiryId": zod.string().uuid(),
+  "authorId": zod.string(),
+  "body": zod.string(),
+  "createdAt": zod.coerce.date()
 })
 
 

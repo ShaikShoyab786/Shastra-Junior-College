@@ -610,6 +610,14 @@ function getHeroFormContent(content: UnknownRecord) {
               required: false,
               options: [],
             },
+            {
+              key: "message",
+              label: "Message",
+              type: "textarea" as const,
+              placeholder: "Write an optional message",
+              required: false,
+              options: [],
+            },
           ],
   };
 }
@@ -646,7 +654,12 @@ export function EnquiryForm({ section }: { section: ContentSection }) {
     if (createEnquiry.isPending) return;
     setSubmitError("");
     createEnquiry.mutate(
-      { data: { values } },
+      {
+        data: {
+          source: section.pageSlug === "contact" ? "contact" : "home",
+          values,
+        },
+      },
       {
         onSuccess: () => {
           void queryClient.invalidateQueries({
@@ -746,6 +759,7 @@ export function EnquiryForm({ section }: { section: ContentSection }) {
                 placeholder={field.placeholder}
                 required={field.required}
                 rows={3}
+                maxLength={1000}
                 className="focus-ring w-full resize-y rounded-xl border border-white/15 bg-white/[.08] px-4 py-3 text-sm text-white placeholder:text-blue-100/40"
                 data-testid={`textarea-enquiry-${field.key}`}
               />

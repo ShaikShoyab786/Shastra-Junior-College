@@ -5,8 +5,10 @@
  * Shared API for Shastra Junior College public content and administration.
  * OpenAPI spec version: 0.1.0
  */
+import type { PublicEnquirySubmissionSource } from './publicEnquirySubmissionSource';
 import type { PublicEnquirySubmissionValues } from './publicEnquirySubmissionValues';
 
 export interface PublicEnquirySubmission {
+  source: PublicEnquirySubmissionSource;
   values: PublicEnquirySubmissionValues;
 }

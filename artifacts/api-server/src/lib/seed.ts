@@ -259,6 +259,7 @@ const demoEnquiryForm = {
   submitLabel: "Send enquiry",
   note: "Your details will be shared with the college admissions team.",
   successMessage: "Thank you. Our admissions team has received your enquiry.",
+  __optionalMessageFieldVersion: 1,
   fields: [
     {
       name: "fullName",
@@ -289,8 +290,58 @@ const demoEnquiryForm = {
       options: ["Intermediate", "IIT-JEE Main", "NEET"],
       required: true,
     },
+    {
+      name: "message",
+      type: "textarea",
+      label: "Message",
+      placeholder: "Write an optional message",
+      required: false,
+    },
   ],
 };
+
+const OPTIONAL_MESSAGE_FIELD_VERSION_KEY = "__optionalMessageFieldVersion";
+
+function ensureOptionalEnquiryMessageField(
+  form: Record<string, unknown>,
+): { form: Record<string, unknown>; changed: boolean } {
+  if (form[OPTIONAL_MESSAGE_FIELD_VERSION_KEY] === 1) {
+    return { form, changed: false };
+  }
+
+  const fieldsKey = ["fields", "formFields", "inputs"].find((key) =>
+    Array.isArray(form[key]),
+  );
+  if (!fieldsKey) return { form, changed: false };
+
+  const fields = form[fieldsKey] as unknown[];
+  const alreadyHasMessage = fields.some((entry) => {
+    const field = isCmsRecord(entry) ? entry : {};
+    const name = typeof field.name === "string" ? field.name.trim() : "";
+    const label = typeof field.label === "string" ? field.label.trim() : "";
+    return name.toLowerCase() === "message" || /\bmessage\b/i.test(label);
+  });
+
+  return {
+    form: {
+      ...form,
+      [fieldsKey]: alreadyHasMessage
+        ? fields
+        : [
+            ...fields,
+            {
+              name: "message",
+              type: "textarea",
+              label: "Message",
+              placeholder: "Write an optional message",
+              required: false,
+            },
+          ],
+      [OPTIONAL_MESSAGE_FIELD_VERSION_KEY]: 1,
+    },
+    changed: true,
+  };
+}
 
 export async function seedCoursesPageSections(): Promise<void> {
   await db.transaction(async (tx) => {
@@ -1852,6 +1903,13 @@ export async function seedInitialHomeContent(): Promise<void> {
       }
       if (!("note" in enquiryForm)) {
         enquiryForm.note = demoEnquiryForm.note;
+        heroChanged = true;
+      }
+
+      const messageFieldMigration =
+        ensureOptionalEnquiryMessageField(enquiryForm);
+      if (messageFieldMigration.changed) {
+        Object.assign(enquiryForm, messageFieldMigration.form);
         heroChanged = true;
       }
 
@@ -3576,7 +3634,42 @@ async function seedContactPage(): Promise<void> {
           ),
         )
         .limit(1);
-      if (existingSection) continue;
+      if (existingSection) {
+        if (section.sectionKey === "enquiry-form") {
+          const [currentSection] = await tx
+            .select({
+              id: contentSectionsTable.id,
+              content: contentSectionsTable.content,
+            })
+            .from(contentSectionsTable)
+            .where(eq(contentSectionsTable.id, existingSection.id))
+            .limit(1);
+          const sectionContent =
+            currentSection && isCmsRecord(currentSection.content)
+              ? currentSection.content
+              : {};
+          const currentForm = isCmsRecord(sectionContent.enquiryForm)
+            ? sectionContent.enquiryForm
+            : null;
+          if (currentSection && currentForm) {
+            const messageFieldMigration =
+              ensureOptionalEnquiryMessageField(currentForm);
+            if (messageFieldMigration.changed) {
+              await tx
+                .update(contentSectionsTable)
+                .set({
+                  content: {
+                    ...sectionContent,
+                    enquiryForm: messageFieldMigration.form,
+                  },
+                  updatedAt: new Date(),
+                })
+                .where(eq(contentSectionsTable.id, currentSection.id));
+            }
+          }
+        }
+        continue;
+      }
 
       if (section.sectionKey === "enquiry-form" && !enquiryForm) {
         throw new Error(

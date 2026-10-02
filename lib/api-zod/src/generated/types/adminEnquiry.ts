@@ -12,6 +12,11 @@ export interface AdminEnquiry {
   id: string;
   answers: EnquiryAnswer[];
   status: EnquiryStatus;
+  /**
+     * @nullable
+     * @pattern ^\d{4}-\d{2}-\d{2}$
+     */
+  followUpDate: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

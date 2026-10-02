@@ -8,6 +8,7 @@
 
 export * from './adminEnquiries';
 export * from './adminEnquiry';
+export * from './adminEnquiryNotes';
 export * from './adminHomeSummary';
 export * from './article';
 export * from './articleCategory';
@@ -38,6 +39,8 @@ export * from './coursesMenuPatch';
 export * from './coursesMenuSettings';
 export * from './enquiryActionResult';
 export * from './enquiryAnswer';
+export * from './enquiryNote';
+export * from './enquiryNoteInput';
 export * from './enquiryReceipt';
 export * from './enquiryStatus';
 export * from './errorEnvelope';
@@ -62,6 +65,7 @@ export * from './knowledgeHubMenuPatch';
 export * from './knowledgeHubMenuSettings';
 export * from './navigationLink';
 export * from './publicEnquirySubmission';
+export * from './publicEnquirySubmissionSource';
 export * from './publicEnquirySubmissionValues';
 export * from './siteSettings';
 export * from './siteSettingsUpdate';

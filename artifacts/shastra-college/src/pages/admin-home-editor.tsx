@@ -28,7 +28,7 @@ import AdminTestimonialsEditor from "./admin-testimonials-editor";
 
 type Flash = { tone: "success" | "error"; message: string } | null;
 type CmsRecord = Record<string, unknown>;
-type FieldType = "text" | "email" | "tel" | "select";
+type FieldType = "text" | "email" | "tel" | "number" | "select" | "textarea";
 type EnquiryField = {
   name: string;
   type: FieldType;
@@ -37,7 +37,7 @@ type EnquiryField = {
   required: boolean;
   options: string[];
 };
-type EnquiryForm = {
+type EnquiryForm = CmsRecord & {
   eyebrow: string;
   title: string;
   description: string;
@@ -95,15 +95,23 @@ function getEnquiryForm(content: CmsRecord): EnquiryForm {
         const field = record(entry);
         const rawType = field.type;
         const type: FieldType =
-          rawType === "email" || rawType === "tel" || rawType === "select"
+          rawType === "email" ||
+          rawType === "tel" ||
+          rawType === "number" ||
+          rawType === "select" ||
+          rawType === "textarea"
             ? rawType
             : "text";
         return {
-          name: text(field.name, `field${index + 1}`),
+          ...field,
+          name: text(
+            field.name,
+            text(field.key, text(field.id, `field${index + 1}`)),
+          ),
           type,
-          label: text(field.label),
-          placeholder: text(field.placeholder),
-          required: field.required === true,
+          label: text(field.label, text(field.title, text(field.name))),
+          placeholder: text(field.placeholder, text(field.hint)),
+          required: field.required === true || field.isRequired === true,
           options: Array.isArray(field.options)
             ? field.options.filter(
                 (option): option is string => typeof option === "string",
@@ -114,6 +122,7 @@ function getEnquiryForm(content: CmsRecord): EnquiryForm {
     : [];
 
   return {
+    ...raw,
     eyebrow: text(raw.eyebrow, "ADMISSIONS ENQUIRY"),
     title: text(raw.title, "Talk with our team"),
     description: text(
@@ -372,11 +381,12 @@ function HeroEditor({
   const updateForm = (patch: Partial<EnquiryForm>) =>
     setForm((current) => ({ ...current, ...patch }));
   const updateField = (index: number, patch: Partial<EnquiryField>) =>
-    updateForm({
-      fields: form.fields.map((field, current) =>
-        current === index ? { ...field, ...patch } : field,
+    setForm((current) => ({
+      ...current,
+      fields: current.fields.map((field, currentIndex) =>
+        currentIndex === index ? { ...field, ...patch } : field,
       ),
-    });
+    }));
 
   const save = (event: FormEvent) => {
     event.preventDefault();
@@ -539,7 +549,7 @@ function HeroEditor({
         <div className="mt-5 space-y-4">
           {form.fields.map((field, index) => (
             <div
-              key={`${field.name}-${index}`}
+              key={index}
               className="rounded-xl border border-slate-200 bg-slate-50 p-4"
               data-testid={`row-enquiry-field-${index}`}
             >
@@ -601,7 +611,9 @@ function HeroEditor({
                     <option value="text">Text</option>
                     <option value="email">Email</option>
                     <option value="tel">Telephone</option>
+                    <option value="number">Number</option>
                     <option value="select">Select list</option>
+                    <option value="textarea">Long message</option>
                   </select>
                 </label>
                 <label className="flex items-end gap-2 pb-2 text-sm font-semibold text-slate-700">

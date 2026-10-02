@@ -1,5 +1,6 @@
 import {
   boolean,
+  date,
   integer,
   jsonb,
   pgTable,
@@ -68,9 +69,10 @@ export const siteEnquiriesTable = pgTable("site_enquiries", {
   id: uuid("id").primaryKey().defaultRandom(),
   answers: jsonb("answers").$type<EnquiryAnswer[]>().notNull().default([]),
   status: text("status")
-    .$type<"new" | "reviewed" | "handled">()
+    .$type<"new" | "follow_up" | "reviewed" | "handled">()
     .notNull()
     .default("new"),
+  followUpDate: date("follow_up_date", { mode: "string" }),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

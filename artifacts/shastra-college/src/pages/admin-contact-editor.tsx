@@ -691,7 +691,7 @@ function EnquiryEditor({
           {form.fields.length ? (
             <div className="space-y-3">
               {form.fields.map((field, index) => (
-                <div key={`${field.name}-${index}`} className="rounded-2xl border border-[#0b3472]/10 bg-[#f8f8f4] p-4 sm:p-5" data-testid={`row-contact-form-field-${index}`}>
+                <div key={index} className="rounded-2xl border border-[#0b3472]/10 bg-[#f8f8f4] p-4 sm:p-5" data-testid={`row-contact-form-field-${index}`}>
                   <div className="mb-4 flex items-center justify-between">
                     <span className="eyebrow text-slate-500">Field {String(index + 1).padStart(2, "0")}</span>
                     <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
@@ -717,11 +717,13 @@ function EnquiryEditor({
                         className="mt-2 w-full rounded-xl border border-slate-200 bg-[#fffefa] px-3.5 py-3 text-sm text-slate-800 outline-none focus:border-[#0b3472]/50 focus:ring-4 focus:ring-[#0b3472]/10"
                         data-testid={`select-contact-form-field-type-${index}`}
                       >
-                        {field.type && !["text", "email", "tel", "select"].includes(field.type) ? <option value={field.type}>{field.type}</option> : null}
+                        {field.type && !["text", "email", "tel", "number", "select", "textarea"].includes(field.type) ? <option value={field.type}>{field.type}</option> : null}
                         <option value="text">Text</option>
                         <option value="email">Email</option>
                         <option value="tel">Telephone</option>
+                        <option value="number">Number</option>
                         <option value="select">Select list</option>
+                        <option value="textarea">Long message</option>
                       </select>
                     </label>
                     {field.type === "select" ? (

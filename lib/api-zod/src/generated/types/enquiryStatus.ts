@@ -11,5 +11,6 @@ export type EnquiryStatus = typeof EnquiryStatus[keyof typeof EnquiryStatus];
 
 export const EnquiryStatus = {
   new: 'new',
+  follow_up: 'follow_up',
   reviewed: 'reviewed',
 } as const;
