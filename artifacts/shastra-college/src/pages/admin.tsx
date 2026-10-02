@@ -8,6 +8,16 @@ import {
 import { useClerk, useUser, Show } from "@clerk/react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   AlertCircle,
   Award,
   BookOpen,
@@ -336,6 +346,7 @@ function Shell({
   const { signOut } = useClerk();
   const { user } = useUser();
   const [mobileNav, setMobileNav] = useState(false);
+  const [signOutOpen, setSignOutOpen] = useState(false);
   const [homeOpen, setHomeOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(
     activeView === "identity" ||
@@ -979,7 +990,12 @@ function Shell({
             <UserRound className="h-3.5 w-3.5" />
             <span className="min-w-0 truncate" data-testid="text-admin-user">{user?.primaryEmailAddress?.emailAddress || user?.id}</span>
           </div>
-          <button onClick={() => signOut({ redirectUrl: "/" })} className="focus-ring flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-blue-100 transition hover:bg-white/10 hover:text-white" data-testid="button-sign-out">
+          <button
+            type="button"
+            onClick={() => setSignOutOpen(true)}
+            className="focus-ring flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-blue-100 transition hover:bg-white/10 hover:text-white"
+            data-testid="button-sign-out"
+          >
             <LogOut className="h-4 w-4" /> Sign out
           </button>
         </div>
@@ -1002,6 +1018,32 @@ function Shell({
         </header>
         <main>{children}</main>
       </div>
+      <AlertDialog open={signOutOpen} onOpenChange={setSignOutOpen}>
+        <AlertDialogContent className="border-slate-200 bg-white text-slate-900 sm:rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display text-[#0b3472]">
+              Sign out?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to sign out of the admin workspace?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-sign-out">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              data-testid="button-confirm-sign-out"
+              className="bg-[#e3212b] text-white hover:bg-[#c01d26]"
+              onClick={() => {
+                void signOut({ redirectUrl: "/" });
+              }}
+            >
+              Sign out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
