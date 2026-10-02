@@ -24,6 +24,7 @@ import {
   FolderOpen,
   ImagePlus,
   LayoutDashboard,
+  LayoutGrid,
   Link2,
   LogOut,
   Menu,
@@ -85,6 +86,7 @@ import AdminFaqEditor from "./admin-faq-editor";
 import AdminFaqTextSettingsEditor from "./admin-faq-text-settings-editor";
 import AdminAboutCtaEditor from "./admin-about-cta-editor";
 import AdminContactEditor from "./admin-contact-editor";
+import AdminOverview from "./admin-overview";
 import {
   COURSE_DETAILS,
   courseSectionKey,
@@ -98,6 +100,7 @@ type Flash = {
 } | null;
 type WorkspaceView =
   | "dashboard"
+  | "overview"
   | "hero"
   | "programs"
   | "statistics"
@@ -428,6 +431,8 @@ function Shell({
   const activePage =
     activeView === "dashboard"
       ? "Dashboard"
+      : activeView === "overview"
+        ? "Overview"
       : activeView === "identity" ||
           activeView === "courses-mega-menu" ||
           activeView === "knowledge-hub-mega-menu"
@@ -459,6 +464,8 @@ function Shell({
       ? `${selectedCourse.name} course page`
       : activeView === "dashboard"
       ? "Dashboard"
+      : activeView === "overview"
+        ? "Website Overview"
       : activeView === "identity"
         ? "Site identity"
           : activeView === "courses-mega-menu"
@@ -615,6 +622,7 @@ function Shell({
           <div>
             <p className="eyebrow mb-2 px-3 text-blue-300">Workspace</p>
             <NavRow icon={LayoutDashboard} label="Dashboard" active={activeView === "dashboard"} onClick={() => go("dashboard")} />
+            <NavRow icon={LayoutGrid} label="Overview" active={activeView === "overview"} onClick={() => go("overview")} />
           </div>
 
           <div>
@@ -1647,6 +1655,14 @@ function AdminWorkspace() {
         enquiriesError={enquiries.isError}
         onRefresh={() => void enquiries.refetch()}
         onFlash={showFlash}
+      />
+    );
+  } else if (activeView === "overview") {
+    body = (
+      <AdminOverview
+        collegeName={home.settings.collegeName}
+        logoUrl={home.settings.logoUrl}
+        onNavigate={(view) => setActiveView(view)}
       />
     );
   } else if (activeView === "identity") {
