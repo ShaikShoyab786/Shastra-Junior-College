@@ -160,6 +160,11 @@ export function Header({ home }: { home?: HomePage }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const cmsNavigation = home?.settings.navigation || [];
   const navigation = publicNavigation(cmsNavigation);
+  const menuThemeStyle = themeVariables(
+    home?.settings.primaryColor ?? "#0b3472",
+    home?.settings.accentColor ?? "#e3212b",
+    home?.settings.surfaceColor ?? "#f7f5ef",
+  );
 
   return (
     <header
@@ -197,6 +202,7 @@ export function Header({ home }: { home?: HomePage }) {
                   <CoursesMegaMenu
                     key={`${link.path}-${index}`}
                     fallbackLogoUrl={collegeLogo(home?.settings.logoUrl)}
+                    themeStyle={menuThemeStyle}
                     onMobileNavClose={() => setMobileOpen(false)}
                   />
                 );
@@ -206,6 +212,7 @@ export function Header({ home }: { home?: HomePage }) {
                   <KnowledgeHubMegaMenu
                     key={`${link.path}-${index}`}
                     triggerLabel={link.label}
+                    themeStyle={menuThemeStyle}
                     onMobileNavClose={() => setMobileOpen(false)}
                   />
                 );

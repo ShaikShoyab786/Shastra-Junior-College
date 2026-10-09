@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import {
   ArrowRight,
@@ -30,9 +30,11 @@ const itemIcons = {
 export default function KnowledgeHubMegaMenu({
   onMobileNavClose,
   triggerLabel,
+  themeStyle,
 }: {
   onMobileNavClose?: () => void;
   triggerLabel: string;
+  themeStyle: Record<string, string>;
 }) {
   const [open, setOpen] = useState(false);
   const [location, setLocation] = useLocation();
@@ -205,15 +207,17 @@ export default function KnowledgeHubMegaMenu({
                 }
               }}
               style={{
+                ...themeStyle,
                 top: panelTop,
                 maxHeight: `calc(100dvh - ${panelTop + 16}px)`,
-              }}
+              } as CSSProperties}
+              data-college-theme
               role="dialog"
               aria-label="Knowledge Hub menu"
             >
               {query.isLoading ? (
                 <div
-                  className="flex items-center gap-3 rounded-[1.75rem] border border-[#0b3472]/15 bg-[#fbfaf6] p-6 text-sm font-semibold text-[#0b3472] shadow-[0_24px_70px_rgba(11,52,114,.18)]"
+                  className="college-theme-menu-shadow flex items-center gap-3 rounded-[1.75rem] border border-[#0b3472]/15 bg-[#fbfaf6] p-6 text-sm font-semibold text-[#0b3472]"
                   data-testid="status-knowledge-hub-menu-loading"
                 >
                   <LoaderCircle
@@ -224,7 +228,7 @@ export default function KnowledgeHubMegaMenu({
                 </div>
               ) : query.isError || !query.data ? (
                 <div
-                  className="rounded-[1.75rem] border border-red-200 bg-[#fff8f7] p-6 shadow-[0_24px_70px_rgba(11,52,114,.18)]"
+                  className="college-theme-menu-shadow rounded-[1.75rem] border border-red-200 bg-[#fff8f7] p-6"
                   role="alert"
                   data-testid="status-knowledge-hub-menu-error"
                 >
@@ -254,18 +258,18 @@ export default function KnowledgeHubMegaMenu({
                 </div>
               ) : (
                 <div
-                  className="overflow-hidden rounded-[1.75rem] border border-[#0b3472]/15 bg-[#f7f5ef] shadow-[0_24px_70px_rgba(11,52,114,.18)]"
+                  className="college-theme-menu-shadow overflow-hidden rounded-[1.75rem] border border-[#0b3472]/15 bg-[#f7f5ef]"
                   data-testid="panel-knowledge-hub-mega-menu"
                 >
                   <div className="flex items-start justify-between gap-5 bg-[#0b3472] px-5 py-5 text-white sm:px-7 sm:py-6">
                     <div className="max-w-2xl">
-                      <p className="text-[10px] font-extrabold uppercase tracking-[.2em] text-[#f5c1b7]">
+                      <p className="text-[10px] font-extrabold uppercase tracking-[.2em] text-white/75">
                         {query.data.heading.eyebrow}
                       </p>
                       <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
                         {query.data.heading.title}
                       </h2>
-                      <p className="mt-2 max-w-xl text-sm leading-6 text-blue-100/80">
+                      <p className="mt-2 max-w-xl text-sm leading-6 text-white/80">
                         {query.data.heading.description}
                       </p>
                     </div>
@@ -318,10 +322,10 @@ export default function KnowledgeHubMegaMenu({
                                     selectSection(item.key);
                                   }
                             }
-                            className="group focus-ring relative flex min-h-28 items-start gap-4 overflow-hidden rounded-2xl border border-[#0b3472]/10 bg-white p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#e3212b]/35 hover:shadow-[0_14px_28px_rgba(11,52,114,.09)] sm:p-5"
+                            className="college-theme-menu-card group focus-ring relative flex min-h-28 items-start gap-4 overflow-hidden rounded-2xl border border-[#0b3472]/10 bg-white p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#e3212b]/35 sm:p-5"
                             data-testid={`link-knowledge-hub-menu-${item.key}`}
                           >
-                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#f7eee8] text-[#b71927] transition group-hover:bg-[#e3212b] group-hover:text-white">
+                            <span className="college-theme-accent-soft flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[#b71927] transition group-hover:bg-[#e3212b] group-hover:text-white">
                               <Icon className="h-5 w-5" aria-hidden="true" />
                             </span>
                             <span className="min-w-0 flex-1">

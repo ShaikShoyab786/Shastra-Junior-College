@@ -281,6 +281,15 @@
   .font-telugu { font-family: 'Noto Sans Telugu', 'Nirmala UI', sans-serif; }
   .brand-name-red { color: var(--college-accent, #e3212b); }
   .brand-name-blue { color: var(--college-primary, #0b3472); }
+  .college-theme-menu-shadow {
+    box-shadow: 0 24px 70px color-mix(in srgb, var(--college-primary) 18%, transparent);
+  }
+  .college-theme-menu-card:hover {
+    box-shadow: 0 16px 30px color-mix(in srgb, var(--college-primary) 10%, transparent);
+  }
+  .college-theme-accent-soft {
+    background-color: color-mix(in srgb, var(--college-accent) 10%, var(--college-surface));
+  }
   .eyebrow { letter-spacing: .16em; text-transform: uppercase; font-size: .68rem; font-weight: 700; }
   .focus-ring:focus-visible { outline: 3px solid hsl(var(--accent) / .4); outline-offset: 3px; }
 }
@@ -920,6 +929,7 @@ html { scroll-behavior: smooth; }
 }
 
 [data-college-theme] [class~="hover:bg-[#c71927]"]:hover,
+[data-college-theme] [class~="hover:bg-[#b71927]"]:hover,
 [data-college-theme] [class~="hover:bg-[#c81c25]"]:hover,
 [data-college-theme] [class~="hover:bg-[#ad2d2a]"]:hover {
   background-color: color-mix(in srgb, var(--college-accent) 86%, black);

@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 import {
   ArrowRight,
@@ -89,7 +95,7 @@ function CourseCard({
     <Destination
       destination={card.destination}
       onSelect={onSelect}
-      className="group flex min-h-[138px] flex-col justify-between rounded-2xl border border-[#0b3472]/10 bg-[#fffdfa] p-4 transition hover:-translate-y-0.5 hover:border-[#0b3472]/30 hover:shadow-[0_16px_30px_rgba(11,52,114,.1)] focus-ring"
+      className="college-theme-menu-card group flex min-h-[138px] flex-col justify-between rounded-2xl border border-[#0b3472]/10 bg-[#fffdfa] p-4 transition hover:-translate-y-0.5 hover:border-[#0b3472]/30 focus-ring"
       testId={`link-course-menu-card-${card.id}`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -124,7 +130,7 @@ function Benefit({ benefit }: { benefit: CoursesMenuBenefit }) {
       </span>
       <span>
         <span className="block text-xs font-extrabold text-white">{benefit.title}</span>
-        <span className="mt-0.5 block text-[11px] leading-4 text-blue-100/85">{benefit.description}</span>
+      <span className="mt-0.5 block text-[11px] leading-4 text-white/80">{benefit.description}</span>
       </span>
     </li>
   );
@@ -152,7 +158,7 @@ function MenuPanel({
   const ctas = data.ctaButtons.slice().sort((a, b) => a.order - b.order).filter((button) => button.isVisible);
 
   return (
-    <div className="overflow-hidden rounded-[1.65rem] border border-[#0b3472]/12 bg-[#fbfaf6] shadow-[0_24px_70px_rgba(11,52,114,.18)]" data-testid="panel-courses-mega-menu">
+    <div className="college-theme-menu-shadow overflow-hidden rounded-[1.65rem] border border-[#0b3472]/12 bg-[#fbfaf6]" data-testid="panel-courses-mega-menu">
       <div className="flex items-center justify-between border-b border-[#0b3472]/10 px-5 py-3 md:hidden">
         <span className="eyebrow text-[#e3212b]">Explore Courses</span>
         <button type="button" onClick={onDismiss} className="focus-ring rounded-lg p-2 text-[#0b3472]" aria-label="Close Courses menu" data-testid="button-close-courses-menu">
@@ -172,16 +178,20 @@ function MenuPanel({
               />
               <div
                 aria-hidden="true"
-                className="absolute inset-0 bg-gradient-to-br from-[#0b3472]/90 to-[#0b3472]/72"
+                className="absolute inset-0"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(135deg, color-mix(in srgb, var(--college-primary) 90%, transparent), color-mix(in srgb, var(--college-primary) 72%, transparent))",
+                }}
               />
             </>
           ) : null}
           <div className="relative">
             {logo ? <img src={logo} alt={logoAlt} className="h-11 max-w-[150px] object-contain object-left" /> : null}
             <p className="mt-5 text-xs font-extrabold text-white/90" data-testid="text-courses-menu-college-name">{data.brandPanel.collegeName}</p>
-            <p className="mt-7 text-[10px] font-extrabold uppercase tracking-[.18em] text-[#f5c1b7]">{data.brandPanel.tagline}</p>
+            <p className="mt-7 text-[10px] font-extrabold uppercase tracking-[.18em] text-white/75">{data.brandPanel.tagline}</p>
             <h2 className="mt-3 max-w-[13ch] font-display text-2xl font-extrabold leading-[1.03] sm:text-3xl">{data.brandPanel.headline}</h2>
-            <p className="mt-3 text-xs leading-5 text-blue-100/75">{data.brandPanel.supportingText}</p>
+            <p className="mt-3 text-xs leading-5 text-white/75">{data.brandPanel.supportingText}</p>
             {benefits.length ? <ul className="mt-6 space-y-3">{benefits.slice(0, 3).map((benefit) => <Benefit key={benefit.id} benefit={benefit} />)}</ul> : null}
           </div>
         </aside>
@@ -236,9 +246,11 @@ function MenuPanel({
 export default function CoursesMegaMenu({
   onMobileNavClose,
   fallbackLogoUrl,
+  themeStyle,
 }: {
   onMobileNavClose?: () => void;
   fallbackLogoUrl: string;
+  themeStyle: Record<string, string>;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -382,18 +394,20 @@ export default function CoursesMegaMenu({
             }
           }}
           style={{
+            ...themeStyle,
             top: panelTop,
             maxHeight: `calc(100dvh - ${panelTop + 16}px)`,
-          }}
+          } as CSSProperties}
+          data-college-theme
           role="dialog"
           aria-label="Courses menu"
         >
           {query.isLoading ? (
-            <div className="flex items-center gap-3 rounded-2xl border border-[#0b3472]/12 bg-[#fbfaf6] p-6 text-sm font-semibold text-[#0b3472] shadow-[0_24px_70px_rgba(11,52,114,.18)]" data-testid="status-courses-menu-loading">
+            <div className="college-theme-menu-shadow flex items-center gap-3 rounded-2xl border border-[#0b3472]/12 bg-[#fbfaf6] p-6 text-sm font-semibold text-[#0b3472]" data-testid="status-courses-menu-loading">
               <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> Loading confirmed courses…
             </div>
           ) : query.isError || !query.data ? (
-            <div className="rounded-2xl border border-red-200 bg-[#fff8f7] p-6 shadow-[0_24px_70px_rgba(11,52,114,.18)]" role="alert" data-testid="status-courses-menu-error">
+            <div className="college-theme-menu-shadow rounded-2xl border border-red-200 bg-[#fff8f7] p-6" role="alert" data-testid="status-courses-menu-error">
               <div className="flex gap-3"><CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-[#e3212b]" /><div><p className="font-bold text-[#8f1823]">Courses are unavailable right now.</p><p className="mt-1 text-sm text-slate-600">Please try again before choosing a pathway.</p><button type="button" onClick={() => void query.refetch()} className="focus-ring mt-3 inline-flex items-center gap-2 rounded-lg bg-[#0b3472] px-3 py-2 text-xs font-bold text-white" data-testid="button-retry-courses-menu"><RefreshCw className="h-3.5 w-3.5" /> Try again</button></div></div>
             </div>
           ) : (
