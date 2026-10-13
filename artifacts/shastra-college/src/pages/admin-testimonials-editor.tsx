@@ -307,7 +307,7 @@ function TestimonialForm({
             <option value="Student">Student</option><option value="Parent">Parent</option><option value="Alumni">Alumni</option>
           </select>
         </label>
-        <Input label="Course / year (optional)" value={course} onChange={setCourse} placeholder="e.g. MPC · 2024–25" testId={`input-testimonial-course-${initial?.id || "new"}`} />
+        <Input label="Course / year (optional)" value={course} onChange={setCourse} placeholder="e.g. IIT · 2024–25" testId={`input-testimonial-course-${initial?.id || "new"}`} />
         <Input label="Portrait alt text" value={altText} onChange={setAltText} required={Boolean(imageUrl)} placeholder="Describe the portrait" testId={`input-testimonial-alt-${initial?.id || "new"}`} />
       </div>
       <div className="mt-4"><Input label="Feedback" value={feedback} onChange={setFeedback} required multiline placeholder="What did this person value about learning at Shastra?" testId={`textarea-testimonial-feedback-${initial?.id || "new"}`} /></div>

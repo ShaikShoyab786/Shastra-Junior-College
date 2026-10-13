@@ -765,12 +765,6 @@ export default function AdminCourseDetailEditor({
     <div className="space-y-6">
     <CoursePathwaySelector course={course} onCourseChange={onCourseChange} />
     <form onSubmit={(event) => void save(event)} className="space-y-6" data-testid={`form-admin-course-${course.slug}`}>
-      {course.slug === "integrated" ? (
-        <div className="rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-950" role="status" data-testid="notice-integrated-course-draft">
-          The project has no verified Integrated course description yet. This page starts unpublished; add confirmed course details before publishing either section.
-        </div>
-      ) : null}
-
       <Panel id={courseSectionKey(course.slug, "hero")} eyebrow={`${course.name} / Section 1`} title="Hero" testId={`panel-admin-course-${course.slug}-hero`}>
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Section label" value={stringValue(recordValue(hero.content), "eyebrow")} onChange={(value) => patchSectionContent("hero", "eyebrow", value)} testId={`input-course-${course.slug}-hero-eyebrow`} />

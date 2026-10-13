@@ -287,7 +287,7 @@ const demoEnquiryForm = {
       type: "select",
       label: "Area of interest",
       placeholder: "Choose an option",
-      options: ["Intermediate", "IIT-JEE Main", "NEET"],
+      options: ["IIT", "NIT", "IIIT", "IPE"],
       required: true,
     },
     {
@@ -1039,6 +1039,131 @@ export async function seedCoursesPageSections(): Promise<void> {
       seedMarkers.add(courseCurriculumSeedMarker);
     }
 
+    const courseCatalogMarker = "four-course-catalog-iit-nit-iiit-ipe-v1";
+    if (!seedMarkers.has(courseCatalogMarker)) {
+      const currentCards = seedableMenu.courseCards;
+      const archivedCards =
+        (seedableMenu as typeof seedableMenu & { __legacyCourseCards?: typeof currentCards })
+          .__legacyCourseCards ?? currentCards;
+      const courseNames = ["IIT", "NIT", "IIIT", "IPE"] as const;
+      const canonicalCards = courseNames.map((title, order) => {
+        const slug = title.toLowerCase();
+        const existing =
+          currentCards.find((card) => card.title.trim().toLowerCase() === title.toLowerCase()) ??
+          (title === "IIT"
+            ? currentCards.find((card) => card.id === "iit-jee-main" || /iit.?jee/i.test(card.title))
+            : undefined);
+        return {
+          id: slug,
+          order,
+          title,
+          category: "Course",
+          description: "",
+          destination: `/courses/${slug}`,
+          isVisible: true,
+          icon: existing?.icon ?? null,
+          tint: existing?.tint ?? null,
+          imageUrl: title === "IIT" ? existing?.imageUrl ?? null : null,
+          imageAlt: title === "IIT" ? existing?.imageAlt ?? "" : "",
+        };
+      });
+      const legacyContent = seedableMenu as typeof seedableMenu & {
+        __legacyCourseCards?: typeof currentCards;
+      };
+      seedableMenu = {
+        ...seedableMenu,
+        __legacyCourseCards: legacyContent.__legacyCourseCards ?? archivedCards,
+        courseCards: canonicalCards,
+        brandPanel: {
+          ...seedableMenu.brandPanel,
+          headline: "Explore our courses",
+          supportingText:
+            "Explore IIT, NIT, IIIT, and IPE at Shastra Junior College.",
+          backgroundImageAlt: "Student studying at Shastra Junior College",
+        },
+        heading: {
+          ...seedableMenu.heading,
+          title: "Explore our courses",
+        },
+        benefits: [
+          {
+            id: "four-course-options",
+            order: 0,
+            title: "Four course options",
+            description: "IIT, NIT, IIIT, and IPE are the courses offered.",
+            icon: null,
+            isVisible: true,
+          },
+        ],
+        __seedMarkers: [...seedMarkers, courseCatalogMarker],
+      } as typeof seedableMenu;
+      seedMarkers.add(courseCatalogMarker);
+      await tx
+        .update(coursesMenuSettingsTable)
+        .set({
+          content: {
+            ...seedableMenu,
+            __seedMarkers: [...seedMarkers],
+          } as CoursesMenuContent,
+          updatedAt: new Date(),
+        })
+        .where(eq(coursesMenuSettingsTable.id, "primary"));
+
+      for (const [slug, name] of [
+        ["iit", "IIT"],
+        ["nit", "NIT"],
+        ["iiit", "IIIT"],
+        ["ipe", "IPE"],
+      ] as const) {
+        for (const [suffix, title] of [
+          ["hero", name],
+          ["highlights", `${name} course details`],
+          ["curriculum", `${name} course details`],
+        ] as const) {
+          await tx
+            .insert(contentSectionsTable)
+            .values({
+              pageSlug: "courses",
+              sectionKey: `course-${slug}-${suffix}`,
+              title,
+              subtitle: null,
+              content: {},
+              isVisible: false,
+              position: 100 + ["iit", "nit", "iiit", "ipe"].indexOf(slug),
+            })
+            .onConflictDoNothing();
+        }
+      }
+
+      const coursePageSections = await tx
+        .select()
+        .from(contentSectionsTable)
+        .where(eq(contentSectionsTable.pageSlug, "courses"));
+      for (const section of coursePageSections) {
+        if (!["hero", "regular-pathways", "pathways"].includes(section.sectionKey)) {
+          continue;
+        }
+        const content = isCmsRecord(section.content) ? { ...section.content } : {};
+        const oldCourseCopy =
+          /MPC|BIPC|NEET|EAMCET|IIT-JEE|exam pathways/i.test(
+            `${section.subtitle ?? ""} ${JSON.stringify(content)}`,
+          );
+        if (!oldCourseCopy) continue;
+        const copy =
+          section.sectionKey === "hero"
+            ? "Explore the four courses offered at Shastra Junior College: IIT, NIT, IIIT, and IPE."
+            : "IIT, NIT, IIIT, and IPE are the four courses currently offered.";
+        await tx
+          .update(contentSectionsTable)
+          .set({
+            subtitle: copy,
+            content: { ...content, description: copy, introduction: copy },
+            updatedAt: new Date(),
+          })
+          .where(eq(contentSectionsTable.id, section.id));
+      }
+    }
+
     const starterSeedMarker = "courses-batches-schedule-admissions-v1";
     if (seedMarkers.has(starterSeedMarker)) {
       if (seedMarkers.size !== (seedableMenu.__seedMarkers?.length ?? 0)) {
@@ -1302,10 +1427,10 @@ const initialSections: SeedSection[] = [
     title: "Homepage hero",
     subtitle: null,
     content: {
-      eyebrow: "INTERMEDIATE • IIT-JEE MAIN • NEET",
+      eyebrow: "IIT • NIT • IIIT • IPE",
       headline: "A strong start for everything ahead.",
       introduction:
-        "Explore intermediate education and preparation for IIT-JEE Main and NEET at Shastra Junior College. Tell us what you’re aiming for, and we’ll help you explore your next step.",
+        "Explore IIT, NIT, IIIT, and IPE courses at Shastra Junior College. Contact admissions for current course details.",
       imageUrl: null,
       primaryLabel: "Explore pathways",
       primaryPath: "#programs",
@@ -1848,8 +1973,11 @@ export async function seedInitialHomeContent(): Promise<void> {
       const heroContent = { ...hero.content };
       let heroChanged = false;
 
-      if (heroContent.eyebrow === "DEMO COPY · REPLACE BEFORE LAUNCH") {
-        heroContent.eyebrow = "INTERMEDIATE • IIT-JEE MAIN • NEET";
+      if (
+        heroContent.eyebrow === "DEMO COPY · REPLACE BEFORE LAUNCH" ||
+        heroContent.eyebrow === "INTERMEDIATE • IIT-JEE MAIN • NEET"
+      ) {
+        heroContent.eyebrow = "IIT • NIT • IIIT • IPE";
         heroChanged = true;
       }
       if (heroContent.headline === "Build your next chapter with curiosity.") {
@@ -1858,10 +1986,12 @@ export async function seedInitialHomeContent(): Promise<void> {
       }
       if (
         heroContent.introduction ===
-        "The words on this homepage are sample copy created for the first build. Replace them with details approved by Shastra Junior College."
+          "The words on this homepage are sample copy created for the first build. Replace them with details approved by Shastra Junior College." ||
+        heroContent.introduction ===
+          "Explore intermediate education and preparation for IIT-JEE Main and NEET at Shastra Junior College. Tell us what you’re aiming for, and we’ll help you explore your next step."
       ) {
         heroContent.introduction =
-          "Explore intermediate education and preparation for IIT-JEE Main and NEET at Shastra Junior College. Tell us what you’re aiming for, and we’ll help you explore your next step.";
+          "Explore IIT, NIT, IIIT, and IPE courses at Shastra Junior College. Contact admissions for current course details.";
         heroChanged = true;
       }
 
@@ -1911,6 +2041,22 @@ export async function seedInitialHomeContent(): Promise<void> {
       if (messageFieldMigration.changed) {
         Object.assign(enquiryForm, messageFieldMigration.form);
         heroChanged = true;
+      }
+
+      if (Array.isArray(enquiryForm.fields)) {
+        const pathwayField = enquiryForm.fields.find(
+          (field) => isCmsRecord(field) && field.name === "pathway",
+        );
+        if (
+          isCmsRecord(pathwayField) &&
+          Array.isArray(pathwayField.options) &&
+          pathwayField.options.some((option) =>
+            ["Intermediate", "IIT-JEE Main", "NEET"].includes(String(option)),
+          )
+        ) {
+          pathwayField.options = ["IIT", "NIT", "IIIT", "IPE"];
+          heroChanged = true;
+        }
       }
 
       if (heroChanged) {

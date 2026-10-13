@@ -151,13 +151,8 @@ function validateCoursesMenu(menu: CoursesMenuContent): string | null {
     if (!isSafeDestination(card.destination, false)) {
       return "Course destinations must be safe internal paths or HTTP(S) URLs.";
     }
-    if (
-      card.isVisible &&
-      (!card.title.trim() ||
-        !card.category.trim() ||
-        !card.description.trim())
-    ) {
-      return "Visible course cards need a title, category, and description.";
+    if (card.isVisible && (!card.title.trim() || !card.category.trim())) {
+      return "Visible course cards need a title and category.";
     }
     if (!isSafeImageReference(card.imageUrl)) {
       return "Course images must use a safe site path or an HTTP(S) URL.";

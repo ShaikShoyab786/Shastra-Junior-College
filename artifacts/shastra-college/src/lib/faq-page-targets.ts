@@ -19,12 +19,7 @@ export const FAQ_PAGE_TARGETS: Array<{ value: FaqPageTarget; label: string }> = 
   { value: "courses", label: "All Courses" },
   ...COURSE_DETAILS.map((course) => ({
     value: `course:${course.slug}` as CourseFaqPageTarget,
-    label:
-      course.slug === "iit-jee"
-        ? "IIT-JEE / JEE Main"
-        : "isDraft" in course && course.isDraft
-          ? `${course.name} (draft)`
-          : course.name,
+    label: course.name,
   })),
 ] as const;
 

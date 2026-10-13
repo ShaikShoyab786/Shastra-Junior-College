@@ -147,12 +147,10 @@ function validDestination(destination: string | null | undefined) {
     "/",
     "/about",
     "/contact",
-    "/courses/bipc",
-    "/courses/integrated",
-    "/courses/iit-jee",
-    "/courses/mpc",
-    "/courses/mpc-eamcet",
-    "/courses/neet",
+    "/courses/iit",
+    "/courses/nit",
+    "/courses/iiit",
+    "/courses/ipe",
     "/faculty",
     "/gallery",
     "/knowledge-hub",
@@ -182,7 +180,7 @@ function PathwayCard({ card, featured }: { card: CoursesMenuCard; featured?: boo
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eef2f8] text-[#0b3472]">{image ? <img src={image} alt={card.imageAlt} className="h-full w-full rounded-full object-cover" /> : <BookOpen className="h-4 w-4" />}</span>
       </div>
       <h3 className={`mt-6 font-display font-extrabold leading-[1.03] text-[#0b3472] ${featured ? "text-3xl sm:text-4xl" : "text-2xl"}`}>{card.title}</h3>
-      <p className="mt-4 text-sm leading-6 text-[#53657d]">{card.description}</p>
+      {card.description ? <p className="mt-4 text-sm leading-6 text-[#53657d]">{card.description}</p> : null}
       {action ? <span className="mt-7 inline-flex items-center gap-2 text-sm font-extrabold text-[#0b3472]">Explore pathway <ArrowRight className="h-4 w-4" /></span> : null}
     </>
   );

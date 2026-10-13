@@ -13,7 +13,7 @@ import GalleryPage from '@/pages/gallery';
 import FacultyPage from '@/pages/faculty';
 import { PublicCoursesPage as CoursesPage } from '@/pages/public-courses';
 import PublicCourseDetailPage from '@/pages/public-course-detail';
-import { getCourseDetail } from '@/pages/course-detail-config';
+import { getCourseDetail, LEGACY_COURSE_SLUGS } from '@/pages/course-detail-config';
 import {
   ContactPage,
 } from '@/pages/public-destination-page';
@@ -76,7 +76,13 @@ function SignUpPage() {
 
 function CourseDetailRoute() {
   const [match, params] = useRoute<{ courseSlug: string }>('/courses/:courseSlug');
-  const course = match ? getCourseDetail(params?.courseSlug ?? '') : undefined;
+  const courseSlug = params?.courseSlug ?? '';
+  const course = match ? getCourseDetail(courseSlug) : undefined;
+  const isLegacyCourse = match && !course && LEGACY_COURSE_SLUGS.has(courseSlug);
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    if (isLegacyCourse) setLocation('/courses');
+  }, [isLegacyCourse, setLocation]);
   return course ? <PublicCourseDetailPage course={course} /> : <NotFound />;
 }
 

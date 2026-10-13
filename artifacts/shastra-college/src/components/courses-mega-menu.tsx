@@ -116,7 +116,7 @@ function CourseCard({
       <span>
         <span className="mt-4 block text-[10px] font-extrabold uppercase tracking-[.14em] text-[#e3212b]">{card.category}</span>
         <span className="mt-1 block font-display text-lg font-extrabold leading-tight text-[#0b3472]">{card.title}</span>
-        <span className="mt-1.5 block text-xs leading-5 text-slate-500">{card.description}</span>
+        {card.description ? <span className="mt-1.5 block text-xs leading-5 text-slate-500">{card.description}</span> : null}
       </span>
     </Destination>
   );
