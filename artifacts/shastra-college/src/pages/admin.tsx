@@ -514,7 +514,7 @@ function Shell({
             : activeView === "statistics"
               ? "Home · Statistics"
               : activeView === "placement-records"
-                ? "Home · Placement Record"
+                ? "Home · Top Rankers"
                   : activeView === "gallery-preview"
                     ? "Home · Gallery Preview"
                     : activeView === "faculty-preview"
@@ -723,7 +723,7 @@ function Shell({
                       <NavRow icon={Link2} label="Pathways" nested active={activeView === "programs"} onClick={() => go("programs")} />
                       <NavRow icon={ClipboardList} label="Statistics" nested active={activeView === "statistics"} onClick={() => go("statistics")} />
                        <NavRow icon={ImagePlus} label="Gallery Preview" nested active={activeView === "gallery-preview"} onClick={() => go("gallery-preview")} />
-                      <NavRow icon={Award} label="Placement Record" nested active={activeView === "placement-records"} onClick={() => go("placement-records")} />
+                      <NavRow icon={Award} label="Top Rankers" nested active={activeView === "placement-records"} onClick={() => go("placement-records")} />
                        <NavRow icon={UserRound} label="Faculty Preview" nested active={activeView === "faculty-preview"} onClick={() => go("faculty-preview")} />
                         <NavRow icon={MessageSquareQuote} label="Testimonials" nested active={activeView === "testimonials"} onClick={() => go("testimonials")} />
                         <NavRow icon={BookOpenCheck} label="Knowledge Hub Preview" nested active={activeView === "knowledge-hub-preview"} onClick={() => go("knowledge-hub-preview")} />
@@ -1952,9 +1952,9 @@ function AdminWorkspace() {
     body = (
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
         <PageIntro
-          eyebrow="Pages / Home / Placement Record"
-          title="Manage placement records."
-          description="Add and maintain placement details approved for public sharing. Unpublished records remain available in this workspace."
+          eyebrow="Pages / Home / Top Rankers"
+          title="Manage top rankers."
+          description="Add and maintain student achievements and academic results approved for public sharing. Unpublished entries remain available in this workspace."
         />
         <AdminPlacementRecordsEditor home={home} onFlash={showFlash} />
       </div>

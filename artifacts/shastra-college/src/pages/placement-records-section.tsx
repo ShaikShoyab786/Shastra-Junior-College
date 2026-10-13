@@ -40,21 +40,19 @@ function PlacementCard({ item }: { item: ContentItem }) {
   const content = record(item.content);
   const name = item.title.trim() || "Student";
   const image = assetUrl(item.imageUrl);
-  const altText =
-    text(content.altText).trim() || `${name} placement record photo`;
-  const details = [
-    { label: "Employer", value: text(content.employer) },
-    { label: "Role", value: text(content.role) },
-    { label: "Batch / Year", value: text(content.cohort) },
-    { label: "Package", value: text(content.package) },
-  ].filter((detail) => detail.value.trim());
+  const altText = text(content.altText).trim() || `${name} top ranker photo`;
+  const achievement = text(content.achievement).trim() || "Top Ranker";
+  const examOrStream = text(content.examOrStream).trim();
+  const subject = text(content.subject).trim();
+  const marks = text(content.marks).trim();
+  const year = text(content.year, text(content.cohort)).trim();
   return (
     <article
-      className="group rounded-[1.5rem] border border-[#0b3472]/10 bg-white p-5 shadow-[0_12px_34px_rgba(11,52,114,.06)] transition-transform duration-200 hover:-translate-y-1"
+      className="group rounded-[1.5rem] border border-[#0b3472]/10 bg-white p-6 shadow-[0_12px_34px_rgba(11,52,114,.06)] transition-transform duration-200 hover:-translate-y-1"
       data-testid={`card-placement-record-${item.id}`}
     >
-      <div className="flex items-center gap-4">
-        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border-4 border-[#f7f5ef] bg-[#e9eef7] shadow-sm">
+      <div className="flex flex-col items-center text-center">
+        <div className="h-36 w-36 shrink-0 overflow-hidden rounded-full border-4 border-[#f7f5ef] bg-[#e9eef7] shadow-md">
           {image ? (
             <img src={image} alt={altText} loading="eager" decoding="async" className="h-full w-full object-cover" data-testid={`img-placement-record-${item.id}`} />
           ) : (
@@ -63,18 +61,23 @@ function PlacementCard({ item }: { item: ContentItem }) {
             </span>
           )}
         </div>
+        <p className="mt-4 rounded-full bg-[#e3212b]/10 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.1em] text-[#e3212b]" data-testid={`text-placement-achievement-${item.id}`}>
+          {achievement}
+        </p>
         <div className="min-w-0">
-          <h3 className="truncate font-display text-lg font-extrabold tracking-tight text-[#0b3472]" data-testid={`text-placement-student-${item.id}`}>
+          <h3 className="mt-3 font-display text-xl font-extrabold tracking-tight text-[#0b3472]" data-testid={`text-placement-student-${item.id}`}>
             {name}
           </h3>
-          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#e3212b]">Placement record</p>
+          {examOrStream ? <p className="mt-1 text-sm font-semibold text-slate-500">{examOrStream}</p> : null}
         </div>
       </div>
-      <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-5 border-t border-slate-100 pt-5">
-        {details.map((detail) => (
-          <Detail key={detail.label} label={detail.label} value={detail.value} />
-        ))}
-      </dl>
+      {subject || marks || year ? (
+        <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-5 border-t border-slate-100 pt-5">
+          {subject ? <Detail label="Subject" value={subject} /> : null}
+          {marks ? <Detail label="Marks / Score" value={marks} /> : null}
+          {year ? <Detail label="Academic year" value={year} /> : null}
+        </dl>
+      ) : null}
     </article>
   );
 }
@@ -88,10 +91,25 @@ export default function PlacementRecordsSection({ section, items }: PlacementRec
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [visibleCount, setVisibleCount] = useState(6);
   const sectionContent = record(section.content);
-  const eyebrow = text(sectionContent.eyebrow).trim() || "Placement records";
-  const title = section.title.trim() || "Global Placement Record";
+  const savedEyebrow = text(sectionContent.eyebrow).trim();
+  const eyebrow =
+    !savedEyebrow || savedEyebrow.toLowerCase() === "placement records"
+      ? "Top Rankers"
+      : savedEyebrow;
+  const savedTitle = section.title.trim();
+  const title =
+    !savedTitle || savedTitle.toLowerCase() === "global placement record"
+      ? "Top Rankers of Shastra"
+      : savedTitle;
+  const savedDescription = section.subtitle?.trim() || "";
+  const legacyPlacementDescriptions = new Set([
+    "student placements by employer, role, batch, and year.",
+    "explore placement details by employer, role, and graduating batch.",
+  ]);
   const description =
-    section.subtitle?.trim() || "Explore placement details by employer, role, and graduating batch.";
+    !savedDescription || legacyPlacementDescriptions.has(savedDescription.toLowerCase())
+      ? "Celebrating the academic achievements of our students."
+      : savedDescription;
   const records = useMemo(
     () =>
       items
@@ -131,7 +149,7 @@ export default function PlacementRecordsSection({ section, items }: PlacementRec
           </div>
         ) : (
           <div className="mt-9 rounded-[1.5rem] border border-dashed border-[#0b3472]/20 bg-white/60 px-6 py-12 text-center text-sm font-semibold text-slate-500" data-testid="empty-placement-records">
-            Placement details will be shared here when records are available.
+            Ranker details will be shared here when records are available.
           </div>
         )}
 

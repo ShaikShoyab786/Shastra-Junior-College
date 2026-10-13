@@ -31,6 +31,13 @@ import type {
 
 type Flash = { tone: "success" | "error"; message: string } | null;
 type CmsRecord = Record<string, unknown>;
+const defaultRankerEyebrow = "Top Rankers";
+const defaultRankerTitle = "Top Rankers of Shastra";
+const defaultRankerDescription = "Celebrating the academic achievements of our students.";
+const legacyPlacementDescriptions = new Set([
+  "student placements by employer, role, batch, and year.",
+  "explore placement details by employer, role, and graduating batch.",
+]);
 
 function record(value: unknown): CmsRecord {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -40,6 +47,27 @@ function record(value: unknown): CmsRecord {
 
 function text(value: unknown, fallback = "") {
   return typeof value === "string" ? value : fallback;
+}
+
+function rankerEyebrow(value: unknown) {
+  const current = text(value).trim();
+  return !current || current.toLowerCase() === "placement records"
+    ? defaultRankerEyebrow
+    : current;
+}
+
+function rankerTitle(value: string) {
+  const current = value.trim();
+  return !current || current.toLowerCase() === "global placement record"
+    ? defaultRankerTitle
+    : current;
+}
+
+function rankerDescription(value: string | null) {
+  const current = value?.trim() || "";
+  return !current || legacyPlacementDescriptions.has(current.toLowerCase())
+    ? defaultRankerDescription
+    : current;
 }
 
 function initials(name: string) {
@@ -107,7 +135,7 @@ function SectionVisibility({ section, onFlash }: { section: ContentSection; onFl
     {
       onSuccess: () => {
         invalidateHome(client);
-        onFlash({ tone: "success", message: section.isVisible ? "Placement records hidden from the public site." : "Placement records shown on the public site." });
+        onFlash({ tone: "success", message: section.isVisible ? "Top Rankers hidden from the public site." : "Top Rankers shown on the public site." });
       },
       onError: (error) => onFlash({ tone: "error", message: errorMessage(error) }),
     },
@@ -122,24 +150,24 @@ function SectionVisibility({ section, onFlash }: { section: ContentSection; onFl
 function SectionIntroduction({ section, onFlash }: { section: ContentSection; onFlash: (flash: Flash) => void }) {
   const client = useQueryClient();
   const update = useUpdateContentSection();
-  const [eyebrow, setEyebrow] = useState(text(record(section.content).eyebrow, "Placement records"));
-  const [title, setTitle] = useState(section.title);
-  const [description, setDescription] = useState(section.subtitle || "");
+  const [eyebrow, setEyebrow] = useState(rankerEyebrow(record(section.content).eyebrow));
+  const [title, setTitle] = useState(rankerTitle(section.title));
+  const [description, setDescription] = useState(rankerDescription(section.subtitle));
 
   useEffect(() => {
-    setEyebrow(text(record(section.content).eyebrow, "Placement records"));
-    setTitle(section.title);
-    setDescription(section.subtitle || "");
+    setEyebrow(rankerEyebrow(record(section.content).eyebrow));
+    setTitle(rankerTitle(section.title));
+    setDescription(rankerDescription(section.subtitle));
   }, [section.id, section.content, section.title, section.subtitle]);
 
   const save = (event: FormEvent) => {
     event.preventDefault();
     if (!title.trim()) {
-      onFlash({ tone: "error", message: "A placement section heading is required." });
+      onFlash({ tone: "error", message: "A Top Rankers heading is required." });
       return;
     }
     if (!description.trim()) {
-      onFlash({ tone: "error", message: "A placement section description is required." });
+      onFlash({ tone: "error", message: "A Top Rankers description is required." });
       return;
     }
     update.mutate(
@@ -150,14 +178,14 @@ function SectionIntroduction({ section, onFlash }: { section: ContentSection; on
           subtitle: description.trim(),
           content: {
             ...record(section.content),
-            eyebrow: eyebrow.trim() || "Placement records",
+            eyebrow: eyebrow.trim() || defaultRankerEyebrow,
           },
         },
       },
       {
         onSuccess: () => {
           invalidateHome(client);
-          onFlash({ tone: "success", message: "Placement section text saved." });
+          onFlash({ tone: "success", message: "Top Rankers section text saved." });
         },
         onError: (error) => onFlash({ tone: "error", message: errorMessage(error) }),
       },
@@ -166,8 +194,8 @@ function SectionIntroduction({ section, onFlash }: { section: ContentSection; on
 
   return (
     <form onSubmit={save} className="mt-6 grid gap-4 rounded-2xl bg-[#f5f8fc] p-4 sm:grid-cols-2 sm:p-5" data-testid="form-placement-section-text">
-      <Input label="Eyebrow text" value={eyebrow} onChange={setEyebrow} placeholder="Placement records" testId="input-placement-section-eyebrow" />
-      <Input label="Main text" value={title} onChange={setTitle} required maxLength={160} placeholder="Global Placement Record" testId="input-placement-section-title" />
+      <Input label="Eyebrow text" value={eyebrow} onChange={setEyebrow} placeholder="Top Rankers" testId="input-placement-section-eyebrow" />
+      <Input label="Main text" value={title} onChange={setTitle} required maxLength={160} placeholder="Top Rankers of Shastra" testId="input-placement-section-title" />
       <label className="block text-sm font-bold text-slate-700 sm:col-span-2">
         Description text
         <textarea
@@ -208,10 +236,11 @@ function PlacementItemForm({
   const requestUpload = useRequestUploadUrl();
   const initialContent = record(initial?.content);
   const [name, setName] = useState(initial?.title || "");
-  const [employer, setEmployer] = useState(text(initialContent.employer));
-  const [role, setRole] = useState(text(initialContent.role));
-  const [cohort, setCohort] = useState(text(initialContent.cohort));
-  const [packageValue, setPackageValue] = useState(text(initialContent.package));
+  const [achievement, setAchievement] = useState(text(initialContent.achievement));
+  const [examOrStream, setExamOrStream] = useState(text(initialContent.examOrStream));
+  const [subject, setSubject] = useState(text(initialContent.subject));
+  const [marks, setMarks] = useState(text(initialContent.marks));
+  const [year, setYear] = useState(text(initialContent.year, text(initialContent.cohort)));
   const [altText, setAltText] = useState(text(initialContent.altText));
   const [imageUrl, setImageUrl] = useState(initial?.imageUrl || "");
   const [isDemo, setIsDemo] = useState(initialContent.isDemo === true);
@@ -227,10 +256,11 @@ function PlacementItemForm({
   useEffect(() => {
     const content = record(initial?.content);
     setName(initial?.title || "");
-    setEmployer(text(content.employer));
-    setRole(text(content.role));
-    setCohort(text(content.cohort));
-    setPackageValue(text(content.package));
+    setAchievement(text(content.achievement));
+    setExamOrStream(text(content.examOrStream));
+    setSubject(text(content.subject));
+    setMarks(text(content.marks));
+    setYear(text(content.year, text(content.cohort)));
     setAltText(text(content.altText));
     setImageUrl(initial?.imageUrl || "");
     setIsDemo(content.isDemo === true);
@@ -277,17 +307,16 @@ function PlacementItemForm({
   const save = (event: FormEvent) => {
     event.preventDefault();
     if (!name.trim()) { setError("Student name is required."); return; }
-    if (!employer.trim()) { setError("Employer is required."); return; }
-    if (!role.trim()) { setError("Role is required."); return; }
     if (imageUrl && !altText.trim()) { setError("Useful alt text is required when a photo is present."); return; }
     if (selectedFile) { setError("Upload the selected photo before saving."); return; }
 
     const content: CmsRecord = {
       ...initialContent,
-      employer: employer.trim(),
-      role: role.trim(),
-      cohort: cohort.trim(),
-      package: packageValue.trim(),
+      achievement: achievement.trim(),
+      examOrStream: examOrStream.trim(),
+      subject: subject.trim(),
+      marks: marks.trim(),
+      year: year.trim(),
       altText: imageUrl ? altText.trim() : "",
       isDemo,
     };
@@ -305,13 +334,13 @@ function PlacementItemForm({
     if (initial) {
       const data: ContentItemUpdate = { ...common, itemType: "placement-record" };
       update.mutate({ id: initial.id, data }, {
-        onSuccess: () => { invalidateHome(client); onFlash({ tone: "success", message: "Placement record saved." }); onClose(); },
+        onSuccess: () => { invalidateHome(client); onFlash({ tone: "success", message: "Top ranker saved." }); onClose(); },
         onError: (failure) => setError(errorMessage(failure)),
       });
     } else {
       const data: ContentItemInput = { sectionId, itemType: "placement-record", ...common };
       create.mutate({ data }, {
-        onSuccess: () => { invalidateHome(client); onFlash({ tone: "success", message: "Placement record added." }); onClose(); },
+        onSuccess: () => { invalidateHome(client); onFlash({ tone: "success", message: "Top ranker added." }); onClose(); },
         onError: (failure) => setError(errorMessage(failure)),
       });
     }
@@ -324,10 +353,11 @@ function PlacementItemForm({
     <form onSubmit={save} className="mt-4 rounded-2xl border border-[#0b3472]/15 bg-[#f5f8fc] p-4 sm:p-5" data-testid={`form-placement-record-${initial?.id || "new"}`}>
       <div className="grid gap-4 md:grid-cols-2">
         <Input label="Student name" value={name} onChange={setName} required placeholder="Enter the student name" testId={`input-placement-name-${initial?.id || "new"}`} />
-        <Input label="Employer" value={employer} onChange={setEmployer} required placeholder="Enter the employer" testId={`input-placement-employer-${initial?.id || "new"}`} />
-        <Input label="Role" value={role} onChange={setRole} required placeholder="Enter the role" testId={`input-placement-role-${initial?.id || "new"}`} />
-        <Input label="Batch / Year" value={cohort} onChange={setCohort} placeholder="e.g. 2025–26" testId={`input-placement-cohort-${initial?.id || "new"}`} />
-        <Input label="Package" value={packageValue} onChange={setPackageValue} placeholder="e.g. As reported by the college" testId={`input-placement-package-${initial?.id || "new"}`} />
+        <Input label="Achievement / Rank" value={achievement} onChange={setAchievement} placeholder="e.g. IIT-JEE Main Topper" testId={`input-placement-achievement-${initial?.id || "new"}`} />
+        <Input label="Exam / Stream" value={examOrStream} onChange={setExamOrStream} placeholder="e.g. IIT-JEE Main · MPC" testId={`input-placement-exam-${initial?.id || "new"}`} />
+        <Input label="Subject" value={subject} onChange={setSubject} placeholder="e.g. Mathematics" testId={`input-placement-subject-${initial?.id || "new"}`} />
+        <Input label="Marks / Score" value={marks} onChange={setMarks} placeholder="e.g. 467 / 470" testId={`input-placement-marks-${initial?.id || "new"}`} />
+        <Input label="Academic year" value={year} onChange={setYear} placeholder="e.g. 2025–26" testId={`input-placement-year-${initial?.id || "new"}`} />
         <Input label="Photo alt text" value={altText} onChange={setAltText} required={Boolean(imageUrl)} placeholder="Describe the student photo" testId={`input-placement-alt-${initial?.id || "new"}`} />
       </div>
 
@@ -396,9 +426,9 @@ function PlacementItems({ section, items, onFlash }: { section: ContentSection; 
   );
 
   const deleteItem = (item: ContentItem) => {
-    if (!window.confirm(`Delete “${item.title}” from placement records? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete “${item.title}” from Top Rankers? This cannot be undone.`)) return;
     remove.mutate({ id: item.id }, {
-      onSuccess: () => { invalidateHome(client); setEditing(null); onFlash({ tone: "success", message: "Placement record deleted." }); },
+      onSuccess: () => { invalidateHome(client); setEditing(null); onFlash({ tone: "success", message: "Top ranker deleted." }); },
       onError: (failure) => onFlash({ tone: "error", message: errorMessage(failure) }),
     });
   };
@@ -408,18 +438,18 @@ function PlacementItems({ section, items, onFlash }: { section: ContentSection; 
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="eyebrow text-[#e3212b]">Records</p>
-          <h3 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Placement details</h3>
-          <p className="mt-1 max-w-xl text-sm leading-5 text-slate-500">Manage every record shown in the public placement section. Hidden records remain available here for review.</p>
+          <h3 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">Student achievements</h3>
+          <p className="mt-1 max-w-xl text-sm leading-5 text-slate-500">Manage the student rankings and academic results shown on the home page. Hidden entries remain available here for review.</p>
         </div>
         <button type="button" onClick={() => setEditing((current) => current === "new" ? null : "new")} className="inline-flex items-center gap-2 rounded-xl border border-[#0b3472]/15 bg-white px-3.5 py-2.5 text-sm font-bold text-[#0b3472] hover:bg-[#0b3472]/5" data-testid="button-add-placement-record">
-          <Plus className="h-4 w-4" /> {editing === "new" ? "Close form" : "Add record"}
+          <Plus className="h-4 w-4" /> {editing === "new" ? "Close form" : "Add top ranker"}
         </button>
       </div>
 
-      {editing === "new" ? <section className="mb-5 rounded-2xl border border-[#0b3472]/15 bg-[#f5f8fc] p-4 sm:p-5" data-testid="panel-new-placement-record"><div className="flex items-start justify-between gap-3"><div><h4 className="font-display text-lg font-extrabold text-[#0b3472]">Add a placement record</h4><p className="mt-1 text-sm text-slate-500">Enter only details the college has authorized for publication.</p></div><button type="button" onClick={() => setEditing(null)} className="rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-white" data-testid="button-close-new-placement">Close</button></div><PlacementItemForm sectionId={section.id} position={nextPosition} onFlash={onFlash} onClose={() => setEditing(null)} /></section> : null}
+      {editing === "new" ? <section className="mb-5 rounded-2xl border border-[#0b3472]/15 bg-[#f5f8fc] p-4 sm:p-5" data-testid="panel-new-placement-record"><div className="flex items-start justify-between gap-3"><div><h4 className="font-display text-lg font-extrabold text-[#0b3472]">Add a top ranker</h4><p className="mt-1 text-sm text-slate-500">Enter only achievements and results the college has authorized for publication.</p></div><button type="button" onClick={() => setEditing(null)} className="rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-white" data-testid="button-close-new-placement">Close</button></div><PlacementItemForm sectionId={section.id} position={nextPosition} onFlash={onFlash} onClose={() => setEditing(null)} /></section> : null}
 
       {ordered.length === 0 && editing !== "new" ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 px-5 py-12 text-center text-sm text-slate-500" data-testid="empty-admin-placement-records">No placement records yet. Add the first authorized record.</div>
+        <div className="rounded-2xl border border-dashed border-slate-300 px-5 py-12 text-center text-sm text-slate-500" data-testid="empty-admin-placement-records">No top rankers yet. Add the first student achievement.</div>
       ) : (
         <div className="space-y-3">
           {ordered.map((item, index) => {
@@ -432,7 +462,7 @@ function PlacementItems({ section, items, onFlash }: { section: ContentSection; 
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-bold text-[#0b3472]" data-testid={`text-admin-placement-name-${item.id}`}>{item.title}</p>
-                    <p className="mt-1 truncate text-xs text-slate-500">{text(content.employer, "Employer not set")} · {text(content.role, "Role not set")} · {item.isVisible ? "Published" : "Unpublished"}{content.isDemo === true ? " · Illustrative sample" : ""}</p>
+                    <p className="mt-1 truncate text-xs text-slate-500">{text(content.achievement, "Top Ranker")} · {text(content.examOrStream, "Exam or stream not set")} · {item.isVisible ? "Published" : "Unpublished"}{content.isDemo === true ? " · Illustrative sample" : ""}</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-1">
                     <button type="button" onClick={() => toggle(item)} disabled={update.isPending} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30" aria-label={`${item.isVisible ? "Unpublish" : "Publish"} ${item.title}`} data-testid={`button-toggle-placement-${item.id}`}>{item.isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
@@ -462,7 +492,7 @@ export default function AdminPlacementRecordsEditor({ home, onFlash }: AdminPlac
   const items = section ? home.items.filter((item) => item.sectionId === section.id && item.itemType === "placement-record") : [];
 
   if (!section) {
-    return <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-900" role="alert" data-testid="missing-placement-records-section">The placement records section is not available in the current CMS response. Create the section in the content service, then refresh this editor.</div>;
+    return <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-900" role="alert" data-testid="missing-placement-records-section">The Top Rankers section is not available in the current CMS response. Create the section in the content service, then refresh this editor.</div>;
   }
 
   return (
@@ -472,7 +502,7 @@ export default function AdminPlacementRecordsEditor({ home, onFlash }: AdminPlac
           <div>
             <p className="eyebrow text-[#e3212b]">Home page</p>
             <h2 className="mt-2 font-display text-2xl font-extrabold text-[#0b3472]">Placement section text</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Edit the eyebrow, heading, and description shown above the placement records.</p>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Edit the eyebrow, heading, and description shown above the student achievements.</p>
           </div>
           <SectionVisibility section={section} onFlash={onFlash} />
         </div>
