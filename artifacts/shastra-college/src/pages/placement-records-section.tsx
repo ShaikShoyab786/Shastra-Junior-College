@@ -87,6 +87,11 @@ export type PlacementRecordsSectionProps = {
 export default function PlacementRecordsSection({ section, items }: PlacementRecordsSectionProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [visibleCount, setVisibleCount] = useState(6);
+  const sectionContent = record(section.content);
+  const eyebrow = text(sectionContent.eyebrow).trim() || "Placement records";
+  const title = section.title.trim() || "Global Placement Record";
+  const description =
+    section.subtitle?.trim() || "Explore placement details by employer, role, and graduating batch.";
   const records = useMemo(
     () =>
       items
@@ -111,12 +116,12 @@ export default function PlacementRecordsSection({ section, items }: PlacementRec
     <section id="placement-records" className="border-t border-[#0b3472]/10 bg-[#fbfaf6] px-5 py-16 sm:px-8 sm:py-20" data-testid={`section-placement-records-${section.id}`}>
       <div className="mx-auto max-w-7xl">
         <div className="max-w-2xl">
-          <p className="eyebrow text-[#e3212b]">Placement records</p>
+          <p className="eyebrow text-[#e3212b]">{eyebrow}</p>
           <h2 ref={headingRef} className="mt-3 font-display text-4xl font-extrabold tracking-[-0.04em] text-[#0b3472] sm:text-5xl" data-testid="heading-global-placement-record">
-            Global Placement Record
+            {title}
           </h2>
           <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
-            Explore placement details by employer, role, and graduating batch.
+            {description}
           </p>
         </div>
 

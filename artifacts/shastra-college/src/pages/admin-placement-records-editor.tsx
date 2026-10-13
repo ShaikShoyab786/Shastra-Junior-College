@@ -72,6 +72,7 @@ function Input({
   onChange,
   placeholder,
   required = false,
+  maxLength,
   testId,
 }: {
   label: string;
@@ -79,6 +80,7 @@ function Input({
   onChange: (value: string) => void;
   placeholder?: string;
   required?: boolean;
+  maxLength?: number;
   testId: string;
 }) {
   return (
@@ -89,6 +91,7 @@ function Input({
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         required={required}
+        maxLength={maxLength}
         className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#0b3472]/50 focus:ring-4 focus:ring-[#0b3472]/10"
         data-testid={testId}
       />
@@ -113,6 +116,76 @@ function SectionVisibility({ section, onFlash }: { section: ContentSection; onFl
     <button type="button" onClick={toggle} disabled={update.isPending} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-[#0b3472] transition hover:bg-slate-50 disabled:opacity-50" data-testid="button-toggle-placement-section">
       {section.isVisible ? <><EyeOff className="h-4 w-4" /> Hide section</> : <><Eye className="h-4 w-4" /> Show section</>}
     </button>
+  );
+}
+
+function SectionIntroduction({ section, onFlash }: { section: ContentSection; onFlash: (flash: Flash) => void }) {
+  const client = useQueryClient();
+  const update = useUpdateContentSection();
+  const [eyebrow, setEyebrow] = useState(text(record(section.content).eyebrow, "Placement records"));
+  const [title, setTitle] = useState(section.title);
+  const [description, setDescription] = useState(section.subtitle || "");
+
+  useEffect(() => {
+    setEyebrow(text(record(section.content).eyebrow, "Placement records"));
+    setTitle(section.title);
+    setDescription(section.subtitle || "");
+  }, [section.id, section.content, section.title, section.subtitle]);
+
+  const save = (event: FormEvent) => {
+    event.preventDefault();
+    if (!title.trim()) {
+      onFlash({ tone: "error", message: "A placement section heading is required." });
+      return;
+    }
+    if (!description.trim()) {
+      onFlash({ tone: "error", message: "A placement section description is required." });
+      return;
+    }
+    update.mutate(
+      {
+        id: section.id,
+        data: {
+          title: title.trim(),
+          subtitle: description.trim(),
+          content: {
+            ...record(section.content),
+            eyebrow: eyebrow.trim() || "Placement records",
+          },
+        },
+      },
+      {
+        onSuccess: () => {
+          invalidateHome(client);
+          onFlash({ tone: "success", message: "Placement section text saved." });
+        },
+        onError: (error) => onFlash({ tone: "error", message: errorMessage(error) }),
+      },
+    );
+  };
+
+  return (
+    <form onSubmit={save} className="mt-6 grid gap-4 rounded-2xl bg-[#f5f8fc] p-4 sm:grid-cols-2 sm:p-5" data-testid="form-placement-section-text">
+      <Input label="Eyebrow text" value={eyebrow} onChange={setEyebrow} placeholder="Placement records" testId="input-placement-section-eyebrow" />
+      <Input label="Main text" value={title} onChange={setTitle} required maxLength={160} placeholder="Global Placement Record" testId="input-placement-section-title" />
+      <label className="block text-sm font-bold text-slate-700 sm:col-span-2">
+        Description text
+        <textarea
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+          required
+          maxLength={300}
+          rows={3}
+          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#0b3472]/50 focus:ring-4 focus:ring-[#0b3472]/10"
+          data-testid="input-placement-section-description"
+        />
+      </label>
+      <div className="flex justify-end sm:col-span-2">
+        <button type="submit" disabled={update.isPending} className="inline-flex items-center gap-2 rounded-xl bg-[#0b3472] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#082859] disabled:opacity-50" data-testid="button-save-placement-section-text">
+          <Save className="h-4 w-4" />{update.isPending ? "Saving…" : "Save section text"}
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -397,12 +470,13 @@ export default function AdminPlacementRecordsEditor({ home, onFlash }: AdminPlac
       <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="eyebrow text-[#e3212b]">Placement records</p>
-            <h2 className="mt-2 font-display text-2xl font-extrabold text-[#0b3472]">Global Placement Record</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Keep concise, authorized placement details accurate. The public heading is fixed and cannot be changed here.</p>
+            <p className="eyebrow text-[#e3212b]">Home page</p>
+            <h2 className="mt-2 font-display text-2xl font-extrabold text-[#0b3472]">Placement section text</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Edit the eyebrow, heading, and description shown above the placement records.</p>
           </div>
           <SectionVisibility section={section} onFlash={onFlash} />
         </div>
+        <SectionIntroduction section={section} onFlash={onFlash} />
         <PlacementItems section={section} items={items} onFlash={onFlash} />
       </section>
     </div>
