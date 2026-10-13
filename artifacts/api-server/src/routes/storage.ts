@@ -27,7 +27,7 @@ import {
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
 const allowedImageTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
-const maxImageBytes = 2 * 1024 * 1024;
+const maxImageBytes = 10 * 1024 * 1024;
 const maxPdfBytes = 10 * 1024 * 1024;
 
 function streamResponse(
@@ -69,7 +69,7 @@ router.post(
       res.status(400).json({
         error: isPdf
           ? "Choose a PDF file with a .pdf extension no larger than 10 MB."
-          : "Choose a PNG, JPEG, or WebP image no larger than 2 MB.",
+          : "Choose a PNG, JPEG, or WebP image no larger than 10 MB.",
       });
       return;
     }

@@ -222,8 +222,8 @@ export default function AdminStudyResourcesEditor({ onFlash }: Props) {
         if (!["image/png", "image/jpeg", "image/webp"].includes(contentType)) {
           throw new Error("Choose a PNG, JPEG, or WebP cover image.");
         }
-        if (file.size < 1 || file.size > 2 * 1024 * 1024) {
-          throw new Error("Cover images must be 2 MB or smaller.");
+        if (file.size < 1 || file.size > 10 * 1024 * 1024) {
+          throw new Error("Cover images must be 10 MB or smaller.");
         }
       }
 

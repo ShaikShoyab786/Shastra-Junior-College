@@ -256,8 +256,8 @@ export default function AdminAboutChairmanEditor({
         if (!["image/png", "image/jpeg", "image/webp"].includes(selectedFile.type)) {
           throw new Error("Use a PNG, JPEG, or WebP portrait.");
         }
-        if (selectedFile.size > 2 * 1024 * 1024) {
-          throw new Error("The portrait must be 2 MB or smaller.");
+        if (selectedFile.size > 10 * 1024 * 1024) {
+          throw new Error("The portrait must be 10 MB or smaller.");
         }
         const uploadInfo = await requestUpload.mutateAsync({
           data: {
@@ -471,7 +471,7 @@ export default function AdminAboutChairmanEditor({
                   data-testid="input-about-chairman-image"
                 />
                 <p className="mt-1 text-xs leading-5 text-slate-500">
-                  PNG, JPEG, or WebP; maximum 2 MB. The photo uploads when you
+                  PNG, JPEG, or WebP; maximum 10 MB. The photo uploads when you
                   save.
                 </p>
                 {selectedFile ? (

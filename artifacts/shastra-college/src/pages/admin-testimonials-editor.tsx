@@ -244,8 +244,8 @@ function TestimonialForm({
       setError("Use a PNG, JPEG, or WebP portrait.");
       return;
     }
-    if (selectedFile.size > 2 * 1024 * 1024) {
-      setError("Portraits must be 2 MB or smaller.");
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      setError("Portraits must be 10 MB or smaller.");
       return;
     }
     setUploading(true);
@@ -317,7 +317,7 @@ function TestimonialForm({
         </div>
         <div className="rounded-xl border border-dashed border-slate-300 bg-white p-4">
           <label className="flex cursor-pointer items-center gap-3 text-sm font-bold text-[#0b3472]"><ImagePlus className="h-5 w-5 shrink-0" /><span className="truncate">{selectedFile ? selectedFile.name : imageUrl ? "Choose a replacement portrait" : "Choose an optional portrait"}</span><input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => selectFile(event.target.files?.[0] || null)} data-testid={`input-testimonial-file-${initial?.id || "new"}`} /></label>
-          <p className="mt-2 text-xs leading-5 text-slate-500">PNG, JPEG, or WebP. Maximum 2 MB.</p>
+          <p className="mt-2 text-xs leading-5 text-slate-500">PNG, JPEG, or WebP. Maximum 10 MB.</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {selectedFile ? <button type="button" onClick={() => void upload()} disabled={uploading} className="inline-flex items-center gap-2 rounded-xl border border-[#0b3472]/20 px-3 py-2 text-xs font-bold text-[#0b3472] hover:bg-[#0b3472]/5 disabled:opacity-50" data-testid={`button-upload-testimonial-${initial?.id || "new"}`}><Upload className="h-3.5 w-3.5" />{uploading ? "Uploading…" : "Upload portrait"}</button> : null}
             {imageUrl ? <button type="button" onClick={() => { setImageUrl(""); setAltText(""); }} className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50" data-testid={`button-remove-testimonial-photo-${initial?.id || "new"}`}><X className="h-3.5 w-3.5" />Remove portrait</button> : null}

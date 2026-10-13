@@ -215,8 +215,8 @@ export default function AdminAboutWhoWeAreEditor({
         if (!["image/png", "image/jpeg", "image/webp"].includes(selectedFile.type)) {
           throw new Error("Use a PNG, JPEG, or WebP image.");
         }
-        if (selectedFile.size > 2 * 1024 * 1024) {
-          throw new Error("The About image must be 2 MB or smaller.");
+        if (selectedFile.size > 10 * 1024 * 1024) {
+          throw new Error("The About image must be 10 MB or smaller.");
         }
         const uploadInfo = await requestUpload.mutateAsync({
           data: {
@@ -406,7 +406,7 @@ export default function AdminAboutWhoWeAreEditor({
                     data-testid="input-about-who-image-upload"
                   />
                   <p className="mt-1 text-xs leading-5 text-slate-500">
-                    PNG, JPEG, or WebP; maximum 2 MB. The selected file uploads
+                    PNG, JPEG, or WebP; maximum 10 MB. The selected file uploads
                     when you save.
                   </p>
                   <p className="mt-1 text-xs leading-5 text-slate-500">

@@ -179,8 +179,8 @@ function PlacementItemForm({
       setError("Use a PNG, JPEG, or WebP photo.");
       return;
     }
-    if (selectedFile.size > 2 * 1024 * 1024) {
-      setError("Photos must be 2 MB or smaller.");
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      setError("Photos must be 10 MB or smaller.");
       return;
     }
     setUploading(true);
@@ -268,7 +268,7 @@ function PlacementItemForm({
             <span className="truncate">{selectedFile ? selectedFile.name : imageUrl ? "Choose a replacement photo" : "Choose an optional photo"}</span>
             <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => selectFile(event.target.files?.[0] || null)} data-testid={`input-placement-file-${initial?.id || "new"}`} />
           </label>
-          <p className="mt-2 text-xs leading-5 text-slate-500">PNG, JPEG, or WebP. Maximum 2 MB.</p>
+          <p className="mt-2 text-xs leading-5 text-slate-500">PNG, JPEG, or WebP. Maximum 10 MB.</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {selectedFile ? <button type="button" onClick={() => void upload()} disabled={uploading} className="inline-flex items-center gap-2 rounded-xl border border-[#0b3472]/20 px-3 py-2 text-xs font-bold text-[#0b3472] hover:bg-[#0b3472]/5 disabled:opacity-50" data-testid={`button-upload-placement-${initial?.id || "new"}`}><Upload className="h-3.5 w-3.5" />{uploading ? "Uploading…" : "Upload photo"}</button> : null}
             {imageUrl ? <button type="button" onClick={() => { setImageUrl(""); setAltText(""); }} className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50" data-testid={`button-remove-placement-photo-${initial?.id || "new"}`}><X className="h-3.5 w-3.5" />Remove photo</button> : null}

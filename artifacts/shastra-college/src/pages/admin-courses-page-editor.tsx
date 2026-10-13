@@ -272,7 +272,7 @@ export default function AdminCoursesPageEditor({ onFlash }: { onFlash: (flash: F
     setUploadsInProgress((count) => count + 1);
     try {
       if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) throw new Error("Use a PNG, JPEG, or WebP image.");
-      if (file.size > 2 * 1024 * 1024) throw new Error("Images must be 2 MB or smaller.");
+      if (file.size > 10 * 1024 * 1024) throw new Error("Images must be 10 MB or smaller.");
       const info = await uploadRef.current({ data: { name: file.name, size: file.size, contentType: file.type } });
       const response = await fetch(info.uploadURL, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
       if (!response.ok) throw new Error("The image upload could not be completed.");

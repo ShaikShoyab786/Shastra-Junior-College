@@ -164,8 +164,8 @@ function ImageUpload({
       setError("Choose a PNG, JPEG or WebP image.");
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      setError("Images must be 2 MB or smaller.");
+    if (file.size > 10 * 1024 * 1024) {
+      setError("Images must be 10 MB or smaller.");
       return;
     }
     setUploading(true);
@@ -224,7 +224,7 @@ function ImageUpload({
             />
           </label>
           <p className="mt-2 text-xs text-[#77848a]">
-            PNG, JPEG or WebP · up to 2 MB
+            PNG, JPEG or WebP · up to 10 MB
           </p>
           {file ? (
             <button

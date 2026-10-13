@@ -1161,7 +1161,7 @@ function IdentityView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flas
     if (!selectedFile) return;
     const supported = ["image/png", "image/jpeg", "image/webp"];
     if (!supported.includes(selectedFile.type)) { onFlash({ tone: "error", message: "Logo must be a PNG, JPEG, or WebP file." }); return; }
-    if (selectedFile.size > 2 * 1024 * 1024) { onFlash({ tone: "error", message: "Logo files must be 2 MB or smaller." }); return; }
+    if (selectedFile.size > 10 * 1024 * 1024) { onFlash({ tone: "error", message: "Logo files must be 10 MB or smaller." }); return; }
     setUploading(true);
     try {
       const uploadInfo = await requestUpload.mutateAsync({ data: { name: selectedFile.name, size: selectedFile.size, contentType: selectedFile.type } });
@@ -1355,7 +1355,7 @@ function IdentityView({ home, onFlash }: { home: HomePage; onFlash: (flash: Flas
           <SectionCard>
             <div><p className="eyebrow text-[#e3212b]">Header mark</p><h2 className="mt-1 font-display text-2xl font-extrabold text-[#0b3472]">College logo</h2></div>
             <div className="mt-6 flex min-h-[180px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-[#f7f9fc] p-6"><img src={logoPreview} alt="College logo preview" className="max-h-32 max-w-full object-contain" data-testid="img-logo-preview" /></div>
-            <div className="mt-4 rounded-2xl border border-slate-200 p-4"><label className="flex cursor-pointer items-center gap-3 text-sm font-bold text-[#0b3472]"><ImagePlus className="h-5 w-5" /><span>{selectedFile ? selectedFile.name : "Choose a new logo"}</span><input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => setSelectedFile(event.target.files?.[0] || null)} data-testid="input-logo-file" /></label><p className="mt-2 text-xs leading-5 text-slate-500">PNG, JPEG, or WebP. Maximum 2 MB.</p>{selectedFile ? <Button onClick={() => void upload()} disabled={uploading} testId="button-upload-logo" variant="outline"><Upload className="h-4 w-4" />{uploading ? "Uploading…" : "Upload logo"}</Button> : null}</div>
+            <div className="mt-4 rounded-2xl border border-slate-200 p-4"><label className="flex cursor-pointer items-center gap-3 text-sm font-bold text-[#0b3472]"><ImagePlus className="h-5 w-5" /><span>{selectedFile ? selectedFile.name : "Choose a new logo"}</span><input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => setSelectedFile(event.target.files?.[0] || null)} data-testid="input-logo-file" /></label><p className="mt-2 text-xs leading-5 text-slate-500">PNG, JPEG, or WebP. Maximum 10 MB.</p>{selectedFile ? <Button onClick={() => void upload()} disabled={uploading} testId="button-upload-logo" variant="outline"><Upload className="h-4 w-4" />{uploading ? "Uploading…" : "Upload logo"}</Button> : null}</div>
           </SectionCard>
           <SectionCard className="sticky top-[100px]">
             <div className="flex items-start gap-3"><Palette className="mt-0.5 h-5 w-5 text-[#e3212b]" /><div><p className="eyebrow text-[#e3212b]">Save changes</p><h2 className="mt-1 font-display text-xl font-extrabold text-[#0b3472]">Ready to publish?</h2><p className="mt-2 text-sm leading-6 text-slate-500">The selected palette is only a draft until you save. Saving updates the shared settings used across public pages and the staff workspace.</p></div></div>

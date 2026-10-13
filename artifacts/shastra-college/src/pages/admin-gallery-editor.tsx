@@ -224,7 +224,7 @@ function GalleryItemEditor({ sectionId, categories, initial, position, onFlash, 
   const upload = async () => {
     if (!selectedFile) return;
     if (!["image/png", "image/jpeg", "image/webp"].includes(selectedFile.type)) { setError("Use a PNG, JPEG, or WebP image."); return; }
-    if (selectedFile.size > 2 * 1024 * 1024) { setError("Gallery images must be 2 MB or smaller."); return; }
+    if (selectedFile.size > 10 * 1024 * 1024) { setError("Gallery images must be 10 MB or smaller."); return; }
     setUploading(true); setError("");
     try {
       const uploadInfo = await requestUpload.mutateAsync({ data: { name: selectedFile.name, size: selectedFile.size, contentType: selectedFile.type } });
@@ -285,7 +285,7 @@ function GalleryItemEditor({ sectionId, categories, initial, position, onFlash, 
        <div className="aspect-[4/3] overflow-hidden rounded-xl border border-slate-200 bg-white">{imageUrl || previewUrl ? <img src={previewUrl || assetUrl(imageUrl)} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-slate-300"><ImagePlus className="h-8 w-8" /></div>}</div>
       <div className="rounded-xl border border-dashed border-slate-300 bg-white p-4">
          <label className="flex cursor-pointer items-center gap-3 text-sm font-bold text-[#0b3472]"><ImagePlus className="h-5 w-5" /><span className="truncate">{selectedFile ? selectedFile.name : imageUrl ? "Choose a replacement image" : "Choose an image"}</span><input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => { const file = event.target.files?.[0] || null; if (previewUrl) URL.revokeObjectURL(previewUrl); setSelectedFile(file); setPreviewUrl(file ? URL.createObjectURL(file) : ""); }} data-testid={`input-gallery-file-${initial?.id || "new"}`} /></label>
-         <p className="mt-2 text-xs leading-5 text-slate-500">PNG, JPEG, or WebP. Maximum 2 MB.</p>
+         <p className="mt-2 text-xs leading-5 text-slate-500">PNG, JPEG, or WebP. Maximum 10 MB.</p>
         {selectedFile ? <button type="button" onClick={() => void upload()} disabled={uploading} className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[#0b3472]/20 px-3 py-2 text-xs font-bold text-[#0b3472] hover:bg-[#0b3472]/5 disabled:opacity-50" data-testid={`button-upload-gallery-${initial?.id || "new"}`}><Upload className="h-3.5 w-3.5" />{uploading ? "Uploading…" : "Upload image"}</button> : null}
       </div>
     </div>
