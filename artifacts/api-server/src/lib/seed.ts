@@ -1942,6 +1942,189 @@ export async function seedCoursesPageSections(): Promise<void> {
         .where(eq(coursesMenuSettingsTable.id, "primary"));
     }
 
+    const targetedPublicContentSeedMarker = "targeted-public-content-top-rankers-theme-v1";
+    if (!seedMarkers.has(targetedPublicContentSeedMarker)) {
+      const storage = new ObjectStorageService();
+      const rankers = [
+        {
+          name: "Dheeraj",
+          image: "dheeraj.jpg",
+          achievement: "IIT Topper",
+          examOrStream: "IIT, Indore",
+          year: "2025–26",
+          altText: "Portrait of Dheeraj",
+        },
+        {
+          name: "Jagadeesh",
+          image: "jagadeesh.jpg",
+          achievement: "NIT Topper",
+          examOrStream: "NIT, Calicut",
+          year: "2025–26",
+          altText: "Portrait of Jagadeesh",
+        },
+        {
+          name: "Brahmendra Reddy",
+          image: "brahmendra.jpg",
+          achievement: "IIIT Topper",
+          examOrStream: "IIIT, Kurnool",
+          year: "2024–25",
+          altText: "Portrait of Brahmendra Reddy",
+        },
+        {
+          name: "Mani Kishore",
+          image: "mani.jpg",
+          achievement: "IPE 1st Year Topper",
+          examOrStream: "MPC",
+          marks: "467/470",
+          year: "2025–26",
+          altText: "Portrait of Mani Kishore",
+        },
+        {
+          name: "Shaik Sheema",
+          image: "sheema.jpg",
+          achievement: "IPE 1st Year Topper",
+          examOrStream: "MPC",
+          marks: "467/470",
+          year: "2025–26",
+          altText: "Portrait of Shaik Sheema",
+        },
+        {
+          name: "R. Manoj Kumar Reddy",
+          image: "manoj.jpg",
+          achievement: "IPE 2nd Year Topper",
+          examOrStream: "MPC",
+          marks: "991/1000",
+          year: "2025–26",
+          altText: "Portrait of R. Manoj Kumar Reddy",
+        },
+      ] as const;
+      const rankerImagePaths: string[] = [];
+      for (const ranker of rankers) {
+        const imageBytes = await readFile(
+          resolve(
+            dirname(fileURLToPath(import.meta.url)),
+            "../assets/top-rankers",
+            ranker.image,
+          ),
+        );
+        const uploadUrl = await storage.getObjectEntityUploadURL();
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": "image/jpeg" },
+          body: imageBytes,
+        });
+        if (!uploadResponse.ok) {
+          throw new Error(`Could not upload the Top Rankers photo for ${ranker.name}.`);
+        }
+        rankerImagePaths.push(storage.normalizeObjectEntityPath(uploadUrl));
+      }
+
+      const [placementSection] = await tx
+        .select()
+        .from(contentSectionsTable)
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "home"),
+            eq(contentSectionsTable.sectionKey, "placement-records"),
+          ),
+        )
+        .limit(1);
+      if (placementSection) {
+        const sectionContent = isCmsRecord(placementSection.content)
+          ? placementSection.content
+          : {};
+        await tx
+          .update(contentSectionsTable)
+          .set({
+            title: "Top Rankers of Shastra",
+            subtitle:
+              "Meet the talented students of Shastra Junior College who strive for excellence",
+            content: {
+              ...sectionContent,
+              eyebrow: "Our Rankers",
+              isDemo: true,
+              placementProfilesSeedVersion: 3,
+            },
+            isVisible: true,
+            updatedAt: new Date(),
+          })
+          .where(eq(contentSectionsTable.id, placementSection.id));
+
+        const existingRankers = (
+          await tx
+            .select()
+            .from(contentItemsTable)
+            .where(eq(contentItemsTable.sectionId, placementSection.id))
+        )
+          .filter((item) => item.itemType === "placement-record")
+          .sort((a, b) => a.position - b.position);
+
+        for (const [index, ranker] of rankers.entries()) {
+          const item = existingRankers[index];
+          const content = {
+            isDemo: true,
+            altText: ranker.altText,
+            achievement: ranker.achievement,
+            examOrStream: ranker.examOrStream,
+            marks: "marks" in ranker ? ranker.marks : "",
+            subject: "",
+            year: ranker.year,
+          };
+          if (item) {
+            await tx
+              .update(contentItemsTable)
+              .set({
+                title: ranker.name,
+                imageUrl: rankerImagePaths[index],
+                content,
+                isVisible: true,
+                position: index,
+                updatedAt: new Date(),
+              })
+              .where(eq(contentItemsTable.id, item.id));
+          } else {
+            await tx.insert(contentItemsTable).values({
+              sectionId: placementSection.id,
+              itemType: "placement-record",
+              title: ranker.name,
+              imageUrl: rankerImagePaths[index],
+              content,
+              isVisible: true,
+              position: index,
+            });
+          }
+        }
+
+        for (const item of existingRankers.slice(rankers.length)) {
+          const itemContent = isCmsRecord(item.content) ? item.content : {};
+          if (itemContent.isDemo === true) {
+            await tx
+              .update(contentItemsTable)
+              .set({ isVisible: false, updatedAt: new Date() })
+              .where(eq(contentItemsTable.id, item.id));
+          }
+        }
+      }
+
+      await tx
+        .update(siteSettingsTable)
+        .set({
+          themePreset: "shastra-blue-red",
+          primaryColor: "#0B3472",
+          accentColor: "#E3212B",
+          surfaceColor: "#F7F5EF",
+          updatedAt: new Date(),
+        })
+        .where(eq(siteSettingsTable.id, "primary"));
+
+      seedMarkers.add(targetedPublicContentSeedMarker);
+      seedableMenu = { ...seedableMenu, __seedMarkers: [...seedMarkers] } as typeof seedableMenu;
+      await tx
+        .update(coursesMenuSettingsTable)
+        .set({ content: seedableMenu as CoursesMenuContent, updatedAt: new Date() })
+        .where(eq(coursesMenuSettingsTable.id, "primary"));
+    }
+
     const starterSeedMarker = "courses-batches-schedule-admissions-v1";
     if (seedMarkers.has(starterSeedMarker)) {
       if (seedMarkers.size !== (seedableMenu.__seedMarkers?.length ?? 0)) {
