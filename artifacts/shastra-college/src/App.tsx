@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { ClerkProvider, SignIn, SignUp, useClerk } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -109,6 +109,73 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
+function PublicRouteScrollManager() {
+  const [path] = useLocation();
+  const previousPath = useRef(path);
+  const historyTraversalPath = useRef<string | null>(null);
+
+  useEffect(() => {
+    const markHistoryTraversal = () => {
+      historyTraversalPath.current = window.location.pathname;
+    };
+    window.addEventListener('popstate', markHistoryTraversal);
+    return () => window.removeEventListener('popstate', markHistoryTraversal);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (previousPath.current === path) return;
+    previousPath.current = path;
+
+    const traversedPath = historyTraversalPath.current;
+    historyTraversalPath.current = null;
+    if (traversedPath === window.location.pathname) {
+      return;
+    }
+
+    const isPublicPath =
+      !path.startsWith('/admin') &&
+      !path.startsWith('/sign-in') &&
+      !path.startsWith('/sign-up');
+    if (!isPublicPath) return;
+
+    const hash = window.location.hash;
+    if (!hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      return;
+    }
+
+    let observer: MutationObserver | undefined;
+    let timeout: number | undefined;
+    const targetId = (() => {
+      try {
+        return decodeURIComponent(hash.slice(1));
+      } catch {
+        return hash.slice(1);
+      }
+    })();
+    const scrollToTarget = () => {
+      const target = document.getElementById(targetId);
+      if (!target) return false;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      observer?.disconnect();
+      if (timeout !== undefined) window.clearTimeout(timeout);
+      return true;
+    };
+
+    if (scrollToTarget()) return;
+    observer = new MutationObserver(scrollToTarget);
+    observer.observe(document.body, { childList: true, subtree: true });
+    timeout = window.setTimeout(() => observer?.disconnect(), 3000);
+
+    return () => {
+      observer?.disconnect();
+      if (timeout !== undefined) window.clearTimeout(timeout);
+    };
+  }, [path]);
+
+  return null;
+}
+
 function RoutedApp() {
   const [, setLocation] = useLocation();
   return (
@@ -138,6 +205,7 @@ function RoutedApp() {
       <ClerkQueryClientCacheInvalidator />
       <QueryClientProvider client={queryClient}>
         <PublicSiteEffects />
+        <PublicRouteScrollManager />
         <Switch>
           <Route path="/" component={HomePage} />
           <Route path="/about" component={AboutPage} />
