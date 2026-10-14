@@ -397,6 +397,14 @@ function CourseCurriculum({ course, section, items }: { course: CourseDetail; se
   const subjects = items
     .filter((item) => item.sectionId === section.id && item.itemType === "course-curriculum-subject" && item.isVisible)
     .sort((a, b) => a.position - b.position);
+  const benefits = course.slug === "iit"
+    ? [
+        { title: "IIT-JEE pathway", description: "Explore course information connected with IIT-JEE preparation.", Icon: BookOpenCheck },
+        { title: "Mathematics", description: "Build understanding and problem-solving practice.", Icon: Target },
+        { title: "Physics and Chemistry", description: "Review core science subject information.", Icon: Layers3 },
+        { title: "Current course details", description: "Ask admissions for confirmed curriculum information.", Icon: UpdatesIcon },
+      ]
+    : curriculumBenefits;
   const pdfPath = textValue(content, "pdfPath");
   const pdfFileName = textValue(content, "pdfFileName");
   const pdfHref = pdfPath ? curriculumPdfUrl(pdfPath) : "";
@@ -453,14 +461,14 @@ function CourseCurriculum({ course, section, items }: { course: CourseDetail; se
                 <Download className="h-4 w-4" aria-hidden="true" />{textValue(content, "downloadButtonLabel", pdfFileName || "Download PDF")}<ArrowRight className="h-4 w-4" aria-hidden="true" />
               </a>
             ) : (
-              <p className="mt-5 rounded-full border border-white/15 bg-white/[.06] px-4 py-3 text-center text-xs font-semibold text-blue-100/70" role="status" data-testid={`status-curriculum-pdf-unavailable-${course.slug}`}>Curriculum guide not available yet</p>
+              <p className="mt-5 rounded-full border border-white/15 bg-white/[.06] px-4 py-3 text-center text-xs font-semibold text-blue-100/70" role="status" data-testid={`status-curriculum-pdf-unavailable-${course.slug}`}>{course.slug === "iit" ? "Contact the college for the current IIT-JEE curriculum guide." : "Curriculum guide not available yet"}</p>
             )}
             {pdfHref && pdfFileName ? <p className="mt-3 truncate text-[10px] text-blue-100/55">{pdfFileName}</p> : null}
           </div>
           <div className="rounded-[1.5rem] border border-[#17478f]/35 bg-white/55 p-5 sm:p-6">
-            <p className="eyebrow text-[#0b3472]">Course information</p>
+            <p className="eyebrow text-[#0b3472]">{course.slug === "iit" ? "IIT-JEE preparation" : "Course information"}</p>
             <div className="mt-4 grid grid-cols-1 divide-y divide-[#17478f]/20 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
-              {curriculumBenefits.map(({ title, description, Icon }, index) => (
+              {benefits.map(({ title, description, Icon }, index) => (
                 <div key={title} className={`flex gap-3 py-4 ${index > 1 ? "sm:border-t sm:border-[#17478f]/20" : ""} ${index % 2 ? "sm:pl-4" : "sm:pr-4"} ${index < 2 ? "sm:pt-1" : ""}`}>
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e3212b]/[.08] text-[#b71927]"><Icon className="h-4 w-4" aria-hidden="true" /></span>
                   <span><span className="block text-xs font-extrabold text-[#0b3472]">{title}</span><span className="mt-1 block text-[10px] leading-4 text-[#53657d]">{description}</span></span>

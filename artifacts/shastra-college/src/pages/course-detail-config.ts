@@ -25,7 +25,7 @@ const COURSE_MENTOR_SUBJECTS_BY_COURSE: Record<
   CourseDetailSlug,
   readonly CourseMentorSubject[]
 > = {
-  iit: [],
+  iit: ["mathematics", "iit-jee"],
   nit: [],
   iiit: [],
   ipe: [],

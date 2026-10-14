@@ -1500,6 +1500,185 @@ export async function seedCoursesPageSections(): Promise<void> {
         .where(eq(coursesMenuSettingsTable.id, "primary"));
     }
 
+    const iitCourseCopyMarker = "iit-course-specific-public-copy-v1";
+    if (!seedMarkers.has(iitCourseCopyMarker)) {
+      const sections = await tx.select().from(contentSectionsTable).where(eq(contentSectionsTable.pageSlug, "courses"));
+      const hero = sections.find((section) => section.sectionKey === "course-iit-hero");
+      const highlights = sections.find((section) => section.sectionKey === "course-iit-highlights");
+      const curriculum = sections.find((section) => section.sectionKey === "course-iit-curriculum");
+
+      if (hero) {
+        const content = isCmsRecord(hero.content) ? { ...hero.content } : {};
+        await tx.update(contentSectionsTable).set({
+          title: "IIT",
+          subtitle: "Build a strong foundation in Mathematics, Physics, and Chemistry while preparing for the IIT-JEE pathway.",
+          content: { ...content, eyebrow: "IIT-JEE PREPARATION", primaryCtaLabel: "Explore IIT-JEE", secondaryCtaLabel: "View all courses" },
+          isVisible: true,
+          updatedAt: new Date(),
+        }).where(eq(contentSectionsTable.id, hero.id));
+      }
+
+      if (highlights) {
+        const content = isCmsRecord(highlights.content) ? { ...highlights.content } : {};
+        await tx.update(contentSectionsTable).set({
+          title: "IIT-JEE Course Highlights",
+          subtitle: "Explore Mathematics, Physics, Chemistry, and the IIT-JEE preparation pathway.",
+          content: { ...content, eyebrow: "IIT-JEE COURSE HIGHLIGHTS" },
+          isVisible: true,
+          updatedAt: new Date(),
+        }).where(eq(contentSectionsTable.id, highlights.id));
+        const items = await tx.select().from(contentItemsTable).where(eq(contentItemsTable.sectionId, highlights.id));
+        const copy = [
+          { title: "IIT-JEE pathway", description: "Explore preparation for the IIT-JEE pathway associated with this course.", category: "IIT-JEE" },
+          { title: "Mathematics", description: "Build mathematical understanding and problem-solving practice.", category: "MATHEMATICS" },
+          { title: "Physics and Chemistry", description: "Study core science subjects alongside IIT-JEE preparation.", category: "CORE SUBJECTS" },
+        ];
+        const highlightItems = items.filter((item) => item.itemType === "course-highlight").sort((a, b) => a.position - b.position);
+        for (let index = 0; index < copy.length; index++) {
+          const entry = copy[index];
+          const item = highlightItems[index];
+          if (item) {
+            await tx.update(contentItemsTable).set({
+              title: entry.title,
+              description: entry.description,
+              content: { ...(isCmsRecord(item.content) ? item.content : {}), category: entry.category },
+              isVisible: true,
+              updatedAt: new Date(),
+            }).where(eq(contentItemsTable.id, item.id));
+          } else {
+            await tx.insert(contentItemsTable).values({
+              sectionId: highlights.id, itemType: "course-highlight", title: entry.title,
+              description: entry.description, content: { category: entry.category },
+              isVisible: true, position: index,
+            });
+          }
+        }
+      }
+
+      if (curriculum) {
+        const content = isCmsRecord(curriculum.content) ? { ...curriculum.content } : {};
+        const facultyPreview = isCmsRecord(content.courseFacultyPreview) ? content.courseFacultyPreview : {};
+        const galleryPreview = isCmsRecord(content.courseGalleryPreview) ? content.courseGalleryPreview : {};
+        const testimonials = isCmsRecord(content.courseTestimonials) ? content.courseTestimonials : {};
+        const faqs = isCmsRecord(content.courseFaqs) ? content.courseFaqs : {};
+        await tx.update(contentSectionsTable).set({
+          title: "IIT-JEE Course Curriculum",
+          subtitle: "Explore Mathematics, Physics, Chemistry, and preparation for the IIT-JEE pathway.",
+          content: {
+            ...content,
+            eyebrow: "IIT-JEE COURSE CURRICULUM",
+            downloadHeading: "IIT-JEE course guide",
+            downloadDescription: "Explore the IIT-JEE pathway and core subject information.",
+            courseFacultyPreview: { ...facultyPreview, isVisible: true, eyebrow: "IIT-JEE FACULTY", title: "IIT-JEE Faculty", description: "Meet faculty selected for Mathematics and the IIT-JEE pathway." },
+            courseGalleryPreview: { ...galleryPreview, isVisible: true, eyebrow: "IIT COURSE GALLERY", title: "IIT Course Gallery", description: "Explore campus and classroom moments while learning about the IIT course.", ctaLabel: "View Gallery" },
+            courseEnrollmentProcess: {
+              eyebrow: "IIT-JEE ENQUIRIES",
+              title: "Explore the IIT-JEE pathway",
+              description: "Learn about the course focus and ask the college for current details.",
+              isVisible: true,
+              steps: [
+                { id: "iit-course-pathway", title: "Explore IIT-JEE preparation", description: "Review the course focus on Mathematics, Physics, and Chemistry." },
+                { id: "iit-course-subjects", title: "Discuss subject support", description: "Ask the college about Mathematics and the other core subjects." },
+                { id: "iit-course-next-steps", title: "Plan your next step", description: "Contact admissions for current IIT course and application details." },
+              ],
+            },
+            courseTestimonials: { ...testimonials, isVisible: true, eyebrow: "IIT-JEE STUDENT STORIES", title: "IIT course experiences", description: "Explore student perspectives on learning and preparation at Shastra." },
+            courseFaqs: { ...faqs, isVisible: true, eyebrow: "IIT-JEE QUESTIONS", title: "IIT Course Questions", description: "Answers about Mathematics, the IIT-JEE pathway, and course information." },
+          },
+          isVisible: true,
+          updatedAt: new Date(),
+        }).where(eq(contentSectionsTable.id, curriculum.id));
+
+        const curriculumItems = await tx.select().from(contentItemsTable).where(eq(contentItemsTable.sectionId, curriculum.id));
+        const subjectCopy = [
+          { title: "Mathematics", description: "Develop mathematical understanding and problem-solving practice for the IIT-JEE pathway." },
+          { title: "Physics", description: "Explore Physics as a core subject in IIT-JEE preparation." },
+          { title: "Chemistry", description: "Explore Chemistry as a core subject in IIT-JEE preparation." },
+        ];
+        const existingSubjects = curriculumItems.filter((item) => item.itemType === "course-curriculum-subject").sort((a, b) => a.position - b.position);
+        for (let index = 0; index < subjectCopy.length; index++) {
+          const entry = subjectCopy[index];
+          const item = existingSubjects[index];
+          if (item) {
+            await tx.update(contentItemsTable).set({
+              title: entry.title, description: entry.description, content: { topics: [] },
+              isVisible: true, position: index, updatedAt: new Date(),
+            }).where(eq(contentItemsTable.id, item.id));
+          } else {
+            await tx.insert(contentItemsTable).values({
+              sectionId: curriculum.id, itemType: "course-curriculum-subject",
+              title: entry.title, description: entry.description, content: { topics: [] },
+              isVisible: true, position: index,
+            });
+          }
+        }
+      }
+
+      const homeSections = await tx.select().from(contentSectionsTable).where(eq(contentSectionsTable.pageSlug, "home"));
+      const homeFaqSection = homeSections.find((section) => section.sectionKey.toLowerCase() === "faqs");
+      if (homeFaqSection) {
+        const faqItems = await tx.select().from(contentItemsTable).where(eq(contentItemsTable.sectionId, homeFaqSection.id));
+        const target = "course:iit";
+        const iitFaqs = [
+          { title: "What subjects does the IIT course focus on?", description: "The IIT-JEE pathway focuses on Mathematics, Physics, and Chemistry. Contact admissions for the current detailed curriculum." },
+          { title: "Does the IIT course include IIT-JEE preparation?", description: "The IIT course includes an IIT-JEE preparation pathway. Contact the college for current program details." },
+        ];
+        const matches = faqItems.filter((item) =>
+          item.itemType === "faq" && isCmsRecord(item.content) &&
+          Array.isArray(item.content.pageTargets) && item.content.pageTargets.includes(target),
+        ).sort((a, b) => a.position - b.position);
+        for (let index = 0; index < iitFaqs.length; index++) {
+          const entry = iitFaqs[index];
+          const item = matches[index];
+          if (item) {
+            await tx.update(contentItemsTable).set({
+              title: entry.title, description: entry.description, isVisible: true, updatedAt: new Date(),
+            }).where(eq(contentItemsTable.id, item.id));
+          } else {
+            await tx.insert(contentItemsTable).values({
+              sectionId: homeFaqSection.id, itemType: "faq", title: entry.title,
+              description: entry.description, content: { pageTargets: [target] },
+              isVisible: true, position: faqItems.reduce((max, faq) => Math.max(max, faq.position), -1) + index + 1,
+            });
+          }
+        }
+      }
+
+      seedMarkers.add(iitCourseCopyMarker);
+      seedableMenu = { ...seedableMenu, __seedMarkers: [...seedMarkers] } as typeof seedableMenu;
+      await tx.update(coursesMenuSettingsTable)
+        .set({ content: seedableMenu as CoursesMenuContent, updatedAt: new Date() })
+        .where(eq(coursesMenuSettingsTable.id, "primary"));
+    }
+
+    const iitTestimonialContextMarker = "iit-testimonial-context-v2";
+    if (!seedMarkers.has(iitTestimonialContextMarker)) {
+      const curriculum = (await tx.select().from(contentSectionsTable).where(eq(contentSectionsTable.pageSlug, "courses")))
+        .find((section) => section.sectionKey === "course-iit-curriculum");
+      if (curriculum) {
+        const content = isCmsRecord(curriculum.content) ? { ...curriculum.content } : {};
+        const testimonials = isCmsRecord(content.courseTestimonials) ? content.courseTestimonials : {};
+        await tx.update(contentSectionsTable).set({
+          content: {
+            ...content,
+            courseTestimonials: {
+              ...testimonials,
+              isVisible: true,
+              eyebrow: "SHASTRA STORIES",
+              title: "Student and parent stories",
+              description: "Explore experiences shared by Shastra families alongside IIT-JEE course information.",
+            },
+          },
+          updatedAt: new Date(),
+        }).where(eq(contentSectionsTable.id, curriculum.id));
+      }
+      seedMarkers.add(iitTestimonialContextMarker);
+      seedableMenu = { ...seedableMenu, __seedMarkers: [...seedMarkers] } as typeof seedableMenu;
+      await tx.update(coursesMenuSettingsTable)
+        .set({ content: seedableMenu as CoursesMenuContent, updatedAt: new Date() })
+        .where(eq(coursesMenuSettingsTable.id, "primary"));
+    }
+
     const starterSeedMarker = "courses-batches-schedule-admissions-v1";
     if (seedMarkers.has(starterSeedMarker)) {
       if (seedMarkers.size !== (seedableMenu.__seedMarkers?.length ?? 0)) {
