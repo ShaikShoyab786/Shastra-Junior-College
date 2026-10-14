@@ -3455,6 +3455,7 @@ export async function seedInitialHomeContent(): Promise<void> {
 
   await seedFacultyAndGalleryPages();
   await seedGalleryHomePreviewDefaults();
+  await seedApprovedGalleryContent();
   await seedHomeTestimonials();
   await seedHomeKnowledgeHubPreview();
   await seedHomeFaqs();
@@ -4645,6 +4646,191 @@ async function seedGalleryHomePreviewDefaults(): Promise<void> {
         content: {
           ...sectionContent,
           galleryHomePreviewSeedVersion: 1,
+        },
+        updatedAt: new Date(),
+      })
+      .where(eq(contentSectionsTable.id, gallerySection.id));
+  });
+}
+
+async function seedApprovedGalleryContent(): Promise<void> {
+  const approvedItems = [
+    {
+      position: 0,
+      title: "College Main Campus Building",
+      imageFile: "campus.jpg",
+      content: {
+        isDemo: false,
+        altText: "A university campus building framed by green trees",
+        category: "Campus",
+        showOnHome: true,
+        showOnCoursePreview: false,
+      },
+    },
+    {
+      position: 1,
+      title: "Structured Classrooms",
+      imageFile: "classrooms.jpg",
+      content: {
+        isDemo: false,
+        altText: "A teacher and students in a bright classroom",
+        category: "Classrooms",
+        showOnHome: true,
+        showOnCoursePreview: false,
+      },
+    },
+    {
+      position: 2,
+      title: "A quiet place for big ideas",
+      imageFile: "library.jpg",
+      content: {
+        isDemo: false,
+        altText: "A bright library reading room with long tables and bookshelves",
+        category: "Library",
+        showOnHome: true,
+        showOnCoursePreview: true,
+      },
+    },
+    {
+      position: 3,
+      title: "Preparing for what comes next",
+      imageFile: "activities.jpg",
+      content: {
+        isDemo: false,
+        altText: "A group of young professionals working together around a table",
+        category: "Placements",
+        showOnHome: true,
+        showOnCoursePreview: false,
+      },
+    },
+    {
+      position: 4,
+      title: "Spaces made for possibility",
+      imageFile: "building.jpg",
+      content: {
+        isDemo: false,
+        altText: "A modern educational building with clean architectural lines",
+        category: "Buildings",
+        showOnHome: true,
+        showOnCoursePreview: true,
+      },
+    },
+    {
+      position: 5,
+      title: "Shared moments, lasting memories",
+      imageUrl:
+        "https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1400&q=84",
+      content: {
+        isDemo: false,
+        altText: "Graduates celebrating together at a university event",
+        category: "Events",
+        showOnHome: false,
+        showOnCoursePreview: false,
+      },
+    },
+    {
+      position: 6,
+      title: "Focused Studies",
+      imageFile: "focused-studies.jpg",
+      content: {
+        isDemo: false,
+        altText: "Students sharing ideas and studying together",
+        category: "Campus",
+        showOnHome: true,
+        showOnCoursePreview: true,
+      },
+    },
+  ] as const;
+
+  await db.transaction(async (tx) => {
+    const [gallerySection] = await tx
+      .select()
+      .from(contentSectionsTable)
+      .where(
+        and(
+          eq(contentSectionsTable.pageSlug, "gallery"),
+          eq(contentSectionsTable.sectionKey, "gallery"),
+        ),
+      )
+      .limit(1);
+    if (!gallerySection) return;
+
+    const sectionContent = isCmsRecord(gallerySection.content)
+      ? gallerySection.content
+      : {};
+    if (sectionContent.galleryApprovedContentSeedVersion === 1) return;
+
+    const galleryItems = await tx
+      .select()
+      .from(contentItemsTable)
+      .where(
+        and(
+          eq(contentItemsTable.sectionId, gallerySection.id),
+          eq(contentItemsTable.itemType, "gallery-image"),
+        ),
+      );
+    const storage = new ObjectStorageService();
+    for (const entry of approvedItems) {
+      const imageUrl =
+        "imageUrl" in entry
+          ? entry.imageUrl
+          : await (async () => {
+              const imageBytes = await readFile(
+                resolve(
+                  dirname(fileURLToPath(import.meta.url)),
+                  "../assets/gallery",
+                  entry.imageFile,
+                ),
+              );
+              const uploadUrl = await storage.getObjectEntityUploadURL();
+              const response = await fetch(uploadUrl, {
+                method: "PUT",
+                headers: { "Content-Type": "image/jpeg" },
+                body: imageBytes,
+              });
+              if (!response.ok) {
+                throw new Error(
+                  `Could not upload the gallery photo at position ${entry.position}.`,
+                );
+              }
+              return storage.normalizeObjectEntityPath(uploadUrl);
+            })();
+      const existingItem = galleryItems.find(
+        (item) => item.position === entry.position,
+      );
+      if (existingItem) {
+        await tx
+          .update(contentItemsTable)
+          .set({
+            title: entry.title,
+            imageUrl,
+            content: {
+              ...(isCmsRecord(existingItem.content) ? existingItem.content : {}),
+              ...entry.content,
+            },
+            isVisible: true,
+            updatedAt: new Date(),
+          })
+          .where(eq(contentItemsTable.id, existingItem.id));
+      } else {
+        await tx.insert(contentItemsTable).values({
+          sectionId: gallerySection.id,
+          itemType: "gallery-image",
+          title: entry.title,
+          imageUrl,
+          content: entry.content,
+          isVisible: true,
+          position: entry.position,
+        });
+      }
+    }
+
+    await tx
+      .update(contentSectionsTable)
+      .set({
+        content: {
+          ...sectionContent,
+          galleryApprovedContentSeedVersion: 1,
         },
         updatedAt: new Date(),
       })
