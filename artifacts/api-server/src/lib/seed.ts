@@ -2125,6 +2125,69 @@ export async function seedCoursesPageSections(): Promise<void> {
         .where(eq(coursesMenuSettingsTable.id, "primary"));
     }
 
+    const rankerHomePreviewSeedMarker = "top-rankers-home-preview-control-v1";
+    if (!seedMarkers.has(rankerHomePreviewSeedMarker)) {
+      const [placementSection] = await tx
+        .select()
+        .from(contentSectionsTable)
+        .where(
+          and(
+            eq(contentSectionsTable.pageSlug, "home"),
+            eq(contentSectionsTable.sectionKey, "placement-records"),
+          ),
+        )
+        .limit(1);
+      if (placementSection) {
+        const sectionContent = isCmsRecord(placementSection.content)
+          ? placementSection.content
+          : {};
+        await tx
+          .update(contentSectionsTable)
+          .set({
+            content: { ...sectionContent, isDemo: false },
+            updatedAt: new Date(),
+          })
+          .where(eq(contentSectionsTable.id, placementSection.id));
+
+        const rankerNames = new Set([
+          "Dheeraj",
+          "Jagadeesh",
+          "Brahmendra Reddy",
+          "Mani Kishore",
+          "Shaik Sheema",
+          "R. Manoj Kumar Reddy",
+        ]);
+        const existingItems = await tx
+          .select()
+          .from(contentItemsTable)
+          .where(eq(contentItemsTable.sectionId, placementSection.id));
+        for (const item of existingItems) {
+          if (item.itemType !== "placement-record" || !rankerNames.has(item.title)) {
+            continue;
+          }
+          const itemContent = isCmsRecord(item.content) ? item.content : {};
+          await tx
+            .update(contentItemsTable)
+            .set({
+              content: {
+                ...itemContent,
+                isDemo: false,
+                showOnHome: true,
+              },
+              updatedAt: new Date(),
+            })
+            .where(eq(contentItemsTable.id, item.id));
+        }
+      }
+
+      seedMarkers.add(rankerHomePreviewSeedMarker);
+      seedableMenu = { ...seedableMenu, __seedMarkers: [...seedMarkers] } as typeof seedableMenu;
+      await tx
+        .update(coursesMenuSettingsTable)
+        .set({ content: seedableMenu as CoursesMenuContent, updatedAt: new Date() })
+        .where(eq(coursesMenuSettingsTable.id, "primary"));
+    }
+
     const starterSeedMarker = "courses-batches-schedule-admissions-v1";
     if (seedMarkers.has(starterSeedMarker)) {
       if (seedMarkers.size !== (seedableMenu.__seedMarkers?.length ?? 0)) {

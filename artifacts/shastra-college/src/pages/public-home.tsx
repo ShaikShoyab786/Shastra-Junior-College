@@ -1257,7 +1257,8 @@ function PageSections({ home }: { home: HomePage }) {
           (item) =>
             item.sectionId === placementSection.id &&
             item.itemType === "placement-record" &&
-            item.isVisible,
+            item.isVisible &&
+            (!isRecord(item.content) || item.content.showOnHome !== false),
         )
         .sort((a, b) => a.position - b.position)
     : [];

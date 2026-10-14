@@ -243,7 +243,7 @@ function PlacementItemForm({
   const [year, setYear] = useState(text(initialContent.year, text(initialContent.cohort)));
   const [altText, setAltText] = useState(text(initialContent.altText));
   const [imageUrl, setImageUrl] = useState(initial?.imageUrl || "");
-  const [isDemo, setIsDemo] = useState(initialContent.isDemo === true);
+  const [showOnHome, setShowOnHome] = useState(initialContent.showOnHome !== false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [error, setError] = useState("");
@@ -263,7 +263,7 @@ function PlacementItemForm({
     setYear(text(content.year, text(content.cohort)));
     setAltText(text(content.altText));
     setImageUrl(initial?.imageUrl || "");
-    setIsDemo(content.isDemo === true);
+    setShowOnHome(content.showOnHome !== false);
     setSelectedFile(null);
     setPreviewUrl("");
     setError("");
@@ -318,7 +318,8 @@ function PlacementItemForm({
       marks: marks.trim(),
       year: year.trim(),
       altText: imageUrl ? altText.trim() : "",
-      isDemo,
+      showOnHome,
+      isDemo: false,
     };
     const common = {
       title: name.trim(),
@@ -380,8 +381,8 @@ function PlacementItemForm({
       </div>
 
       <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
-        <input type="checkbox" checked={isDemo} onChange={(event) => setIsDemo(event.target.checked)} className="h-4 w-4 accent-[#0b3472]" data-testid={`checkbox-placement-demo-${initial?.id || "new"}`} />
-        Mark as illustrative sample
+        <input type="checkbox" checked={showOnHome} onChange={(event) => setShowOnHome(event.target.checked)} className="h-4 w-4 accent-[#0b3472]" data-testid={`checkbox-placement-home-${initial?.id || "new"}`} />
+        Show on Home Page Preview
       </label>
       {error ? <p className="mt-3 text-sm font-semibold text-red-700" role="alert" data-testid={`error-placement-record-${initial?.id || "new"}`}>{error}</p> : null}
       <div className="mt-4 flex justify-end gap-2">
@@ -462,7 +463,7 @@ function PlacementItems({ section, items, onFlash }: { section: ContentSection; 
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-bold text-[#0b3472]" data-testid={`text-admin-placement-name-${item.id}`}>{item.title}</p>
-                    <p className="mt-1 truncate text-xs text-slate-500">{text(content.achievement, "Top Ranker")} · {text(content.examOrStream, "Exam or stream not set")} · {item.isVisible ? "Published" : "Unpublished"}{content.isDemo === true ? " · Illustrative sample" : ""}</p>
+                    <p className="mt-1 truncate text-xs text-slate-500">{text(content.achievement, "Top Ranker")} · {text(content.examOrStream, "Exam or stream not set")} · {item.isVisible ? "Published" : "Unpublished"} · {content.showOnHome === false ? "Off Home" : "On Home"}</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-1">
                     <button type="button" onClick={() => toggle(item)} disabled={update.isPending} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30" aria-label={`${item.isVisible ? "Unpublish" : "Publish"} ${item.title}`} data-testid={`button-toggle-placement-${item.id}`}>{item.isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
