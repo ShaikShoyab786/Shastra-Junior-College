@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { db } from "@workspace/db";
 import { and, asc, eq } from "drizzle-orm";
 import {
@@ -1877,7 +1878,11 @@ export async function seedCoursesPageSections(): Promise<void> {
 
       for (const course of heroImageCourses) {
         const imageBytes = await readFile(
-          resolve(process.cwd(), "assets/course-images", `${course.slug}.jpg`),
+          resolve(
+            dirname(fileURLToPath(import.meta.url)),
+            "../assets/course-images",
+            `${course.slug}.jpg`,
+          ),
         );
         const uploadUrl = await storage.getObjectEntityUploadURL();
         const uploadResponse = await fetch(uploadUrl, {
