@@ -3,8 +3,8 @@ name: Confirmed course catalog
 description: The approved course names and limits on course details before the college confirms more information.
 ---
 
-The only course names confirmed by the user are IIT, NIT, IIIT, and IPE. The user has now explicitly approved IIT-specific page copy mentioning the IIT-JEE pathway and Mathematics, Physics, and Chemistry, and asked for IIT faculty matching against Mathematics and IIT-JEE selections. Do not extend those details to NIT, IIIT, or IPE, or infer schedules, fees, dates, outcomes, or other unconfirmed logistics.
+The course pages may use editable starter copy and subject-topic lists for IIT, NIT, IIIT, and IPE. The user explicitly approved IIT-JEE and Mathematics, Physics, and Chemistry references for IIT, then requested equivalent course-specific copy, expandable subject topics, and faculty matching for NIT, IIIT, and IPE. Treat seeded topics as editable starter content, not a verified official syllabus.
 
-**Why:** The user confirmed these four as the actual courses, initially limited details to names and links, then explicitly authorized IIT-specific text and faculty matching.
+**Why:** The user confirmed these four as the actual courses and later asked for relevant editable content and subject-topic lists on all four course pages.
 
-**How to apply:** Keep other course pages limited to confirmed content; use the approved IIT-JEE and subject references only for IIT. Keep all course details editable in Admin.
+**How to apply:** Keep each course's copy and faculty mapping scoped to its own page. Do not add unrequested schedules, fees, dates, outcomes, or other administrative claims.

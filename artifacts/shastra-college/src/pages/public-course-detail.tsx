@@ -380,12 +380,32 @@ function CourseFacultyPreview({
   );
 }
 
-const curriculumBenefits = [
-  { title: "Course overview", description: "Review the published course introduction.", Icon: BookOpenCheck },
-  { title: "Current details", description: "Ask admissions about current subjects and course structure.", Icon: Target },
-  { title: "College information", description: "Get confirmed details directly from the college.", Icon: Layers3 },
-  { title: "Enquiry support", description: "Send your questions to the admissions team.", Icon: UpdatesIcon },
-];
+const curriculumBenefits = {
+  iit: [
+    { title: "IIT-JEE pathway", description: "Explore course information connected with IIT-JEE preparation.", Icon: BookOpenCheck },
+    { title: "Mathematics", description: "Build understanding and problem-solving practice.", Icon: Target },
+    { title: "Physics and Chemistry", description: "Review core science subject information.", Icon: Layers3 },
+    { title: "Current course details", description: "Ask admissions for confirmed curriculum information.", Icon: UpdatesIcon },
+  ],
+  nit: [
+    { title: "NIT pathway", description: "Explore the JEE Main pathway associated with NIT.", Icon: BookOpenCheck },
+    { title: "Mathematics", description: "Review core mathematics topics and problem-solving.", Icon: Target },
+    { title: "Physics and Chemistry", description: "Explore core science subjects in the course.", Icon: Layers3 },
+    { title: "Course information", description: "Ask admissions for current NIT course details.", Icon: UpdatesIcon },
+  ],
+  iiit: [
+    { title: "IIIT pathway", description: "Explore the JEE Main pathway associated with IIIT.", Icon: BookOpenCheck },
+    { title: "Mathematics", description: "Review core mathematics topics and problem-solving.", Icon: Target },
+    { title: "Physics and Chemistry", description: "Explore core science subjects in the course.", Icon: Layers3 },
+    { title: "Course information", description: "Ask admissions for current IIIT course details.", Icon: UpdatesIcon },
+  ],
+  ipe: [
+    { title: "IPE course", description: "Explore subject foundations for Intermediate Public Examinations.", Icon: BookOpenCheck },
+    { title: "Mathematics", description: "Review core mathematics topics and practice problems.", Icon: Target },
+    { title: "Physics and Chemistry", description: "Explore core concepts across both subjects.", Icon: Layers3 },
+    { title: "Course information", description: "Ask admissions for current IPE course details.", Icon: UpdatesIcon },
+  ],
+} as const;
 
 function CourseCurriculum({ course, section, items }: { course: CourseDetail; section: ContentSection; items: ContentItem[] }) {
   const content = recordValue(section.content);
@@ -397,14 +417,7 @@ function CourseCurriculum({ course, section, items }: { course: CourseDetail; se
   const subjects = items
     .filter((item) => item.sectionId === section.id && item.itemType === "course-curriculum-subject" && item.isVisible)
     .sort((a, b) => a.position - b.position);
-  const benefits = course.slug === "iit"
-    ? [
-        { title: "IIT-JEE pathway", description: "Explore course information connected with IIT-JEE preparation.", Icon: BookOpenCheck },
-        { title: "Mathematics", description: "Build understanding and problem-solving practice.", Icon: Target },
-        { title: "Physics and Chemistry", description: "Review core science subject information.", Icon: Layers3 },
-        { title: "Current course details", description: "Ask admissions for confirmed curriculum information.", Icon: UpdatesIcon },
-      ]
-    : curriculumBenefits;
+  const benefits = curriculumBenefits[course.slug];
   const pdfPath = textValue(content, "pdfPath");
   const pdfFileName = textValue(content, "pdfFileName");
   const pdfHref = pdfPath ? curriculumPdfUrl(pdfPath) : "";
@@ -466,7 +479,7 @@ function CourseCurriculum({ course, section, items }: { course: CourseDetail; se
             {pdfHref && pdfFileName ? <p className="mt-3 truncate text-[10px] text-blue-100/55">{pdfFileName}</p> : null}
           </div>
           <div className="rounded-[1.5rem] border border-[#17478f]/35 bg-white/55 p-5 sm:p-6">
-            <p className="eyebrow text-[#0b3472]">{course.slug === "iit" ? "IIT-JEE preparation" : "Course information"}</p>
+            <p className="eyebrow text-[#0b3472]">{course.slug === "iit" ? "IIT-JEE preparation" : `${course.name} course focus`}</p>
             <div className="mt-4 grid grid-cols-1 divide-y divide-[#17478f]/20 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
               {benefits.map(({ title, description, Icon }, index) => (
                 <div key={title} className={`flex gap-3 py-4 ${index > 1 ? "sm:border-t sm:border-[#17478f]/20" : ""} ${index % 2 ? "sm:pl-4" : "sm:pr-4"} ${index < 2 ? "sm:pt-1" : ""}`}>

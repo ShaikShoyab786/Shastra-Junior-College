@@ -14,6 +14,7 @@ export const COURSE_MENTOR_SUBJECTS = [
   { value: "chemistry", label: "Chemistry" },
   { value: "biology", label: "Biology" },
   { value: "iit-jee", label: "IIT-JEE" },
+  { value: "jee-main", label: "JEE Main" },
   { value: "neet", label: "NEET" },
   { value: "eamcet", label: "EAMCET" },
 ] as const;
@@ -26,9 +27,9 @@ const COURSE_MENTOR_SUBJECTS_BY_COURSE: Record<
   readonly CourseMentorSubject[]
 > = {
   iit: ["mathematics", "iit-jee"],
-  nit: [],
-  iiit: [],
-  ipe: [],
+  nit: ["mathematics", "physics", "chemistry", "jee-main"],
+  iiit: ["mathematics", "physics", "chemistry", "jee-main"],
+  ipe: ["mathematics", "physics", "chemistry"],
 };
 
 export function getCourseMentorSubjectsForCourse(slug: CourseDetailSlug) {

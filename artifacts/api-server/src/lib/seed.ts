@@ -1679,6 +1679,137 @@ export async function seedCoursesPageSections(): Promise<void> {
         .where(eq(coursesMenuSettingsTable.id, "primary"));
     }
 
+    const allCoursePagesCopyMarker = "all-course-page-copy-and-topics-v1";
+    if (!seedMarkers.has(allCoursePagesCopyMarker)) {
+      const sections = await tx.select().from(contentSectionsTable).where(eq(contentSectionsTable.pageSlug, "courses"));
+      const courseCopy = [
+        { slug: "iit", name: "IIT", pathway: "IIT-JEE", hero: "Build a strong foundation in Mathematics, Physics, and Chemistry while preparing for the IIT-JEE pathway.", focus: "IIT-JEE", faculty: "Mathematics and the IIT-JEE pathway" },
+        { slug: "nit", name: "NIT", pathway: "JEE Main", hero: "Explore the NIT pathway with Mathematics, Physics, Chemistry, and JEE Main preparation.", focus: "JEE Main", faculty: "Mathematics, Physics, Chemistry, and JEE Main" },
+        { slug: "iiit", name: "IIIT", pathway: "JEE Main", hero: "Explore the IIIT pathway with Mathematics, Physics, Chemistry, and JEE Main preparation.", focus: "JEE Main", faculty: "Mathematics, Physics, Chemistry, and JEE Main" },
+        { slug: "ipe", name: "IPE", pathway: "Intermediate Public Examinations", hero: "Build a strong foundation in Mathematics, Physics, and Chemistry for IPE.", focus: "IPE", faculty: "Mathematics, Physics, and Chemistry" },
+      ] as const;
+      const subjects = [
+        { title: "Mathematics", description: "Build mathematical understanding and problem-solving skills.", topics: ["Algebra", "Trigonometry", "Coordinate geometry", "Calculus fundamentals", "Probability"] },
+        { title: "Physics", description: "Explore core Physics concepts and how to apply them to problems.", topics: ["Mechanics", "Waves and optics", "Thermal physics", "Electricity and magnetism"] },
+        { title: "Chemistry", description: "Review core Chemistry concepts and their applications.", topics: ["Atomic structure", "Chemical bonding", "Periodic trends", "Organic chemistry fundamentals"] },
+      ];
+      const fiveSteps = (slug: string, pathway: string) => [
+        { id: `${slug}-step-1`, title: "Explore the course", description: `Review the ${pathway} pathway and core subjects.` },
+        { id: `${slug}-step-2`, title: "Review Mathematics", description: "Explore Mathematics topics and problem-solving practice." },
+        { id: `${slug}-step-3`, title: "Review Physics and Chemistry", description: "Explore the core concepts listed in the course curriculum." },
+        { id: `${slug}-step-4`, title: "Discuss your questions", description: "Ask the college for current course and application information." },
+        { id: `${slug}-step-5`, title: "Plan your next step", description: "Follow the current guidance shared by the admissions team." },
+      ];
+
+      for (const entry of courseCopy) {
+        const hero = sections.find((section) => section.sectionKey === `course-${entry.slug}-hero`);
+        const highlights = sections.find((section) => section.sectionKey === `course-${entry.slug}-highlights`);
+        const curriculum = sections.find((section) => section.sectionKey === `course-${entry.slug}-curriculum`);
+        if (!hero || !highlights || !curriculum) continue;
+        const heroContent = isCmsRecord(hero.content) ? { ...hero.content } : {};
+        await tx.update(contentSectionsTable).set({
+          title: entry.name,
+          subtitle: entry.hero,
+          content: { ...heroContent, eyebrow: `${entry.pathway.toUpperCase()} PATHWAY`, primaryCtaLabel: `Explore ${entry.name}`, secondaryCtaLabel: "View all courses", duration: "", studyMode: "", statusLabel: "" },
+          isVisible: true,
+          updatedAt: new Date(),
+        }).where(eq(contentSectionsTable.id, hero.id));
+
+        const highlightContent = isCmsRecord(highlights.content) ? { ...highlights.content } : {};
+        await tx.update(contentSectionsTable).set({
+          title: `${entry.name} Course Highlights`,
+          subtitle: entry.hero,
+          content: { ...highlightContent, eyebrow: `${entry.name.toUpperCase()} COURSE HIGHLIGHTS` },
+          isVisible: true,
+          updatedAt: new Date(),
+        }).where(eq(contentSectionsTable.id, highlights.id));
+        const highlightRows = (await tx.select().from(contentItemsTable).where(eq(contentItemsTable.sectionId, highlights.id)))
+          .filter((item) => item.itemType === "course-highlight").sort((a, b) => a.position - b.position);
+        const highlightCopy = [
+          { title: `${entry.pathway} pathway`, description: `Explore the ${entry.pathway} pathway associated with the ${entry.name} course.`, category: entry.pathway.toUpperCase() },
+          { title: "Mathematics", description: "Strengthen mathematical understanding and problem-solving practice.", category: "MATHEMATICS" },
+          { title: "Physics and Chemistry", description: "Explore core science subjects through the course curriculum.", category: "CORE SUBJECTS" },
+        ];
+        for (let i = 0; i < highlightCopy.length; i++) {
+          const copy = highlightCopy[i];
+          const item = highlightRows[i];
+          if (item) {
+            await tx.update(contentItemsTable).set({ title: copy.title, description: copy.description, content: { ...(isCmsRecord(item.content) ? item.content : {}), category: copy.category }, isVisible: true, updatedAt: new Date() }).where(eq(contentItemsTable.id, item.id));
+          } else {
+            await tx.insert(contentItemsTable).values({ sectionId: highlights.id, itemType: "course-highlight", title: copy.title, description: copy.description, content: { category: copy.category }, isVisible: true, position: i });
+          }
+        }
+
+        const curriculumContent = isCmsRecord(curriculum.content) ? { ...curriculum.content } : {};
+        const facultyPreview = isCmsRecord(curriculumContent.courseFacultyPreview) ? curriculumContent.courseFacultyPreview : {};
+        const galleryPreview = isCmsRecord(curriculumContent.courseGalleryPreview) ? curriculumContent.courseGalleryPreview : {};
+        const testimonials = isCmsRecord(curriculumContent.courseTestimonials) ? curriculumContent.courseTestimonials : {};
+        const faqSettings = isCmsRecord(curriculumContent.courseFaqs) ? curriculumContent.courseFaqs : {};
+        await tx.update(contentSectionsTable).set({
+          title: `${entry.name} Course Curriculum`,
+          subtitle: `Explore Mathematics, Physics, Chemistry, and the ${entry.pathway} pathway.`,
+          content: {
+            ...curriculumContent,
+            eyebrow: `${entry.pathway.toUpperCase()} CURRICULUM`,
+            downloadHeading: `${entry.name} course guide`,
+            downloadDescription: `Explore the ${entry.pathway} pathway and core subject information.`,
+            courseFacultyPreview: { ...facultyPreview, isVisible: true, eyebrow: `${entry.name.toUpperCase()} FACULTY`, title: `${entry.name} Course Faculty`, description: `Meet faculty selected for ${entry.faculty}.` },
+            courseGalleryPreview: { ...galleryPreview, isVisible: true, eyebrow: `${entry.name.toUpperCase()} GALLERY`, title: `${entry.name} Course Gallery`, description: `Explore campus and classroom moments while learning about the ${entry.name} course.`, ctaLabel: "View Gallery" },
+            courseEnrollmentProcess: { eyebrow: `${entry.pathway.toUpperCase()} COURSE ENQUIRIES`, title: `Explore the ${entry.name} pathway`, description: `Review the ${entry.name} course focus and ask the college for current details.`, isVisible: true, steps: fiveSteps(entry.slug, entry.pathway) },
+            courseTestimonials: { ...testimonials, isVisible: true, eyebrow: "SHASTRA STORIES", title: "Student and parent stories", description: `Explore experiences shared by Shastra families alongside ${entry.name} course information.` },
+            courseFaqs: { ...faqSettings, isVisible: true, eyebrow: `${entry.name.toUpperCase()} QUESTIONS`, title: `${entry.name} Course Questions`, description: `Answers about subjects, the ${entry.pathway} pathway, and course information.` },
+          },
+          isVisible: true,
+          updatedAt: new Date(),
+        }).where(eq(contentSectionsTable.id, curriculum.id));
+
+        const curriculumRows = (await tx.select().from(contentItemsTable).where(eq(contentItemsTable.sectionId, curriculum.id)))
+          .filter((item) => item.itemType === "course-curriculum-subject").sort((a, b) => a.position - b.position);
+        for (let i = 0; i < subjects.length; i++) {
+          const subject = subjects[i];
+          const item = curriculumRows[i];
+          const data = { topics: subject.topics };
+          if (item) {
+            await tx.update(contentItemsTable).set({ title: subject.title, description: subject.description, content: data, isVisible: true, position: i, updatedAt: new Date() }).where(eq(contentItemsTable.id, item.id));
+          } else {
+            await tx.insert(contentItemsTable).values({ sectionId: curriculum.id, itemType: "course-curriculum-subject", title: subject.title, description: subject.description, content: data, isVisible: true, position: i });
+          }
+        }
+
+        const homeSections = await tx.select().from(contentSectionsTable).where(eq(contentSectionsTable.pageSlug, "home"));
+        const homeFaq = homeSections.find((section) => section.sectionKey.toLowerCase() === "faqs");
+        if (homeFaq) {
+          const target = `course:${entry.slug}`;
+          const allFaqs = await tx.select().from(contentItemsTable).where(eq(contentItemsTable.sectionId, homeFaq.id));
+          const courseFaqs = allFaqs.filter((item) => item.itemType === "faq" && isCmsRecord(item.content) && Array.isArray(item.content.pageTargets) && item.content.pageTargets.includes(target)).sort((a, b) => a.position - b.position);
+          const faqCopy = [
+            { title: `Which subjects are covered in the ${entry.name} course?`, description: `The course curriculum includes Mathematics, Physics, and Chemistry. Contact the college for current subject details.` },
+            { title: `What pathway does the ${entry.name} course follow?`, description: `The course information highlights the ${entry.pathway} pathway. Contact admissions for current program details.` },
+          ];
+          for (let i = 0; i < faqCopy.length; i++) {
+            const copy = faqCopy[i];
+            const item = courseFaqs[i];
+            if (item) await tx.update(contentItemsTable).set({ title: copy.title, description: copy.description, isVisible: true, updatedAt: new Date() }).where(eq(contentItemsTable.id, item.id));
+            else await tx.insert(contentItemsTable).values({ sectionId: homeFaq.id, itemType: "faq", title: copy.title, description: copy.description, content: { pageTargets: [target] }, isVisible: true, position: allFaqs.reduce((max, faq) => Math.max(max, faq.position), -1) + i + 1 });
+          }
+        }
+      }
+
+      const iitCurriculum = sections.find((section) => section.sectionKey === "course-iit-curriculum");
+      if (iitCurriculum) {
+        const content = isCmsRecord(iitCurriculum.content) ? { ...iitCurriculum.content } : {};
+        const enrollment = isCmsRecord(content.courseEnrollmentProcess) ? content.courseEnrollmentProcess : {};
+        await tx.update(contentSectionsTable).set({
+          content: { ...content, courseEnrollmentProcess: { ...enrollment, isVisible: true, steps: fiveSteps("iit", "IIT-JEE") } },
+          updatedAt: new Date(),
+        }).where(eq(contentSectionsTable.id, iitCurriculum.id));
+      }
+
+      seedMarkers.add(allCoursePagesCopyMarker);
+      seedableMenu = { ...seedableMenu, __seedMarkers: [...seedMarkers] } as typeof seedableMenu;
+      await tx.update(coursesMenuSettingsTable).set({ content: seedableMenu as CoursesMenuContent, updatedAt: new Date() }).where(eq(coursesMenuSettingsTable.id, "primary"));
+    }
+
     const starterSeedMarker = "courses-batches-schedule-admissions-v1";
     if (seedMarkers.has(starterSeedMarker)) {
       if (seedMarkers.size !== (seedableMenu.__seedMarkers?.length ?? 0)) {
