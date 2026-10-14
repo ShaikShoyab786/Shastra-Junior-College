@@ -293,7 +293,7 @@ function CourseFacultyPreview({
       });
   }, [course.slug, items]);
 
-  if (!profiles.length) return null;
+  if (!profiles.length && copy.isVisible !== true) return null;
   const eyebrow = textValue(copy, "eyebrow", "FACULTY PREVIEW");
   const title = textValue(copy, "title", "Meet your course mentors");
   const description = textValue(
@@ -321,7 +321,7 @@ function CourseFacultyPreview({
               {description}
             </p>
           </div>
-          <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {profiles.length ? <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {profiles.map((item) => {
               const profile = profileData(item);
               return (
@@ -367,7 +367,10 @@ function CourseFacultyPreview({
                 </article>
               );
             })}
-          </div>
+          </div> : <div className="mt-7 rounded-2xl border border-[#0b3472]/10 bg-white p-6 text-sm leading-6 text-[#53657d]">
+            <p>{description}</p>
+            <Link href="/contact" className="focus-ring mt-4 inline-flex min-h-10 items-center gap-2 rounded-full bg-[#0b3472] px-4 py-2 text-sm font-bold text-white">Contact admissions <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+          </div>}
         </div>
       </section>
       {selected ? (
@@ -378,10 +381,10 @@ function CourseFacultyPreview({
 }
 
 const curriculumBenefits = [
-  { title: "Comprehensive Syllabus", description: "Key topics organized by subject.", Icon: BookOpenCheck },
-  { title: "Exam-Oriented Focus", description: "A clear focus for each course pathway.", Icon: Target },
-  { title: "Structured Progression", description: "Move from core ideas to applications.", Icon: Layers3 },
-  { title: "Regular Updates", description: "Subject details managed by the college.", Icon: UpdatesIcon },
+  { title: "Course overview", description: "Review the published course introduction.", Icon: BookOpenCheck },
+  { title: "Current details", description: "Ask admissions about current subjects and course structure.", Icon: Target },
+  { title: "College information", description: "Get confirmed details directly from the college.", Icon: Layers3 },
+  { title: "Enquiry support", description: "Send your questions to the admissions team.", Icon: UpdatesIcon },
 ];
 
 function CourseCurriculum({ course, section, items }: { course: CourseDetail; section: ContentSection; items: ContentItem[] }) {
@@ -455,7 +458,7 @@ function CourseCurriculum({ course, section, items }: { course: CourseDetail; se
             {pdfHref && pdfFileName ? <p className="mt-3 truncate text-[10px] text-blue-100/55">{pdfFileName}</p> : null}
           </div>
           <div className="rounded-[1.5rem] border border-[#17478f]/35 bg-white/55 p-5 sm:p-6">
-            <p className="eyebrow text-[#0b3472]">Built for competitive success</p>
+            <p className="eyebrow text-[#0b3472]">Course information</p>
             <div className="mt-4 grid grid-cols-1 divide-y divide-[#17478f]/20 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
               {curriculumBenefits.map(({ title, description, Icon }, index) => (
                 <div key={title} className={`flex gap-3 py-4 ${index > 1 ? "sm:border-t sm:border-[#17478f]/20" : ""} ${index % 2 ? "sm:pl-4" : "sm:pr-4"} ${index < 2 ? "sm:pt-1" : ""}`}>
@@ -496,7 +499,7 @@ function CourseGalleryPreview({
     [items, section.id],
   );
 
-  if (!images.length) return null;
+  if (!images.length && copy.isVisible !== true) return null;
 
   const content = recordValue(section.content);
   const title = textValue(
@@ -548,7 +551,7 @@ function CourseGalleryPreview({
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
-        <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {images.length ? <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {images.map((item) => {
             const imageContent = recordValue(item.content);
             const category = textValue(imageContent, "category", "Campus");
@@ -587,7 +590,10 @@ function CourseGalleryPreview({
               </figure>
             );
           })}
-        </div>
+        </div> : <div className="mt-7 rounded-2xl border border-[#0b3472]/10 bg-white p-6 text-sm leading-6 text-[#53657d]">
+          <p>{description || "Explore college photographs and campus moments."}</p>
+          <Link href="/gallery" className="focus-ring mt-4 inline-flex min-h-10 items-center gap-2 rounded-full bg-[#0b3472] px-4 py-2 text-sm font-bold text-white">{buttonLabel}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+        </div>}
       </div>
     </section>
   );
@@ -785,11 +791,20 @@ export default function PublicCourseDetailPage({ course }: { course: CourseDetai
               logoUrl={home.data.settings.logoUrl}
             />
           ) : null}
-          {testimonialsSettings.isVisible ? (
+          {testimonialsSettings.isVisible && courseTestimonials.length ? (
             <TestimonialsCarousel
               section={testimonialsSection}
               items={courseTestimonials}
             />
+          ) : testimonialsSettings.isVisible ? (
+            <section className="bg-[#fbfaf6] px-5 py-14 sm:px-8 sm:py-20" data-testid={`section-course-testimonials-${course.slug}`}>
+              <div className="mx-auto max-w-4xl text-center">
+                <p className="eyebrow text-[#e3212b]">{testimonialsSettings.eyebrow}</p>
+                <h2 className="mt-3 font-display text-4xl font-extrabold tracking-[-.055em] text-[#0b3472]">{testimonialsSettings.title}</h2>
+                <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#53657d] sm:text-base">{testimonialsSettings.description}</p>
+                <Link href="/contact" className="focus-ring mt-6 inline-flex min-h-10 items-center gap-2 rounded-full bg-[#0b3472] px-5 py-3 text-sm font-bold text-white">Ask the college <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+              </div>
+            </section>
           ) : null}
           <FaqSection
             section={faqSection}

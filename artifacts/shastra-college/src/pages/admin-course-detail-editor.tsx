@@ -956,8 +956,8 @@ export default function AdminCourseDetailEditor({
           {!subjects.length ? <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-7 text-center text-sm text-slate-500">No subjects have been added to this curriculum.</div> : null}
         </div>
         <div className="mt-5 rounded-xl border border-[#0b3472]/10 bg-[#f7f9fc] p-4">
-          <p className="eyebrow text-[#0b3472]">Built for competitive success</p>
-          <p className="mt-2 text-xs leading-5 text-slate-600">The public benefits panel is fixed: Comprehensive Syllabus, Exam-Oriented Focus, Structured Progression, and Regular Updates.</p>
+          <p className="eyebrow text-[#0b3472]">Course information</p>
+          <p className="mt-2 text-xs leading-5 text-slate-600">This panel is shared across course pages and directs visitors to confirmed course information and admissions support.</p>
         </div>
       </Panel>
 

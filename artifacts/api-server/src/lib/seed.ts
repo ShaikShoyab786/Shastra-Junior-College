@@ -1340,6 +1340,166 @@ export async function seedCoursesPageSections(): Promise<void> {
         .where(eq(coursesMenuSettingsTable.id, "primary"));
     }
 
+    const visibleCourseDetailsMarker = "seed-visible-course-detail-sections-v1";
+    if (!seedMarkers.has(visibleCourseDetailsMarker)) {
+      const courseNames = [["iit", "IIT"], ["nit", "NIT"], ["iiit", "IIIT"], ["ipe", "IPE"]] as const;
+      const sections = await tx.select().from(contentSectionsTable).where(eq(contentSectionsTable.pageSlug, "courses"));
+      const homeSections = await tx.select().from(contentSectionsTable).where(eq(contentSectionsTable.pageSlug, "home"));
+      const homeFaqSection = homeSections.find((section) => section.sectionKey.toLowerCase() === "faqs");
+
+      for (const [slug, name] of courseNames) {
+        const hero = sections.find((section) => section.sectionKey === `course-${slug}-hero`);
+        const highlights = sections.find((section) => section.sectionKey === `course-${slug}-highlights`);
+        const curriculum = sections.find((section) => section.sectionKey === `course-${slug}-curriculum`);
+        if (!hero || !highlights || !curriculum) continue;
+
+        const heroContent = isCmsRecord(hero.content) ? { ...hero.content } : {};
+        await tx.update(contentSectionsTable).set({
+          title: hero.title.trim() || name,
+          subtitle: hero.subtitle?.trim() || `Explore the ${name} course at Shastra Junior College.`,
+          content: {
+            ...heroContent,
+            eyebrow: typeof heroContent.eyebrow === "string" && heroContent.eyebrow.trim() ? heroContent.eyebrow : `${name} COURSE`,
+            primaryCtaLabel: typeof heroContent.primaryCtaLabel === "string" && heroContent.primaryCtaLabel.trim() ? heroContent.primaryCtaLabel : `Enquire about ${name}`,
+            secondaryCtaLabel: typeof heroContent.secondaryCtaLabel === "string" && heroContent.secondaryCtaLabel.trim() ? heroContent.secondaryCtaLabel : "View all courses",
+          },
+          isVisible: true,
+          updatedAt: new Date(),
+        }).where(eq(contentSectionsTable.id, hero.id));
+
+        const highlightContent = isCmsRecord(highlights.content) ? { ...highlights.content } : {};
+        await tx.update(contentSectionsTable).set({
+          title: highlights.title.trim() && highlights.title !== `${name} course details` ? highlights.title : "Quick Course Highlights",
+          subtitle: highlights.subtitle?.trim() || `Explore the ${name} course and ask the college about its current details.`,
+          content: { ...highlightContent, eyebrow: typeof highlightContent.eyebrow === "string" && highlightContent.eyebrow.trim() ? highlightContent.eyebrow : "QUICK COURSE HIGHLIGHTS" },
+          isVisible: true,
+          updatedAt: new Date(),
+        }).where(eq(contentSectionsTable.id, highlights.id));
+
+        const highlightItems = await tx.select().from(contentItemsTable).where(eq(contentItemsTable.sectionId, highlights.id));
+        if (!highlightItems.length) {
+          await tx.insert(contentItemsTable).values([
+            { sectionId: highlights.id, itemType: "course-highlight", title: "Course overview", description: `Explore the ${name} course offered at Shastra Junior College.`, content: { category: "COURSE" }, isVisible: true, position: 0 },
+            { sectionId: highlights.id, itemType: "course-highlight", title: "Course information", description: "Contact admissions to confirm current subjects, curriculum, and course details.", content: { category: "INFORMATION" }, isVisible: true, position: 1 },
+            { sectionId: highlights.id, itemType: "course-highlight", title: "Admissions guidance", description: "Speak with the admissions team about the current application process.", content: { category: "ADMISSIONS" }, isVisible: true, position: 2 },
+          ]);
+        } else {
+          for (const item of highlightItems.filter((entry) => entry.itemType === "course-highlight")) {
+            await tx.update(contentItemsTable).set({ isVisible: true, updatedAt: new Date() }).where(eq(contentItemsTable.id, item.id));
+          }
+        }
+
+        const curriculumContent = isCmsRecord(curriculum.content) ? { ...curriculum.content } : {};
+        const nested = (key: string, defaults: Record<string, unknown>) => {
+          const existing = isCmsRecord(curriculumContent[key]) ? curriculumContent[key] as Record<string, unknown> : {};
+          return { ...defaults, ...existing, isVisible: true };
+        };
+        const enrollment = isCmsRecord(curriculumContent.courseEnrollmentProcess) ? curriculumContent.courseEnrollmentProcess : {};
+        const enrollmentSteps = Array.isArray(enrollment.steps) && enrollment.steps.length ? enrollment.steps : [
+          { id: `course-${slug}-enquiry`, title: "Send an enquiry", description: "Share your interest with the college admissions team." },
+          { id: `course-${slug}-information`, title: "Discuss course details", description: "Confirm current course information and admissions guidance with the college." },
+          { id: `course-${slug}-next-steps`, title: "Confirm next steps", description: "Follow the current instructions provided by the admissions team." },
+        ];
+        await tx.update(contentSectionsTable).set({
+          title: curriculum.title.trim() && curriculum.title !== `${name} course details` ? curriculum.title : "Course information",
+          subtitle: curriculum.subtitle?.trim() || `Ask the college about current ${name} course curriculum and subject details.`,
+          content: {
+            ...curriculumContent,
+            eyebrow: typeof curriculumContent.eyebrow === "string" && curriculumContent.eyebrow.trim() ? curriculumContent.eyebrow : "COURSE INFORMATION",
+            downloadHeading: typeof curriculumContent.downloadHeading === "string" && curriculumContent.downloadHeading.trim() ? curriculumContent.downloadHeading : "Course information",
+            downloadDescription: typeof curriculumContent.downloadDescription === "string" && curriculumContent.downloadDescription.trim() ? curriculumContent.downloadDescription : `Contact admissions for current information about the ${name} course.`,
+            courseFacultyPreview: nested("courseFacultyPreview", { eyebrow: "FACULTY", title: `${name} course faculty`, description: `Contact the college to ask about faculty for the ${name} course.` }),
+            courseGalleryPreview: nested("courseGalleryPreview", { eyebrow: "GALLERY", title: `${name} at Shastra`, description: "Explore college photographs and campus moments.", ctaLabel: "View Gallery" }),
+            courseEnrollmentProcess: { eyebrow: "ADMISSIONS", title: "Enquire about this course", description: "Contact the college for current course and admissions information.", isVisible: true, steps: enrollmentSteps },
+            courseTestimonials: nested("courseTestimonials", { eyebrow: "STUDENT STORIES", title: "Student experiences", description: "Learn more about student experiences at Shastra." }),
+            courseFaqs: nested("courseFaqs", { eyebrow: "COURSE QUESTIONS", title: `Questions about ${name}`, description: `Answers and admissions information for the ${name} course.` }),
+          },
+          isVisible: true,
+          updatedAt: new Date(),
+        }).where(eq(contentSectionsTable.id, curriculum.id));
+
+        const curriculumItems = await tx.select().from(contentItemsTable).where(eq(contentItemsTable.sectionId, curriculum.id));
+        if (!curriculumItems.length) {
+          await tx.insert(contentItemsTable).values({
+            sectionId: curriculum.id,
+            itemType: "course-curriculum-subject",
+            title: "Course information",
+            description: `Contact admissions for current subjects and curriculum details for ${name}.`,
+            content: { topics: [] },
+            isVisible: true,
+            position: 0,
+          });
+        } else {
+          for (const item of curriculumItems.filter((entry) => entry.itemType === "course-curriculum-subject")) {
+            await tx.update(contentItemsTable).set({ isVisible: true, updatedAt: new Date() }).where(eq(contentItemsTable.id, item.id));
+          }
+        }
+
+        if (homeFaqSection) {
+          const faqItems = await tx.select().from(contentItemsTable).where(eq(contentItemsTable.sectionId, homeFaqSection.id));
+          const target = `course:${slug}`;
+          if (!faqItems.some((item) => item.itemType === "faq" && isCmsRecord(item.content) && Array.isArray(item.content.pageTargets) && item.content.pageTargets.includes(target))) {
+            const position = faqItems.reduce((max, item) => Math.max(max, item.position), -1) + 1;
+            await tx.insert(contentItemsTable).values([
+              { sectionId: homeFaqSection.id, itemType: "faq", title: `How can I ask about the ${name} course?`, description: "Use the admissions enquiry form or Contact page to speak with the college team.", content: { pageTargets: [target] }, isVisible: true, position },
+              { sectionId: homeFaqSection.id, itemType: "faq", title: `Where can I confirm current ${name} course details?`, description: "Contact the admissions team for the current course information.", content: { pageTargets: [target] }, isVisible: true, position: position + 1 },
+            ]);
+          }
+        }
+      }
+
+      seedMarkers.add(visibleCourseDetailsMarker);
+      seedableMenu = { ...seedableMenu, __seedMarkers: [...seedMarkers] } as typeof seedableMenu;
+      await tx.update(coursesMenuSettingsTable)
+        .set({ content: seedableMenu as CoursesMenuContent, updatedAt: new Date() })
+        .where(eq(coursesMenuSettingsTable.id, "primary"));
+    }
+
+    const approvedCourseCopyMarker = "approved-neutral-course-copy-v2";
+    if (!seedMarkers.has(approvedCourseCopyMarker)) {
+      const sections = await tx.select().from(contentSectionsTable).where(eq(contentSectionsTable.pageSlug, "courses"));
+      for (const [slug, name] of [["iit", "IIT"], ["nit", "NIT"], ["iiit", "IIIT"], ["ipe", "IPE"]] as const) {
+        const hero = sections.find((section) => section.sectionKey === `course-${slug}-hero`);
+        if (!hero) continue;
+        const content = isCmsRecord(hero.content) ? { ...hero.content } : {};
+        await tx.update(contentSectionsTable).set({
+          title: name,
+          subtitle: `Explore the ${name} course at Shastra Junior College. Contact the admissions team for current details.`,
+          content: {
+            ...content,
+            eyebrow: `${name} COURSE`,
+            primaryCtaLabel: `Enquire about ${name}`,
+            secondaryCtaLabel: "View all courses",
+            statusLabel: "",
+            duration: "",
+            studyMode: "",
+          },
+          isVisible: true,
+          updatedAt: new Date(),
+        }).where(eq(contentSectionsTable.id, hero.id));
+      }
+
+      const testimonials = await tx.select().from(contentItemsTable).where(eq(contentItemsTable.itemType, "testimonial"));
+      for (const item of testimonials) {
+        const content = isCmsRecord(item.content) ? { ...item.content } : {};
+        if (
+          content.showOnCoursePages === true &&
+          /MPC|BIPC|NEET|EAMCET|IIT-JEE|JEE Main/i.test(`${item.title} ${item.description ?? ""} ${JSON.stringify(content)}`)
+        ) {
+          await tx.update(contentItemsTable).set({
+            content: { ...content, showOnCoursePages: false },
+            updatedAt: new Date(),
+          }).where(eq(contentItemsTable.id, item.id));
+        }
+      }
+
+      seedMarkers.add(approvedCourseCopyMarker);
+      seedableMenu = { ...seedableMenu, __seedMarkers: [...seedMarkers] } as typeof seedableMenu;
+      await tx.update(coursesMenuSettingsTable)
+        .set({ content: seedableMenu as CoursesMenuContent, updatedAt: new Date() })
+        .where(eq(coursesMenuSettingsTable.id, "primary"));
+    }
+
     const starterSeedMarker = "courses-batches-schedule-admissions-v1";
     if (seedMarkers.has(starterSeedMarker)) {
       if (seedMarkers.size !== (seedableMenu.__seedMarkers?.length ?? 0)) {
