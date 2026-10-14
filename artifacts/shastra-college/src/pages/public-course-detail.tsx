@@ -99,7 +99,7 @@ function CourseError({ retry }: { retry: () => void }) {
   );
 }
 
-function CourseNotPublished({ course }: { course: CourseDetail }) {
+function CourseNotPublished({ course }: { course: { slug: string; name: string } }) {
   return (
     <main className="min-h-[55vh] bg-[#f7f5ef] px-5 py-16 sm:px-8 sm:py-24" data-testid={`page-course-not-published-${course.slug}`}>
       <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#0b3472]/10 bg-white px-6 py-10 text-center shadow-[0_18px_45px_rgba(11,52,114,.07)] sm:px-10">
@@ -114,6 +114,19 @@ function CourseNotPublished({ course }: { course: CourseDetail }) {
         </div>
       </div>
     </main>
+  );
+}
+
+export function PublicCourseLinkOnlyPage({ course }: { course: { slug: string; name: string } }) {
+  const home = useGetHomePage({ query: { queryKey: getGetHomePageQueryKey() } });
+  if (home.isLoading) return <CourseLoading />;
+  if (home.isError || !home.data) return <CourseError retry={() => { void home.refetch(); }} />;
+  return (
+    <div className="min-h-[100dvh] bg-[#f7f5ef]" data-college-theme style={themeVariables(home.data.settings.primaryColor, home.data.settings.accentColor, home.data.settings.surfaceColor) as React.CSSProperties}>
+      <Header home={home.data} />
+      <CourseNotPublished course={course} />
+      <Footer home={home.data} />
+    </div>
   );
 }
 

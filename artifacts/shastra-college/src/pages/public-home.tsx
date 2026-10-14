@@ -640,15 +640,27 @@ export function EnquiryForm({ section }: { section: ContentSection }) {
   const queryClient = useQueryClient();
   const createEnquiry = useCreateEnquiry();
   const config = useMemo(() => getHeroFormContent(section.content), [section.content]);
-  const [values, setValues] = useState(() => initialFieldValues(config.fields));
+  const coursesQuery = useGetCoursesMenu({ query: { queryKey: getGetCoursesMenuQueryKey() } });
+  const fields = useMemo(() => {
+    const courses = (coursesQuery.data?.courseCards || [])
+      .filter((card) => card.isVisible)
+      .sort((a, b) => a.order - b.order)
+      .map((card) => ({ label: card.title, value: card.title }));
+    return config.fields.map((field) =>
+      field.type === "select" && /course|pathway|program|interest/i.test(`${field.key} ${field.label}`)
+        ? { ...field, options: courses }
+        : field,
+    );
+  }, [config.fields, coursesQuery.data?.courseCards]);
+  const [values, setValues] = useState(() => initialFieldValues(fields));
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
-    setValues(initialFieldValues(config.fields));
+    setValues(initialFieldValues(fields));
     setSubmitted(false);
     setSubmitError("");
-  }, [config.fields]);
+  }, [fields]);
 
   const updateValue = (key: string, value: string) => {
     setValues((current) => ({ ...current, [key]: value }));
@@ -672,7 +684,7 @@ export function EnquiryForm({ section }: { section: ContentSection }) {
           void queryClient.invalidateQueries({
             queryKey: getGetAdminEnquiriesQueryKey(),
           });
-          setValues(initialFieldValues(config.fields));
+          setValues(initialFieldValues(fields));
           setSubmitted(true);
         },
         onError: (error) => {
@@ -749,7 +761,7 @@ export function EnquiryForm({ section }: { section: ContentSection }) {
       </div>
 
       <div className="grid flex-1 content-start gap-3 sm:grid-cols-2">
-        {config.fields.map((field) => (
+        {fields.map((field) => (
           <label
             key={field.key}
             className={`block ${field.type === "textarea" ? "sm:col-span-2" : ""}`}
@@ -908,13 +920,11 @@ function HeroSection({ section }: { section: ContentSection }) {
   );
 }
 
-function PathwaysSection({
-  section,
-  items,
-}: {
-  section: ContentSection;
-  items: ContentItem[];
-}) {
+function PathwaysSection({ section }: { section: ContentSection }) {
+  const coursesQuery = useGetCoursesMenu({ query: { queryKey: getGetCoursesMenuQueryKey() } });
+  const courses = (coursesQuery.data?.courseCards || [])
+    .filter((card) => card.isVisible)
+    .sort((a, b) => a.order - b.order);
   return (
     <section
       id="programs"
@@ -930,24 +940,35 @@ function PathwaysSection({
         </h2>
         <nav aria-label="Program pathways">
           <ul className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-            {items.map((item) => (
-              <li key={item.id}>
-                <a
-                  href="/"
-                  aria-label={`Return home to explore ${item.title}`}
+            {courses.map((course) => (
+              <li key={course.id}>
+                {course.destination.startsWith("/") ? <Link
+                  href={course.destination}
+                  aria-label={`Explore ${course.title}`}
                   className="focus-ring pathway-chip group inline-flex min-h-10 items-center gap-2.5 rounded-full border border-[#0b3472]/20 bg-white px-4 py-2 text-sm font-bold text-[#0b3472] shadow-[0_2px_8px_rgba(11,52,114,.05)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#0b3472] hover:bg-[#eaf1fb] hover:shadow-[0_8px_18px_rgba(11,52,114,.14)] active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:transform-none"
-                  data-testid={`link-pathway-${item.id}`}
+                  data-testid={`link-pathway-${course.id}`}
                 >
                   <span
                     className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#e3212b] transition-shadow group-hover:shadow-[0_0_0_3px_rgba(227,33,43,.16)]"
                     aria-hidden="true"
                   />
-                  <span>{item.title}</span>
+                  <span>{course.title}</span>
                   <ArrowRight
                     className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
                     aria-hidden="true"
                   />
-                </a>
+                </Link> : <a
+                  href={course.destination}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Explore ${course.title}`}
+                  className="focus-ring pathway-chip group inline-flex min-h-10 items-center gap-2.5 rounded-full border border-[#0b3472]/20 bg-white px-4 py-2 text-sm font-bold text-[#0b3472] shadow-[0_2px_8px_rgba(11,52,114,.05)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#0b3472] hover:bg-[#eaf1fb] hover:shadow-[0_8px_18px_rgba(11,52,114,.14)] active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:transform-none"
+                  data-testid={`link-pathway-${course.id}`}
+                >
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#e3212b]" aria-hidden="true" />
+                  <span>{course.title}</span>
+                  <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </a>}
               </li>
             ))}
           </ul>
@@ -1326,7 +1347,7 @@ function PageSections({ home }: { home: HomePage }) {
           return <HeroSection key={section.id} section={section} />;
         }
         if (section.sectionKey.toLowerCase() === "programs") {
-          return <PathwaysSection key={section.id} section={section} items={items} />;
+          return <PathwaysSection key={section.id} section={section} />;
         }
         return <StatisticsBar key={section.id} section={section} items={items} />;
       })}

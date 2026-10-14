@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { ClerkProvider, SignIn, SignUp, useClerk } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { getGetCoursesMenuQueryKey, useGetCoursesMenu } from '@workspace/api-client-react';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
@@ -12,7 +13,7 @@ import AboutPage from '@/pages/about';
 import GalleryPage from '@/pages/gallery';
 import FacultyPage from '@/pages/faculty';
 import { PublicCoursesPage as CoursesPage } from '@/pages/public-courses';
-import PublicCourseDetailPage from '@/pages/public-course-detail';
+import PublicCourseDetailPage, { PublicCourseLinkOnlyPage } from '@/pages/public-course-detail';
 import { getCourseDetail, LEGACY_COURSE_SLUGS } from '@/pages/course-detail-config';
 import {
   ContactPage,
@@ -79,11 +80,18 @@ function CourseDetailRoute() {
   const courseSlug = params?.courseSlug ?? '';
   const course = match ? getCourseDetail(courseSlug) : undefined;
   const isLegacyCourse = match && !course && LEGACY_COURSE_SLUGS.has(courseSlug);
+  const menu = useGetCoursesMenu({ query: { queryKey: getGetCoursesMenuQueryKey() } });
+  const menuCourse = menu.data?.courseCards.find((card) =>
+    card.isVisible && card.destination.match(/^\/courses\/([^/?#]+)/)?.[1] === courseSlug,
+  );
   const [, setLocation] = useLocation();
   useEffect(() => {
     if (isLegacyCourse) setLocation('/courses');
   }, [isLegacyCourse, setLocation]);
-  return course ? <PublicCourseDetailPage course={course} /> : <NotFound />;
+  if (course) return <PublicCourseDetailPage course={course} />;
+  if (menuCourse) return <PublicCourseLinkOnlyPage course={{ slug: courseSlug, name: menuCourse.title }} />;
+  if (menu.isLoading && !isLegacyCourse) return <main className="min-h-[55vh]" aria-busy="true" />;
+  return <NotFound />;
 }
 
 function ClerkQueryClientCacheInvalidator() {
