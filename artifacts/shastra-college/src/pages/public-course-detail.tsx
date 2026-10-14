@@ -103,11 +103,7 @@ function CourseNotPublished({ course }: { course: CourseDetail }) {
   return (
     <main className="min-h-[55vh] bg-[#f7f5ef] px-5 py-16 sm:px-8 sm:py-24" data-testid={`page-course-not-published-${course.slug}`}>
       <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#0b3472]/10 bg-white px-6 py-10 text-center shadow-[0_18px_45px_rgba(11,52,114,.07)] sm:px-10">
-        <p className="eyebrow text-[#e3212b]">COURSE INFORMATION</p>
         <h1 className="mt-4 font-display text-4xl font-extrabold tracking-[-.055em] text-[#0b3472] sm:text-5xl">{course.name}</h1>
-        <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[#53657d]">
-          This course page is not published yet. Contact the college for current information.
-        </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <Link href="/contact" className="focus-ring inline-flex items-center gap-2 rounded-full bg-[#e3212b] px-5 py-3 text-sm font-extrabold text-white">
             Contact the college <ArrowRight className="h-4 w-4" aria-hidden="true" />

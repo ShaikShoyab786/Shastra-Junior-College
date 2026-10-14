@@ -6,4 +6,5 @@
 - [Headless CDP checks](headless-cdp-value-serialization.md) — return JSON-safe CDP values and preload session state when a fresh preview shows a one-time overlay.
 - [Course gallery preview](course-gallery-preview.md) — per-image Gallery toggle controls display on every course page, independent of Home Preview and faculty eligibility.
 - [Course enrollment process](course-enrollment-process.md) — keep course steps editable and grounded in the user's reference; don't invent fee, deadline, or document rules.
+- [Confirmed course catalog](confirmed-course-catalog.md) — only IIT, NIT, IIIT, and IPE are confirmed; keep public course details to names and links until more is approved.
 - [Date-only API contracts](exam-updates-date-only-contract.md) — keep exam dates as YYYY-MM-DD strings across OpenAPI, generated clients, and Drizzle.

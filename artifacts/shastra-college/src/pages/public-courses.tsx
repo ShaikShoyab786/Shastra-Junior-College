@@ -88,7 +88,7 @@ function CoursesError({ retry }: { retry: () => void }) {
       <div className="max-w-md rounded-[1.75rem] border border-[#e3212b]/20 bg-[#fffaf8] p-8 text-center shadow-[0_20px_60px_rgba(11,52,114,.08)]">
         <CircleAlert className="mx-auto h-8 w-8 text-[#e3212b]" aria-hidden="true" />
         <p className="eyebrow mt-5 text-[#e3212b]">Courses unavailable</p>
-        <h1 className="mt-3 font-display text-3xl font-extrabold text-[#0b3472]">The pathways could not load.</h1>
+        <h1 className="mt-3 font-display text-3xl font-extrabold text-[#0b3472]">The courses could not load.</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">Please try again. The college course records are kept in the shared Courses menu.</p>
         <button type="button" onClick={retry} className="focus-ring mt-6 inline-flex items-center gap-2 rounded-full bg-[#0b3472] px-5 py-3 text-sm font-bold text-white" data-testid="button-retry-courses">
           <RefreshCw className="h-4 w-4" /> Try again
@@ -101,8 +101,8 @@ function CoursesError({ retry }: { retry: () => void }) {
 function Hero({ section }: { section?: ContentSection }) {
   const content = (section?.content || {}) as Record<string, unknown>;
   const eyebrow = textValue(content, ["eyebrow"], "COURSES AT SHASTRA");
-  const title = section?.title || textValue(content, ["headline", "heroTitle", "title"], "Explore course pathways");
-  const description = section?.subtitle || textValue(content, ["description", "introduction", "body"], "Review the current course names, categories, and descriptions below.");
+  const title = section?.title || textValue(content, ["headline", "heroTitle", "title"], "Our courses");
+  const description = section?.subtitle || textValue(content, ["description", "introduction", "body"], "Explore IIT, NIT, IIIT, and IPE at Shastra Junior College.");
   const primaryLabel = textValue(content, ["ctaLabel", "primaryLabel"], "Explore courses");
   const image = assetUrl(typeof content.imageUrl === "string" ? content.imageUrl : null);
   const imageAlt = textValue(content, ["imageAlt", "alt"], "");
@@ -129,8 +129,8 @@ function Hero({ section }: { section?: ContentSection }) {
               <span className="eyebrow text-[#f6c1bb]">SHASTRA JUNIOR COLLEGE</span>
             </div>
             <div>
-              <p className="max-w-[12ch] font-display text-3xl font-extrabold leading-tight sm:text-4xl">Course pathways</p>
-              <p className="mt-3 max-w-sm text-sm leading-6 text-blue-100/80">Explore the current subject and exam options listed below.</p>
+              <p className="max-w-[12ch] font-display text-3xl font-extrabold leading-tight sm:text-4xl">Our courses</p>
+              <p className="mt-3 max-w-sm text-sm leading-6 text-blue-100/80">IIT · NIT · IIIT · IPE</p>
             </div>
           </div>
         </div>
@@ -181,7 +181,7 @@ function PathwayCard({ card, featured }: { card: CoursesMenuCard; featured?: boo
       </div>
       <h3 className={`mt-6 font-display font-extrabold leading-[1.03] text-[#0b3472] ${featured ? "text-3xl sm:text-4xl" : "text-2xl"}`}>{card.title}</h3>
       {card.description ? <p className="mt-4 text-sm leading-6 text-[#53657d]">{card.description}</p> : null}
-      {action ? <span className="mt-7 inline-flex items-center gap-2 text-sm font-extrabold text-[#0b3472]">Explore pathway <ArrowRight className="h-4 w-4" /></span> : null}
+      {action ? <span className="mt-7 inline-flex items-center gap-2 text-sm font-extrabold text-[#0b3472]">View course <ArrowRight className="h-4 w-4" /></span> : null}
     </>
   );
   const className = `group flex min-h-[270px] flex-col rounded-[1.5rem] border p-6 sm:p-7 ${action ? "transition-transform hover:-translate-y-1" : ""} ${featured ? "border-[#e3212b]/25 bg-[#fff6f3] shadow-[0_18px_40px_rgba(227,33,43,.07)]" : `border-[#0b3472]/15 bg-white/55 ${action ? "hover:border-[#0b3472]/35 hover:shadow-[0_18px_40px_rgba(11,52,114,.09)]" : ""}`}`;
@@ -193,8 +193,8 @@ function PathwayCard({ card, featured }: { card: CoursesMenuCard; featured?: boo
 function Pathways({ section, cards }: { section?: ContentSection; cards: CoursesMenuCard[] }) {
   const content = (section?.content || {}) as Record<string, unknown>;
   const eyebrow = textValue(content, ["eyebrow"], "REGULAR PATHWAYS");
-  const title = section?.title || textValue(content, ["headline", "title"], "Explore regular pathways");
-  const subtitle = section?.subtitle || textValue(content, ["description", "introduction"], "Compare the course names, categories, and descriptions currently available.");
+  const title = section?.title || textValue(content, ["headline", "title"], "Courses offered");
+  const subtitle = section?.subtitle || textValue(content, ["description", "introduction"], "IIT, NIT, IIIT, and IPE are the four courses currently offered.");
   return (
     <section id="regular-pathways" className="bg-[#fbfaf6] px-5 py-14 sm:px-8 sm:py-20" data-testid={`section-regular-pathways-${section?.id || "default"}`}>
       <div className="mx-auto max-w-7xl">

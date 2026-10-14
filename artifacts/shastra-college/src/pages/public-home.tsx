@@ -397,7 +397,7 @@ export function Footer({ home }: { home: HomePage }) {
         </nav>
 
         <section aria-labelledby="footer-programs-heading" data-testid="section-footer-programs">
-          <h2 id="footer-programs-heading" className="font-display text-lg font-extrabold">Our Programs</h2>
+          <h2 id="footer-programs-heading" className="font-display text-lg font-extrabold">Courses</h2>
           <span className="mt-2 block h-0.5 w-7 bg-[#e3212b]" aria-hidden="true" />
           {coursesQuery.isLoading ? (
             <div className="mt-4 space-y-3" aria-busy="true" data-testid="status-footer-programs-loading">

@@ -1083,6 +1083,7 @@ export async function seedCoursesPageSections(): Promise<void> {
         },
         heading: {
           ...seedableMenu.heading,
+          eyebrow: "Courses offered",
           title: "Explore our courses",
         },
         benefits: [
@@ -1162,6 +1163,181 @@ export async function seedCoursesPageSections(): Promise<void> {
           })
           .where(eq(contentSectionsTable.id, section.id));
       }
+    }
+
+    const courseListingCleanupMarker = "course-listing-four-course-copy-v1";
+    if (!seedMarkers.has(courseListingCleanupMarker)) {
+      const sections = await tx
+        .select()
+        .from(contentSectionsTable)
+        .where(eq(contentSectionsTable.pageSlug, "courses"));
+
+      for (const section of sections) {
+        if (section.sectionKey === "hero") {
+          const content = isCmsRecord(section.content) ? { ...section.content } : {};
+          await tx
+            .update(contentSectionsTable)
+            .set({
+              title: "Our courses",
+              subtitle: "Explore IIT, NIT, IIIT, and IPE at Shastra Junior College.",
+              content: { ...content, eyebrow: "COURSES OFFERED" },
+              updatedAt: new Date(),
+            })
+            .where(eq(contentSectionsTable.id, section.id));
+        }
+
+        if (section.sectionKey === "regular-pathways") {
+          const content = isCmsRecord(section.content) ? { ...section.content } : {};
+          await tx
+            .update(contentSectionsTable)
+            .set({
+              title: "Courses offered",
+              subtitle: "IIT, NIT, IIIT, and IPE are the four courses currently offered.",
+              content: { ...content, eyebrow: "COURSES OFFERED" },
+              updatedAt: new Date(),
+            })
+            .where(eq(contentSectionsTable.id, section.id));
+        }
+
+        if (section.sectionKey === "batch-details-schedule") {
+          const items = await tx
+            .select()
+            .from(contentItemsTable)
+            .where(eq(contentItemsTable.sectionId, section.id));
+          const hasUnconfirmedCourseCopy = items.some((item) =>
+            /MPC|BIPC|NEET|EAMCET|IIT-JEE|JEE Main/i.test(
+              `${item.title} ${item.description ?? ""} ${JSON.stringify(item.content)}`,
+            ),
+          );
+          if (hasUnconfirmedCourseCopy) {
+            await tx
+              .update(contentSectionsTable)
+              .set({ isVisible: false, updatedAt: new Date() })
+              .where(eq(contentSectionsTable.id, section.id));
+          }
+        }
+
+        if (section.sectionKey === "admissions-cta") {
+          const content = isCmsRecord(section.content) ? { ...section.content } : {};
+          if (/NEET|EAMCET|IIT-JEE|MPC|BIPC/i.test(JSON.stringify(content))) {
+            const benefits = Array.isArray(content.benefits) ? content.benefits : [];
+            const benefitCopy = [
+              ["Course information", "Ask about IIT, NIT, IIIT, and IPE."],
+              ["Admissions guidance", "Talk with the admissions team about the application process."],
+              ["Contact the college", "Connect with the admissions team for further information."],
+            ];
+            await tx
+              .update(contentSectionsTable)
+              .set({
+                title: "Ask us about our courses.",
+                subtitle: "Talk with the admissions team about IIT, NIT, IIIT, and IPE.",
+                content: {
+                  ...content,
+                  eyebrow: "COURSE ENQUIRIES",
+                  benefits: benefits.map((benefit, index) => {
+                    const existing = isCmsRecord(benefit) ? benefit : {};
+                    const [title, description] = benefitCopy[index] ?? benefitCopy[2];
+                    return { ...existing, title, description };
+                  }),
+                },
+                updatedAt: new Date(),
+              })
+              .where(eq(contentSectionsTable.id, section.id));
+          }
+        }
+      }
+
+      const faqItems = await tx
+        .select()
+        .from(contentItemsTable)
+        .where(eq(contentItemsTable.itemType, "faq"));
+      for (const item of faqItems) {
+        const content = isCmsRecord(item.content) ? { ...item.content } : {};
+        const hasLegacyCourseCopy = /MPC|BIPC|NEET|EAMCET|IIT-JEE|JEE Main/i.test(
+          `${item.title} ${item.description ?? ""} ${JSON.stringify(content)}`,
+        );
+        const pageTargets = Array.isArray(content.pageTargets)
+          ? content.pageTargets.filter((target): target is string => typeof target === "string")
+          : [];
+        if (!hasLegacyCourseCopy || !pageTargets.some((target) => target === "courses" || target.startsWith("course:"))) {
+          continue;
+        }
+        const remainingTargets = pageTargets.filter(
+          (target) => target !== "courses" && !target.startsWith("course:"),
+        );
+        await tx
+          .update(contentItemsTable)
+          .set({
+            content: { ...content, pageTargets: remainingTargets },
+            isVisible: remainingTargets.length > 0 ? item.isVisible : false,
+            updatedAt: new Date(),
+          })
+          .where(eq(contentItemsTable.id, item.id));
+      }
+
+      seedMarkers.add(courseListingCleanupMarker);
+      seedableMenu = {
+        ...seedableMenu,
+        __seedMarkers: [...seedMarkers],
+      } as typeof seedableMenu;
+      await tx
+        .update(coursesMenuSettingsTable)
+        .set({ content: seedableMenu as CoursesMenuContent, updatedAt: new Date() })
+        .where(eq(coursesMenuSettingsTable.id, "primary"));
+    }
+
+    const legacyCoursePagesMarker = "retire-legacy-course-detail-pages-v1";
+    if (!seedMarkers.has(legacyCoursePagesMarker)) {
+      const legacySlugs = ["mpc", "bipc", "iit-jee", "neet", "mpc-eamcet", "integrated"];
+      const courseSections = await tx
+        .select()
+        .from(contentSectionsTable)
+        .where(eq(contentSectionsTable.pageSlug, "courses"));
+      for (const section of courseSections) {
+        if (!legacySlugs.some((slug) => section.sectionKey.startsWith(`course-${slug}-`))) {
+          continue;
+        }
+        await tx
+          .update(contentSectionsTable)
+          .set({ isVisible: false, updatedAt: new Date() })
+          .where(eq(contentSectionsTable.id, section.id));
+        await tx
+          .update(contentItemsTable)
+          .set({ isVisible: false, updatedAt: new Date() })
+          .where(eq(contentItemsTable.sectionId, section.id));
+      }
+      seedMarkers.add(legacyCoursePagesMarker);
+      seedableMenu = {
+        ...seedableMenu,
+        __seedMarkers: [...seedMarkers],
+      } as typeof seedableMenu;
+      await tx
+        .update(coursesMenuSettingsTable)
+        .set({ content: seedableMenu as CoursesMenuContent, updatedAt: new Date() })
+        .where(eq(coursesMenuSettingsTable.id, "primary"));
+    }
+
+    const courseMenuLabelsMarker = "course-menu-labels-v1";
+    if (!seedMarkers.has(courseMenuLabelsMarker)) {
+      seedMarkers.add(courseMenuLabelsMarker);
+      seedableMenu = {
+        ...seedableMenu,
+        brandPanel: {
+          ...seedableMenu.brandPanel,
+          headline: "Explore our courses",
+          supportingText: "Explore IIT, NIT, IIIT, and IPE at Shastra Junior College.",
+        },
+        heading: {
+          ...seedableMenu.heading,
+          eyebrow: "Courses offered",
+          title: "Explore our courses",
+        },
+        __seedMarkers: [...seedMarkers],
+      } as typeof seedableMenu;
+      await tx
+        .update(coursesMenuSettingsTable)
+        .set({ content: seedableMenu as CoursesMenuContent, updatedAt: new Date() })
+        .where(eq(coursesMenuSettingsTable.id, "primary"));
     }
 
     const starterSeedMarker = "courses-batches-schedule-admissions-v1";
