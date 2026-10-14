@@ -100,7 +100,7 @@ function CourseCard({
     >
       <div className="flex items-start justify-between gap-3">
         <span
-          className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-[#e8eef8] text-[#0b3472]"
+          className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-[#e8eef8] text-[#0b3472]"
           style={card.tint ? { backgroundColor: `${card.tint}18`, color: card.tint } : undefined}
         >
           {image ? (

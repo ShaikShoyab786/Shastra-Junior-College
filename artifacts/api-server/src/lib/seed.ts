@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import { db } from "@workspace/db";
 import { and, asc, eq } from "drizzle-orm";
 import {
@@ -23,6 +25,7 @@ import {
   type KnowledgeHubMenuContent,
 } from "@workspace/db";
 import { logger } from "./logger";
+import { ObjectStorageService } from "./objectStorage";
 
 const DEFAULT_KNOWLEDGE_HUB_MENU: KnowledgeHubMenuContent = {
   heading: {
@@ -1808,6 +1811,130 @@ export async function seedCoursesPageSections(): Promise<void> {
       seedMarkers.add(allCoursePagesCopyMarker);
       seedableMenu = { ...seedableMenu, __seedMarkers: [...seedMarkers] } as typeof seedableMenu;
       await tx.update(coursesMenuSettingsTable).set({ content: seedableMenu as CoursesMenuContent, updatedAt: new Date() }).where(eq(coursesMenuSettingsTable.id, "primary"));
+    }
+
+    const courseSamplePdfSeedMarker = "four-course-sample-curriculum-pdfs-v1";
+    if (!seedMarkers.has(courseSamplePdfSeedMarker)) {
+      const samplePdfCourses = [
+        { slug: "iit", name: "IIT", pathway: "IIT-JEE Preparation" },
+        { slug: "nit", name: "NIT", pathway: "JEE Main Preparation" },
+        { slug: "iiit", name: "IIIT", pathway: "JEE Main Preparation" },
+        { slug: "ipe", name: "IPE", pathway: "Intermediate Public Examinations" },
+      ] as const;
+      const courseSections = await tx
+        .select()
+        .from(contentSectionsTable)
+        .where(eq(contentSectionsTable.pageSlug, "courses"));
+
+      for (const course of samplePdfCourses) {
+        const curriculum = courseSections.find(
+          (section) => section.sectionKey === `course-${course.slug}-curriculum`,
+        );
+        if (!curriculum) continue;
+        const content = isCmsRecord(curriculum.content) ? { ...curriculum.content } : {};
+        const existingPdfPath =
+          typeof content.pdfPath === "string" ? content.pdfPath.trim() : "";
+        if (existingPdfPath && !existingPdfPath.startsWith("/curriculum-guides/")) {
+          continue;
+        }
+
+        const fileName = `${course.slug}-curriculum-sample.pdf`;
+        await tx
+          .update(contentSectionsTable)
+          .set({
+            content: {
+              ...content,
+              downloadHeading: `${course.name} Sample Curriculum`,
+              downloadDescription: `Download a one-page sample outline for ${course.pathway}.`,
+              downloadButtonLabel: "Download Sample PDF",
+              pdfPath: `/curriculum-guides/${fileName}`,
+              pdfFileName: fileName,
+              isSample: true,
+            },
+            updatedAt: new Date(),
+          })
+          .where(eq(contentSectionsTable.id, curriculum.id));
+      }
+
+      seedMarkers.add(courseSamplePdfSeedMarker);
+      seedableMenu = { ...seedableMenu, __seedMarkers: [...seedMarkers] } as typeof seedableMenu;
+      await tx
+        .update(coursesMenuSettingsTable)
+        .set({ content: seedableMenu as CoursesMenuContent, updatedAt: new Date() })
+        .where(eq(coursesMenuSettingsTable.id, "primary"));
+    }
+
+    const courseHeroImageSeedMarker = "four-course-hero-images-duration-mode-v1";
+    if (!seedMarkers.has(courseHeroImageSeedMarker)) {
+      const storage = new ObjectStorageService();
+      const heroImageCourses = [
+        { slug: "iit", name: "IIT", statusLabel: "IIT-JEE Preparation", imageAlt: "Student working through mathematics and physics with an engineering model" },
+        { slug: "nit", name: "NIT", statusLabel: "JEE Main Preparation", imageAlt: "Students collaborating on an engineering model in a college lab" },
+        { slug: "iiit", name: "IIIT", statusLabel: "JEE Main Preparation", imageAlt: "Student studying computer science at a modern workstation" },
+        { slug: "ipe", name: "IPE", statusLabel: "Intermediate Public Examinations", imageAlt: "Students studying science in a college laboratory" },
+      ] as const;
+      const imagePaths = new Map<string, string>();
+
+      for (const course of heroImageCourses) {
+        const imageBytes = await readFile(
+          resolve(process.cwd(), "assets/course-images", `${course.slug}.jpg`),
+        );
+        const uploadUrl = await storage.getObjectEntityUploadURL();
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": "image/jpeg" },
+          body: imageBytes,
+        });
+        if (!uploadResponse.ok) {
+          throw new Error(`Could not upload the ${course.name} course image.`);
+        }
+        imagePaths.set(course.slug, storage.normalizeObjectEntityPath(uploadUrl));
+      }
+
+      const currentSections = await tx
+        .select()
+        .from(contentSectionsTable)
+        .where(eq(contentSectionsTable.pageSlug, "courses"));
+      for (const course of heroImageCourses) {
+        const hero = currentSections.find(
+          (section) => section.sectionKey === `course-${course.slug}-hero`,
+        );
+        const imageUrl = imagePaths.get(course.slug);
+        if (!hero || !imageUrl) continue;
+        const heroContent = isCmsRecord(hero.content) ? { ...hero.content } : {};
+        await tx
+          .update(contentSectionsTable)
+          .set({
+            content: {
+              ...heroContent,
+              imageUrl,
+              imageAlt: course.imageAlt,
+              statusLabel: course.statusLabel,
+              duration: "2 years",
+              studyMode: "Offline",
+            },
+            updatedAt: new Date(),
+          })
+          .where(eq(contentSectionsTable.id, hero.id));
+      }
+
+      seedableMenu = {
+        ...seedableMenu,
+        courseCards: seedableMenu.courseCards.map((card) => {
+          const slug = card.destination.match(/^\/courses\/([^/?#]+)/)?.[1];
+          const course = heroImageCourses.find((entry) => entry.slug === slug);
+          const imageUrl = course ? imagePaths.get(course.slug) : undefined;
+          return course && imageUrl
+            ? { ...card, imageUrl, imageAlt: course.imageAlt }
+            : card;
+        }),
+      };
+      seedMarkers.add(courseHeroImageSeedMarker);
+      seedableMenu = { ...seedableMenu, __seedMarkers: [...seedMarkers] } as typeof seedableMenu;
+      await tx
+        .update(coursesMenuSettingsTable)
+        .set({ content: seedableMenu as CoursesMenuContent, updatedAt: new Date() })
+        .where(eq(coursesMenuSettingsTable.id, "primary"));
     }
 
     const starterSeedMarker = "courses-batches-schedule-admissions-v1";
