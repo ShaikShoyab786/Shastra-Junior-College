@@ -26,8 +26,16 @@ private API container. PostgreSQL remains a separate Coolify database resource.
 | `CLERK_SECRET_KEY` | API | Production Clerk secret key; keep private. |
 | `ADMIN_USER_IDS` | API | Comma-separated production Clerk user IDs. |
 | `VITE_CLERK_PUBLISHABLE_KEY` | Web build | Production Clerk publishable key; this is embedded in the frontend build. |
+| `R2_ACCOUNT_ID` | API | Cloudflare account ID for the R2 S3 endpoint. |
+| `R2_ACCESS_KEY_ID` | API | R2 S3 access key ID. |
+| `R2_SECRET_ACCESS_KEY` | API | R2 S3 secret access key; keep private. |
+| `R2_BUCKET_NAME` | API | Existing R2 bucket name. |
+| `R2_PUBLIC_PREFIX` | API | Optional public object prefix; defaults to `public`. |
+| `R2_PRIVATE_PREFIX` | API | Optional private upload prefix; defaults to `private`. |
 
 Do not commit real values to this repository or send secret values in chat.
+Mark only `VITE_CLERK_PUBLISHABLE_KEY` as a build-time variable. Keep database,
+Clerk secret, and R2 credentials runtime-only.
 
 ## Data and storage prerequisites
 
@@ -37,11 +45,19 @@ Do not commit real values to this repository or send secret values in chat.
   for production data.
 - Keep PostgreSQL private. Configure persistent storage and an off-server backup
   destination before relying on it for production.
-- The current upload/storage adapter uses Replit's local sidecar for Google
-  Cloud Storage credentials and signed upload URLs. It will need a portable
-  storage configuration and an authorized external bucket before uploads and
-  existing stored media can work outside Replit. Do not cut over until that
-  storage migration has been planned and tested.
+- The API uses Cloudflare R2 when `STORAGE_PROVIDER=r2`, while retaining the
+  Replit sidecar path for the Replit deployment. Configure R2 bucket CORS to
+  allow browser `PUT` requests from the production website origin, with the
+  `Content-Type` request header.
+- Existing Replit media still needs to be copied into the R2 bucket before
+  cutover. Private objects must retain the `uploads/<uuid>` suffix under the
+  configured private prefix so database values such as `/objects/uploads/<uuid>`
+  continue to resolve.
+- To copy existing media, add the same R2 credentials to Replit Secrets
+  temporarily (never commit them), run the migration script from the Replit
+  workspace first without arguments to review the count, then run it with
+  `--execute`. The script skips destination keys that already exist and does not
+  alter the Replit source objects or database.
 - The API initializes seed content at startup, but the database schema must
   already exist. Restore a complete database dump including its schema, or run
   the reviewed Drizzle schema setup against the empty target database before

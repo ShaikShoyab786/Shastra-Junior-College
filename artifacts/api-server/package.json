@@ -11,6 +11,8 @@
     "test": "node --test tests/enquiries.test.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1152.0",
+    "@aws-sdk/s3-request-presigner": "^3.1152.0",
     "@clerk/express": "^2.1.72",
     "@clerk/shared": "^4.36.0",
     "@google-cloud/storage": "^8.2.0",
