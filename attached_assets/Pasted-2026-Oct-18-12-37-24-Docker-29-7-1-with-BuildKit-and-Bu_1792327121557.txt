@@ -1,0 +1,32 @@
+2026-Oct-18 12:37:24
+Docker 29.7.1 with BuildKit and Buildx detected on deployment server (localhost).
+2026-Oct-18 12:37:24
+Starting deployment of shastra--junior--college:main-itlofttber8intqks3pgwcjh to localhost.
+2026-Oct-18 12:37:24
+Preparing container with helper image: docker.io/coollabsio/coolify-helper:1.0.17
+2026-Oct-18 12:37:27
+----------------------------------------
+2026-Oct-18 12:37:27
+Importing ShaikShoyab786/Shastra-Junior-College:main (commit sha 0a605d3323bf72ff4e1c225fb4fb19e14086ac59) to /artifacts/uuscwxsw0gsegpsqgz3vlrgh.
+2026-Oct-18 12:37:44
+Dockerfile not found for service api at ../../deploy/coolify/Dockerfile.api, skipping ARG injection.
+2026-Oct-18 12:37:44
+Dockerfile not found for service web at ../../deploy/coolify/Dockerfile.web, skipping ARG injection.
+2026-Oct-18 12:37:44
+Pulling & building required images.
+2026-Oct-18 12:37:44
+Adding build arguments to Docker Compose build command.
+2026-Oct-18 12:37:45
+========================================
+2026-Oct-18 12:37:45
+Deployment failed: Command execution failed (exit code 1): docker exec uuscwxsw0gsegpsqgz3vlrgh bash -c 'DOCKER_BUILDKIT=1 COOLIFY_BRANCH='\''main'\'' COOLIFY_RESOURCE_UUID='\''itlofttber8intqks3pgwcjh'\''  docker compose --env-file /artifacts/build-time.env --project-name itlofttber8intqks3pgwcjh --project-directory /artifacts/uuscwxsw0gsegpsqgz3vlrgh -f /artifacts/uuscwxsw0gsegpsqgz3vlrgh/deploy/coolify/compose.yaml build --pull --build-arg '\''COOLIFY_FQDN'\'' --build-arg '\''VITE_CLERK_PUBLISHABLE_KEY'\'' --build-arg '\''R2_PRIVATE_PREFIX'\'' --build-arg '\''COOLIFY_BUILD_SECRETS_HASH=262a1aa980ce3159f0d602126f267f021a93a04d11b5ab5d6381aff375e6a052'\'''
+2026-Oct-18 12:37:45
+Error:  Image itlofttber8intqks3pgwcjh_web:0a605d3323bf72ff4e1c225fb4fb19e14086ac59 Building
+2026-Oct-18 12:37:45
+Image itlofttber8intqks3pgwcjh_api:0a605d3323bf72ff4e1c225fb4fb19e14086ac59 Building
+2026-Oct-18 12:37:45
+resolve : lstat /deploy: no such file or directory
+2026-Oct-18 12:37:45
+========================================
+2026-Oct-18 12:37:45
+Gracefully shutting down build container: uuscwxsw0gsegpsqgz3vlrgh
