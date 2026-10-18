@@ -1,0 +1,45 @@
+Initialized driver at: Sun Oct 18 2026 21:04:21 GMT+0530 (India Standard Time)
+clerk.browser.js:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+chext_loader.js:76 [Violation] Permissions policy violation: unload is not allowed in this document.
+hf @ chext_loader.js:76
+chext_loader.js:76 Initialized chextloader at: 1792337661903
+share-modal.js:1 Uncaught TypeError: Cannot read properties of null (reading 'addEventListener')
+    at share-modal.js:1:135
+clerk.browser.js:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+clerk.browser.js:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+clerk.browser.js:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+clerk.browser.js:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+index-UPrY9A2Y.js:48  GET https://clerk.www.shastrajuniorcollege.in/npm/@clerk/clerk-js@6/dist/clerk.browser.js net::ERR_NAME_NOT_RESOLVED
+(anonymous) @ index-UPrY9A2Y.js:48
+NT.shouldRetry @ index-UPrY9A2Y.js:48
+NT @ index-UPrY9A2Y.js:48
+index-UPrY9A2Y.js:48 Uncaught (in promise) U3: Clerk: Failed to load Clerk JS, failed to load script: https://clerk.www.shastrajuniorcollege.in/npm/@clerk/clerk-js@6/dist/clerk.browser.js
+
+(code="failed_to_load_clerk_js")
+
+
+    at n (index-UPrY9A2Y.js:48:29630)
+    at index-UPrY9A2Y.js:48:30104Caused by: Error: failed to load script: https://clerk.www.shastrajuniorcollege.in/npm/@clerk/clerk-js@6/dist/clerk.browser.js
+    at HTMLScriptElement.<anonymous> (index-UPrY9A2Y.js:48:28269)
+n @ index-UPrY9A2Y.js:48
+(anonymous) @ index-UPrY9A2Y.js:48
+script
+(anonymous) @ index-UPrY9A2Y.js:48
+NT.shouldRetry @ index-UPrY9A2Y.js:48
+NT @ index-UPrY9A2Y.js:48
+index-UPrY9A2Y.js:49 U3: Clerk: Failed to load Clerk JS
+
+(code="failed_to_load_clerk_js")
+
+
+    at n (index-UPrY9A2Y.js:48:29630)
+    at MT (index-UPrY9A2Y.js:48:30000)
+    at C4.getClerkJsEntryChunk (index-UPrY9A2Y.js:49:38085)
+    at C4.getEntryChunks (index-UPrY9A2Y.js:49:37568)
+    at new C4 (index-UPrY9A2Y.js:49:36437)
+    at C4.getOrCreateInstance (index-UPrY9A2Y.js:49:12085)
+    at i6 (index-UPrY9A2Y.js:49:40693)
+    at n6 (index-UPrY9A2Y.js:49:40398)
+    at Gh (index-UPrY9A2Y.js:8:34211)
+    at up (index-UPrY9A2Y.js:8:62780)
+getEntryChunks @ index-UPrY9A2Y.js:49
