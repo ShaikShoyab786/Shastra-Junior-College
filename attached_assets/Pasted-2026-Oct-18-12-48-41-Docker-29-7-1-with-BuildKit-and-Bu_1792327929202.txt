@@ -1,0 +1,68 @@
+2026-Oct-18 12:48:41
+Docker 29.7.1 with BuildKit and Buildx detected on deployment server (localhost).
+2026-Oct-18 12:48:41
+Starting deployment of shastra--junior--college:main-itlofttber8intqks3pgwcjh to localhost.
+2026-Oct-18 12:48:41
+Preparing container with helper image: docker.io/coollabsio/coolify-helper:1.0.17
+2026-Oct-18 12:48:46
+----------------------------------------
+2026-Oct-18 12:48:46
+Importing ShaikShoyab786/Shastra-Junior-College:main (commit sha 7f07eec7c6e07fc5e4e1b59f5707b249253985ce) to /artifacts/unhlf3xnoqb1f01wzrd6lfz6.
+2026-Oct-18 12:49:03
+Added 3 ARG declarations to Dockerfile for service api.
+2026-Oct-18 12:49:04
+Added 6 ARG declarations to Dockerfile for service web (multi-stage build, added to 2 stages).
+2026-Oct-18 12:49:04
+Pulling & building required images.
+2026-Oct-18 12:49:04
+Adding build arguments to Docker Compose build command.
+2026-Oct-18 12:50:08
+Pulling image-based services before stopping the current deployment.
+2026-Oct-18 12:50:08
+Removing old containers.
+2026-Oct-18 12:50:08
+Starting new application.
+2026-Oct-18 12:50:09
+Container api-itlofttber8intqks3pgwcjh-20261018T124903 Creating
+2026-Oct-18 12:50:10
+Container api-itlofttber8intqks3pgwcjh-20261018T124903 Created
+2026-Oct-18 12:50:10
+Container web-itlofttber8intqks3pgwcjh-20261018T124903 Creating
+2026-Oct-18 12:50:10
+Container web-itlofttber8intqks3pgwcjh-20261018T124903 Created
+2026-Oct-18 12:50:10
+Container api-itlofttber8intqks3pgwcjh-20261018T124903 Starting
+2026-Oct-18 12:50:10
+Container api-itlofttber8intqks3pgwcjh-20261018T124903 Started
+2026-Oct-18 12:50:10
+Container api-itlofttber8intqks3pgwcjh-20261018T124903 Waiting
+2026-Oct-18 12:50:12
+Container api-itlofttber8intqks3pgwcjh-20261018T124903 Error dependency api failed to start
+2026-Oct-18 12:50:12
+dependency failed to start: container api-itlofttber8intqks3pgwcjh-20261018T124903 is unhealthy
+2026-Oct-18 12:50:12
+========================================
+2026-Oct-18 12:50:12
+Deployment failed: Command execution failed (exit code 1): docker exec unhlf3xnoqb1f01wzrd6lfz6 bash -c 'COOLIFY_BRANCH='\''main'\'' COOLIFY_RESOURCE_UUID='\''itlofttber8intqks3pgwcjh'\''  docker compose --env-file /artifacts/unhlf3xnoqb1f01wzrd6lfz6/.env --project-name itlofttber8intqks3pgwcjh --project-directory /artifacts/unhlf3xnoqb1f01wzrd6lfz6 -f /artifacts/unhlf3xnoqb1f01wzrd6lfz6/deploy/coolify/compose.yaml up -d'
+2026-Oct-18 12:50:12
+Error:  Container api-itlofttber8intqks3pgwcjh-20261018T124903 Creating
+2026-Oct-18 12:50:12
+Container api-itlofttber8intqks3pgwcjh-20261018T124903 Created
+2026-Oct-18 12:50:12
+Container web-itlofttber8intqks3pgwcjh-20261018T124903 Creating
+2026-Oct-18 12:50:12
+Container web-itlofttber8intqks3pgwcjh-20261018T124903 Created
+2026-Oct-18 12:50:12
+Container api-itlofttber8intqks3pgwcjh-20261018T124903 Starting
+2026-Oct-18 12:50:12
+Container api-itlofttber8intqks3pgwcjh-20261018T124903 Started
+2026-Oct-18 12:50:12
+Container api-itlofttber8intqks3pgwcjh-20261018T124903 Waiting
+2026-Oct-18 12:50:12
+Container api-itlofttber8intqks3pgwcjh-20261018T124903 Error dependency api failed to start
+2026-Oct-18 12:50:12
+dependency failed to start: container api-itlofttber8intqks3pgwcjh-20261018T124903 is unhealthy
+2026-Oct-18 12:50:13
+========================================
+2026-Oct-18 12:50:13
+Gracefully shutting down build container: unhlf3xnoqb1f01wzrd6lfz6
