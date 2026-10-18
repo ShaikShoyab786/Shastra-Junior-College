@@ -220,7 +220,6 @@ function RoutedApp() {
           <Route path="/knowledge-hub/study-resources" component={PublicStudyResourcesPage} />
           <Route path="/knowledge-hub/exam-updates" component={PublicExamUpdatesPage} />
           <Route path="/contact" component={ContactPage} />
-          <Route path="/admin" component={AdminPage} />
           <Route path="/sign-in/*?" component={SignInPage} />
           <Route path="/sign-up/*?" component={SignUpPage} />
           <Route component={NotFound} />
@@ -230,11 +229,23 @@ function RoutedApp() {
   );
 }
 
+function AppRoutes() {
+  const [path] = useLocation();
+  if (path === "/admin" || path === "/admin/") {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <AdminPage />
+      </QueryClientProvider>
+    );
+  }
+  return <RoutedApp />;
+}
+
 function App() {
   return (
     <TooltipProvider>
       <WouterRouter base={basePath}>
-        <RoutedApp />
+        <AppRoutes />
       </WouterRouter>
       <Toaster />
     </TooltipProvider>

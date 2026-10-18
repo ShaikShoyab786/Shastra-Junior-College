@@ -19,6 +19,54 @@ tags:
   - name: Storage
     description: Object storage upload and serving endpoints.
 paths:
+  /admin/auth/session:
+    get:
+      operationId: getAdminAuthSession
+      tags: [admin]
+      summary: Check the password-based admin session
+      responses:
+        "200":
+          description: Current admin session state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSessionState"
+  /admin/auth/login:
+    post:
+      operationId: loginAdmin
+      tags: [admin]
+      summary: Sign in to the admin workspace with its configured password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminPasswordLogin"
+      responses:
+        "200":
+          description: Admin session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSessionState"
+        "401":
+          description: Password is incorrect
+        "429":
+          description: Too many sign-in attempts
+        "503":
+          description: Admin sign-in is not configured
+  /admin/auth/logout:
+    post:
+      operationId: logoutAdmin
+      tags: [admin]
+      summary: Sign out of the admin workspace
+      responses:
+        "200":
+          description: Admin session cleared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSessionState"
   /healthz:
     get:
       operationId: healthCheck
@@ -1555,6 +1603,23 @@ paths:
           description: Item not found
 components:
   schemas:
+    AdminPasswordLogin:
+      type: object
+      properties:
+        password:
+          type: string
+          minLength: 1
+          maxLength: 256
+      required: [password]
+    AdminSessionState:
+      type: object
+      properties:
+        authenticated:
+          type: boolean
+        expiresIn:
+          type: integer
+          minimum: 1
+      required: [authenticated]
     ArticleHubSettings:
       type: object
       properties:

@@ -5,6 +5,20 @@
  * Shared API for Shastra Junior College public content and administration.
  * OpenAPI spec version: 0.1.0
  */
+export interface AdminPasswordLogin {
+  /**
+     * @minLength 1
+     * @maxLength 256
+     */
+  password: string;
+}
+
+export interface AdminSessionState {
+  authenticated: boolean;
+  /** @minimum 1 */
+  expiresIn?: number;
+}
+
 export interface ArticleHubSettings {
   eyebrow: string;
   title: string;

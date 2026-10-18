@@ -9,6 +9,50 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Check the password-based admin session
+ */
+
+
+
+export const GetAdminAuthSessionResponse = zod.object({
+  "authenticated": zod.boolean(),
+  "expiresIn": zod.number().int().min(1).optional()
+})
+
+
+/**
+ * @summary Sign in to the admin workspace with its configured password
+ */
+export const loginAdminBodyPasswordMax = 256;
+
+
+
+export const LoginAdminBody = zod.object({
+  "password": zod.string().min(1).max(loginAdminBodyPasswordMax)
+})
+
+
+
+
+export const LoginAdminResponse = zod.object({
+  "authenticated": zod.boolean(),
+  "expiresIn": zod.number().int().min(1).optional()
+})
+
+
+/**
+ * @summary Sign out of the admin workspace
+ */
+
+
+
+export const LogoutAdminResponse = zod.object({
+  "authenticated": zod.boolean(),
+  "expiresIn": zod.number().int().min(1).optional()
+})
+
+
+/**
  * Returns server health status
  * @summary Health check
  */

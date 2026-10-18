@@ -1,6 +1,5 @@
 import { and, asc, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { Router, type IRouter, type Request, type RequestHandler } from "express";
-import { getAuth } from "@clerk/express";
 import {
   CreateAdminEnquiryNoteBody,
   CreateAdminEnquiryNoteParams,
@@ -26,6 +25,7 @@ import {
   type EnquiryAnswer,
 } from "@workspace/db";
 import { requireAdmin } from "../middlewares/requireAdmin";
+import { ADMIN_IDENTITY } from "../middlewares/adminSession";
 
 type ConfiguredField = {
   name: string;
@@ -171,7 +171,7 @@ type EnquiriesRouterDependencies = {
 
 export function createEnquiriesRouter({
   database = db,
-  getUserId = (req) => getAuth(req).userId,
+  getUserId = (_req) => ADMIN_IDENTITY,
   adminMiddleware = requireAdmin,
 }: EnquiriesRouterDependencies = {}): IRouter {
   const router: IRouter = Router();

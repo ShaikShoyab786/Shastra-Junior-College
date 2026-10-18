@@ -9,3 +9,4 @@
 - [Confirmed course catalog](confirmed-course-catalog.md) — only IIT, NIT, IIIT, and IPE are confirmed; keep public course details to names and links until more is approved.
 - [Date-only API contracts](exam-updates-date-only-contract.md) — keep exam dates as YYYY-MM-DD strings across OpenAPI, generated clients, and Drizzle.
 - [Production content sync](production-content-sync.md) — carry only approved CMS changes into production; preserve enquiries and other production records.
+- [Admin authentication boundary](admin-authentication-boundary.md) — use a Coolify password session for the admin workspace; keep PostgreSQL/R2 and other Clerk flows separate.

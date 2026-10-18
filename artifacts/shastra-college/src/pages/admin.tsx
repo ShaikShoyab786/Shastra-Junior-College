@@ -5,7 +5,6 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react";
-import { useClerk, useUser, Show } from "@clerk/react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertDialog,
@@ -343,8 +342,6 @@ function Shell({
   activeView: WorkspaceView;
   onNavigate: (view: WorkspaceView) => void;
 }) {
-  const { signOut } = useClerk();
-  const { user } = useUser();
   const [mobileNav, setMobileNav] = useState(false);
   const [signOutOpen, setSignOutOpen] = useState(false);
   const [homeOpen, setHomeOpen] = useState(false);
@@ -988,7 +985,7 @@ function Shell({
         <div className="mt-auto border-t border-white/15 pt-4">
           <div className="mb-2 flex items-center gap-2 px-3 text-xs text-blue-100">
             <UserRound className="h-3.5 w-3.5" />
-            <span className="min-w-0 truncate" data-testid="text-admin-user">{user?.primaryEmailAddress?.emailAddress || user?.id}</span>
+            <span className="min-w-0 truncate" data-testid="text-admin-user">Administrator</span>
           </div>
           <button
             type="button"
@@ -1036,7 +1033,9 @@ function Shell({
               data-testid="button-confirm-sign-out"
               className="bg-[#e3212b] text-white hover:bg-[#c01d26]"
               onClick={() => {
-                void signOut({ redirectUrl: "/" });
+                void fetch("/api/admin/auth/logout", { method: "POST" })
+                  .catch(() => undefined)
+                  .finally(() => window.location.assign("/admin"));
               }}
             >
               Sign out
@@ -1422,14 +1421,11 @@ function AdminLoading() {
   return <div className="min-h-[100dvh] bg-[#f5f7fb] p-8 md:pl-[330px]" aria-label="Loading admin workspace" data-testid="loading-admin"><div className="h-4 w-32 animate-pulse rounded bg-slate-200" /><div className="mt-5 h-10 w-72 animate-pulse rounded bg-slate-200" /><div className="mt-8 h-40 max-w-6xl animate-pulse rounded-3xl bg-white" /><div className="mt-6 h-72 max-w-6xl animate-pulse rounded-3xl bg-white" /></div>;
 }
 
-function AccessDenied({ userId, error }: { userId?: string; error: unknown }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => { if (userId) { await navigator.clipboard?.writeText(userId); setCopied(true); window.setTimeout(() => setCopied(false), 1800); } };
-  return <div className="flex min-h-[100dvh] items-center justify-center bg-[#f5f7fb] p-6"><div className="max-w-lg rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-[#0b3472]/5 sm:p-10"><Link href="/" className="focus-ring text-sm font-bold text-[#0b3472]" data-testid="link-denied-home">Return to public site</Link><p className="eyebrow mt-12 text-[#e3212b]">Admin access</p><h1 className="mt-3 font-display text-3xl font-extrabold text-[#0b3472]">This workspace is restricted.</h1><p className="mt-4 leading-7 text-slate-600">{errorMessage(error)} Ask the site owner to add the signed-in user ID below to <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">ADMIN_USER_IDS</code> in the API service's deployment environment.</p>{userId ? <div className="mt-6 flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3"><code className="min-w-0 flex-1 truncate text-sm text-slate-700" data-testid="text-user-id">{userId}</code><button onClick={copy} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-[#0b3472] hover:bg-slate-100" data-testid="button-copy-user-id"><Copy className="h-4 w-4" />{copied ? "Copied" : "Copy ID"}</button></div> : <Link href="/sign-in" className="focus-ring mt-6 inline-flex rounded-xl bg-[#0b3472] px-5 py-3 text-sm font-bold text-white" data-testid="link-sign-in">Sign in to continue</Link>}</div></div>;
+function AccessDenied({ error }: { error: unknown }) {
+  return <div className="flex min-h-[100dvh] items-center justify-center bg-[#f5f7fb] p-6"><div className="max-w-lg rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-[#0b3472]/5 sm:p-10"><Link href="/" className="focus-ring text-sm font-bold text-[#0b3472]" data-testid="link-denied-home">Return to public site</Link><p className="eyebrow mt-12 text-[#e3212b]">Admin access</p><h1 className="mt-3 font-display text-3xl font-extrabold text-[#0b3472]">Admin session unavailable.</h1><p className="mt-4 leading-7 text-slate-600">{errorMessage(error)}</p><button type="button" onClick={() => window.location.reload()} className="focus-ring mt-6 inline-flex rounded-xl bg-[#0b3472] px-5 py-3 text-sm font-bold text-white" data-testid="button-admin-login">Return to admin sign in</button></div></div>;
 }
 
 function AdminWorkspace() {
-  const { user } = useUser();
   const admin = useGetAdminHome();
   const galleryPage = useGetAdminCmsPage("gallery", {
     query: { queryKey: getGetAdminCmsPageQueryKey("gallery") },
@@ -1463,7 +1459,7 @@ function AdminWorkspace() {
   );
 
   if (admin.isLoading) return <AdminLoading />;
-  if (admin.isError || !home) return <AccessDenied userId={user?.id} error={admin.error} />;
+  if (admin.isError || !home) return <AccessDenied error={admin.error} />;
   let body: ReactNode;
   if (activeView === "dashboard") {
     body = (
@@ -2058,6 +2054,120 @@ function AdminWorkspace() {
   );
 }
 
+type AdminLoginState = "checking" | "signed-in" | "signed-out" | "error";
+
 export default function AdminPage() {
-  return <><Show when="signed-out"><div className="flex min-h-[100dvh] items-center justify-center bg-[#f5f7fb] p-6"><div className="max-w-md rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xl shadow-[#0b3472]/5"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#0b3472] text-white"><LayoutDashboard /></span><p className="eyebrow mt-8 text-[#e3212b]">Staff workspace</p><h1 className="mt-3 font-display text-3xl font-extrabold text-[#0b3472]">Sign in to manage the college site.</h1><p className="mt-3 leading-7 text-slate-600">The public college site is open to everyone. This workspace is reserved for the authorized team keeping it current.</p><Link href="/sign-in" className="focus-ring mt-7 inline-flex w-full items-center justify-center rounded-xl bg-[#0b3472] px-5 py-3.5 text-sm font-bold text-white" data-testid="link-admin-sign-in">Continue to sign in</Link></div></div></Show><Show when="signed-in"><AdminWorkspace /></Show></>;
+  const [state, setState] = useState<AdminLoginState>("checking");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/admin/auth/session", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Could not check the admin session.");
+        return response.json() as Promise<{ authenticated: boolean }>;
+      })
+      .then((result) => {
+        if (active) setState(result.authenticated ? "signed-in" : "signed-out");
+      })
+      .catch(() => {
+        if (active) {
+          setError("Admin sign-in is temporarily unavailable. Please try again.");
+          setState("error");
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        setError(result.error || "The password could not be verified.");
+        return;
+      }
+      setPassword("");
+      setState("signed-in");
+    } catch {
+      setError("Admin sign-in is temporarily unavailable. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (state === "checking") return <AdminLoading />;
+  if (state === "signed-in") return <AdminWorkspace />;
+
+  return (
+    <div className="flex min-h-[100dvh] items-center justify-center bg-[#f5f7fb] p-6">
+      <form
+        onSubmit={submit}
+        className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xl shadow-[#0b3472]/5 sm:p-10"
+        data-testid="form-admin-password-login"
+      >
+        <Link href="/" className="focus-ring text-sm font-bold text-[#0b3472]">
+          Return to public site
+        </Link>
+        <span className="mx-auto mt-10 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#0b3472] text-white">
+          <LayoutDashboard />
+        </span>
+        <p className="eyebrow mt-8 text-[#e3212b]">Staff workspace</p>
+        <h1 className="mt-3 font-display text-3xl font-extrabold text-[#0b3472]">
+          Sign in to manage the college site.
+        </h1>
+        <label
+          htmlFor="admin-password"
+          className="mt-7 block text-left text-sm font-bold text-slate-700"
+        >
+          Admin password
+        </label>
+        <input
+          type="text"
+          name="username"
+          autoComplete="username"
+          value="admin"
+          readOnly
+          tabIndex={-1}
+          aria-hidden="true"
+          className="sr-only"
+        />
+        <input
+          id="admin-password"
+          type="password"
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-[#0b3472] focus:ring-2 focus:ring-[#0b3472]/15"
+          data-testid="input-admin-password"
+        />
+        {error ? (
+          <p role="alert" className="mt-3 text-left text-sm font-medium text-red-700">
+            {error}
+          </p>
+        ) : null}
+        <button
+          type="submit"
+          disabled={submitting}
+          className="focus-ring mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[#0b3472] px-5 py-3.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+          data-testid="button-admin-password-login"
+        >
+          {submitting ? "Signing in…" : "Sign in"}
+        </button>
+      </form>
+    </div>
+  );
 }
