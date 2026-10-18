@@ -20,7 +20,7 @@ export const requireAdmin: RequestHandler = (req, res, next) => {
     res.status(403).json({
       error:
         allowedUserIds.size === 0
-          ? "Admin access has not been configured. Add an authorized Clerk user ID to ADMIN_USER_IDS in Replit Secrets."
+          ? "Admin access has not been configured. Add an authorized Clerk user ID to ADMIN_USER_IDS in the API service's deployment environment."
           : "This Clerk account is not authorized to edit site content.",
     });
     return;
