@@ -26,6 +26,7 @@ private API container. PostgreSQL remains a separate Coolify database resource.
 | `CLERK_SECRET_KEY` | API | Production Clerk secret key; keep private. |
 | `ADMIN_USER_IDS` | API | Comma-separated production Clerk user IDs. |
 | `VITE_CLERK_PUBLISHABLE_KEY` | Web build | Production Clerk publishable key; this is embedded in the frontend build. |
+| `VITE_CLERK_PROXY_URL` | Web build | Absolute HTTPS URL for the site's same-origin Clerk proxy, e.g. `https://your-domain.example/api/__clerk`. |
 | `R2_ACCOUNT_ID` | API | Cloudflare account ID for the R2 S3 endpoint. |
 | `R2_ACCESS_KEY_ID` | API | R2 S3 access key ID. |
 | `R2_SECRET_ACCESS_KEY` | API | R2 S3 secret access key; keep private. |
@@ -34,8 +35,9 @@ private API container. PostgreSQL remains a separate Coolify database resource.
 | `R2_PRIVATE_PREFIX` | API | Optional private upload prefix; defaults to `private`. |
 
 Do not commit real values to this repository or send secret values in chat.
-Mark only `VITE_CLERK_PUBLISHABLE_KEY` as a build-time variable. Keep database,
-Clerk secret, and R2 credentials runtime-only.
+Mark `VITE_CLERK_PUBLISHABLE_KEY` and `VITE_CLERK_PROXY_URL` as build-time
+variables. Set the proxy URL to the final public HTTPS domain assigned to the
+`web` service. Keep database, Clerk secret, and R2 credentials runtime-only.
 
 ## Data and storage prerequisites
 
@@ -65,5 +67,6 @@ Clerk secret, and R2 credentials runtime-only.
 
 ## Local build checks
 
-The web image expects `VITE_CLERK_PUBLISHABLE_KEY` at build time. The API image
-expects a reachable `DATABASE_URL` and production Clerk variables at runtime.
+The web image expects `VITE_CLERK_PUBLISHABLE_KEY` and `VITE_CLERK_PROXY_URL` at
+build time. The API image expects a reachable `DATABASE_URL` and production
+Clerk variables at runtime.

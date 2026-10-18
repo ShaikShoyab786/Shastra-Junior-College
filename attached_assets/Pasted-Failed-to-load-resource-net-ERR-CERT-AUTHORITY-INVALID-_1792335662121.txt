@@ -1,0 +1,38 @@
+Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID
+chrome-extension://e…js/share-modal.js:1 Uncaught TypeError: Cannot read properties of null (reading 'addEventListener')
+    at chrome-extension://edlifbnjlicfpckhgjhflgkeeibhhcii/js/share-modal.js:1:135
+ [Violation] Permissions policy violation: unload is not allowed in this document.
+hf @ chrome-extension://mclkkofklkfljcocdinagocijmpgbhab/chext_loader.js:76
+ Initialized chextloader at: 1792335480058
+clerk.pnrejuor22nyxzgr7roqwrup.200.141.11.39.sslip.io/npm/@clerk/clerk-js@6/dist/clerk.browser.js:1  Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID
+clerk.pnrejuor22nyxzgr7roqwrup.200.141.11.39.sslip.io/npm/@clerk/clerk-js@6/dist/clerk.browser.js:1  Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID
+clerk.pnrejuor22nyxzgr7roqwrup.200.141.11.39.sslip.io/npm/@clerk/clerk-js@6/dist/clerk.browser.js:1  Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID
+clerk.pnrejuor22nyxzgr7roqwrup.200.141.11.39.sslip.io/npm/@clerk/clerk-js@6/dist/clerk.browser.js:1  Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID
+clerk.pnrejuor22nyxzgr7roqwrup.200.141.11.39.sslip.io/npm/@clerk/clerk-js@6/dist/clerk.browser.js:1  Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID
+index-UPrY9A2Y.js:48 Uncaught (in promise) U3: Clerk: Failed to load Clerk JS, failed to load script: https://clerk.pnrejuor22nyxzgr7roqwrup.200.141.11.39.sslip.io/npm/@clerk/clerk-js@6/dist/clerk.browser.js
+
+(code="failed_to_load_clerk_js")
+
+
+    at n (index-UPrY9A2Y.js:48:29630)
+    at index-UPrY9A2Y.js:48:30104Caused by: Error: failed to load script: https://clerk.pnrejuor22nyxzgr7roqwrup.200.141.11.39.sslip.io/npm/@clerk/clerk-js@6/dist/clerk.browser.js
+    at HTMLScriptElement.<anonymous> (index-UPrY9A2Y.js:48:28269)
+ U3: Clerk: Failed to load Clerk JS
+
+(code="failed_to_load_clerk_js")
+
+
+    at n (index-UPrY9A2Y.js:48:29630)
+    at MT (index-UPrY9A2Y.js:48:30000)
+    at C4.getClerkJsEntryChunk (index-UPrY9A2Y.js:49:38085)
+    at C4.getEntryChunks (index-UPrY9A2Y.js:49:37568)
+    at new C4 (index-UPrY9A2Y.js:49:36437)
+    at C4.getOrCreateInstance (index-UPrY9A2Y.js:49:12085)
+    at i6 (index-UPrY9A2Y.js:49:40693)
+    at n6 (index-UPrY9A2Y.js:49:40398)
+    at Gh (index-UPrY9A2Y.js:8:34211)
+    at up (index-UPrY9A2Y.js:8:62780)
+getEntryChunks @ index-UPrY9A2Y.js:49
+ [Violation] Permissions policy violation: unload is not allowed in this document.
+km @ chrome-extension://mclkkofklkfljcocdinagocijmpgbhab/chext_driver.js:61
+ [Violation] Permissions policy violation: unload is not allowed in this document.

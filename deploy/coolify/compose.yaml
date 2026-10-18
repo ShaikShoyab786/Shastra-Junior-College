@@ -37,6 +37,7 @@ services:
       dockerfile: deploy/coolify/Dockerfile.web
       args:
         VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:?Set VITE_CLERK_PUBLISHABLE_KEY in Coolify}
+        VITE_CLERK_PROXY_URL: ${VITE_CLERK_PROXY_URL:?Set VITE_CLERK_PROXY_URL in Coolify}
         BASE_PATH: /
         PORT: "4173"
     restart: unless-stopped
