@@ -17,6 +17,10 @@ export const requireAdmin: RequestHandler = (req, res, next) => {
   );
 
   if (!allowedUserIds.has(userId)) {
+    req.log.warn(
+      { adminAllowlistCount: allowedUserIds.size },
+      "Admin access denied by ADMIN_USER_IDS",
+    );
     res.status(403).json({
       error:
         allowedUserIds.size === 0
