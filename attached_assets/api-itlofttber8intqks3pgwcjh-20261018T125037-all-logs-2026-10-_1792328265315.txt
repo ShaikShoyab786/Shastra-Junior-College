@@ -1,0 +1,112 @@
+
+> @workspace/api-server@0.0.0 start /workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+{"level":50,"time":1792327899944,"pid":20,"hostname":"21d963a9ab0a","err":{"type":"Error","message":"getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz","stack":"Error: getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz\n    at <anonymous> (/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.23.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async _NodePgSession.transaction (/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.23.1_pg@8.23.0/node_modules/src/node-postgres/session.ts:254:24)\n    at async seedInitialHomeContent (/workspace/artifacts/api-server/src/lib/seed.ts:2648:3)\n    at async start (/workspace/artifacts/api-server/src/index.ts:27:3)","errno":-3001,"code":"EAI_AGAIN","syscall":"getaddrinfo","hostname":"blihpiufi1kpb4qhjuif8vrz"},"msg":"Unable to initialize API server"}
+/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
+
+> @workspace/api-server@0.0.0 start /workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+{"level":50,"time":1792327901160,"pid":20,"hostname":"21d963a9ab0a","err":{"type":"Error","message":"getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz","stack":"Error: getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz\n    at <anonymous> (/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.23.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async _NodePgSession.transaction (/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.23.1_pg@8.23.0/node_modules/src/node-postgres/session.ts:254:24)\n    at async seedInitialHomeContent (/workspace/artifacts/api-server/src/lib/seed.ts:2648:3)\n    at async start (/workspace/artifacts/api-server/src/index.ts:27:3)","errno":-3001,"code":"EAI_AGAIN","syscall":"getaddrinfo","hostname":"blihpiufi1kpb4qhjuif8vrz"},"msg":"Unable to initialize API server"}
+/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
+
+> @workspace/api-server@0.0.0 start /workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+{"level":50,"time":1792327902450,"pid":20,"hostname":"21d963a9ab0a","err":{"type":"Error","message":"getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz","stack":"Error: getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz\n    at <anonymous> (/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.23.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async _NodePgSession.transaction (/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.23.1_pg@8.23.0/node_modules/src/node-postgres/session.ts:254:24)\n    at async seedInitialHomeContent (/workspace/artifacts/api-server/src/lib/seed.ts:2648:3)\n    at async start (/workspace/artifacts/api-server/src/index.ts:27:3)","errno":-3001,"code":"EAI_AGAIN","syscall":"getaddrinfo","hostname":"blihpiufi1kpb4qhjuif8vrz"},"msg":"Unable to initialize API server"}
+/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
+
+> @workspace/api-server@0.0.0 start /workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+{"level":50,"time":1792327903957,"pid":19,"hostname":"21d963a9ab0a","err":{"type":"Error","message":"getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz","stack":"Error: getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz\n    at <anonymous> (/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.23.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async _NodePgSession.transaction (/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.23.1_pg@8.23.0/node_modules/src/node-postgres/session.ts:254:24)\n    at async seedInitialHomeContent (/workspace/artifacts/api-server/src/lib/seed.ts:2648:3)\n    at async start (/workspace/artifacts/api-server/src/index.ts:27:3)","errno":-3001,"code":"EAI_AGAIN","syscall":"getaddrinfo","hostname":"blihpiufi1kpb4qhjuif8vrz"},"msg":"Unable to initialize API server"}
+/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
+
+> @workspace/api-server@0.0.0 start /workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+{"level":50,"time":1792327905913,"pid":20,"hostname":"21d963a9ab0a","err":{"type":"Error","message":"getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz","stack":"Error: getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz\n    at <anonymous> (/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.23.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async _NodePgSession.transaction (/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.23.1_pg@8.23.0/node_modules/src/node-postgres/session.ts:254:24)\n    at async seedInitialHomeContent (/workspace/artifacts/api-server/src/lib/seed.ts:2648:3)\n    at async start (/workspace/artifacts/api-server/src/index.ts:27:3)","errno":-3001,"code":"EAI_AGAIN","syscall":"getaddrinfo","hostname":"blihpiufi1kpb4qhjuif8vrz"},"msg":"Unable to initialize API server"}
+/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
+
+> @workspace/api-server@0.0.0 start /workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+{"level":50,"time":1792327908599,"pid":20,"hostname":"21d963a9ab0a","err":{"type":"Error","message":"getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz","stack":"Error: getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz\n    at <anonymous> (/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.23.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async _NodePgSession.transaction (/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.23.1_pg@8.23.0/node_modules/src/node-postgres/session.ts:254:24)\n    at async seedInitialHomeContent (/workspace/artifacts/api-server/src/lib/seed.ts:2648:3)\n    at async start (/workspace/artifacts/api-server/src/index.ts:27:3)","errno":-3001,"code":"EAI_AGAIN","syscall":"getaddrinfo","hostname":"blihpiufi1kpb4qhjuif8vrz"},"msg":"Unable to initialize API server"}
+/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
+
+> @workspace/api-server@0.0.0 start /workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+{"level":50,"time":1792327912911,"pid":20,"hostname":"21d963a9ab0a","err":{"type":"Error","message":"getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz","stack":"Error: getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz\n    at <anonymous> (/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.23.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async _NodePgSession.transaction (/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.23.1_pg@8.23.0/node_modules/src/node-postgres/session.ts:254:24)\n    at async seedInitialHomeContent (/workspace/artifacts/api-server/src/lib/seed.ts:2648:3)\n    at async start (/workspace/artifacts/api-server/src/index.ts:27:3)","errno":-3001,"code":"EAI_AGAIN","syscall":"getaddrinfo","hostname":"blihpiufi1kpb4qhjuif8vrz"},"msg":"Unable to initialize API server"}
+/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
+
+> @workspace/api-server@0.0.0 start /workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+{"level":50,"time":1792327920501,"pid":20,"hostname":"21d963a9ab0a","err":{"type":"Error","message":"getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz","stack":"Error: getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz\n    at <anonymous> (/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.23.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async _NodePgSession.transaction (/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.23.1_pg@8.23.0/node_modules/src/node-postgres/session.ts:254:24)\n    at async seedInitialHomeContent (/workspace/artifacts/api-server/src/lib/seed.ts:2648:3)\n    at async start (/workspace/artifacts/api-server/src/index.ts:27:3)","errno":-3001,"code":"EAI_AGAIN","syscall":"getaddrinfo","hostname":"blihpiufi1kpb4qhjuif8vrz"},"msg":"Unable to initialize API server"}
+/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
+
+> @workspace/api-server@0.0.0 start /workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+{"level":50,"time":1792327934536,"pid":20,"hostname":"21d963a9ab0a","err":{"type":"Error","message":"getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz","stack":"Error: getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz\n    at <anonymous> (/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.23.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async _NodePgSession.transaction (/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.23.1_pg@8.23.0/node_modules/src/node-postgres/session.ts:254:24)\n    at async seedInitialHomeContent (/workspace/artifacts/api-server/src/lib/seed.ts:2648:3)\n    at async start (/workspace/artifacts/api-server/src/index.ts:27:3)","errno":-3001,"code":"EAI_AGAIN","syscall":"getaddrinfo","hostname":"blihpiufi1kpb4qhjuif8vrz"},"msg":"Unable to initialize API server"}
+/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
+
+> @workspace/api-server@0.0.0 start /workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+{"level":50,"time":1792327961229,"pid":20,"hostname":"21d963a9ab0a","err":{"type":"Error","message":"getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz","stack":"Error: getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz\n    at <anonymous> (/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.23.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async _NodePgSession.transaction (/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.23.1_pg@8.23.0/node_modules/src/node-postgres/session.ts:254:24)\n    at async seedInitialHomeContent (/workspace/artifacts/api-server/src/lib/seed.ts:2648:3)\n    at async start (/workspace/artifacts/api-server/src/index.ts:27:3)","errno":-3001,"code":"EAI_AGAIN","syscall":"getaddrinfo","hostname":"blihpiufi1kpb4qhjuif8vrz"},"msg":"Unable to initialize API server"}
+/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
+
+> @workspace/api-server@0.0.0 start /workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+{"level":50,"time":1792328013958,"pid":20,"hostname":"21d963a9ab0a","err":{"type":"Error","message":"getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz","stack":"Error: getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz\n    at <anonymous> (/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.23.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async _NodePgSession.transaction (/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.23.1_pg@8.23.0/node_modules/src/node-postgres/session.ts:254:24)\n    at async seedInitialHomeContent (/workspace/artifacts/api-server/src/lib/seed.ts:2648:3)\n    at async start (/workspace/artifacts/api-server/src/index.ts:27:3)","errno":-3001,"code":"EAI_AGAIN","syscall":"getaddrinfo","hostname":"blihpiufi1kpb4qhjuif8vrz"},"msg":"Unable to initialize API server"}
+/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
+
+> @workspace/api-server@0.0.0 start /workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+{"level":50,"time":1792328075109,"pid":20,"hostname":"21d963a9ab0a","err":{"type":"Error","message":"getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz","stack":"Error: getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz\n    at <anonymous> (/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.23.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async _NodePgSession.transaction (/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.23.1_pg@8.23.0/node_modules/src/node-postgres/session.ts:254:24)\n    at async seedInitialHomeContent (/workspace/artifacts/api-server/src/lib/seed.ts:2648:3)\n    at async start (/workspace/artifacts/api-server/src/index.ts:27:3)","errno":-3001,"code":"EAI_AGAIN","syscall":"getaddrinfo","hostname":"blihpiufi1kpb4qhjuif8vrz"},"msg":"Unable to initialize API server"}
+/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
+
+> @workspace/api-server@0.0.0 start /workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+{"level":50,"time":1792328136275,"pid":20,"hostname":"21d963a9ab0a","err":{"type":"Error","message":"getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz","stack":"Error: getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz\n    at <anonymous> (/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.23.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async _NodePgSession.transaction (/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.23.1_pg@8.23.0/node_modules/src/node-postgres/session.ts:254:24)\n    at async seedInitialHomeContent (/workspace/artifacts/api-server/src/lib/seed.ts:2648:3)\n    at async start (/workspace/artifacts/api-server/src/index.ts:27:3)","errno":-3001,"code":"EAI_AGAIN","syscall":"getaddrinfo","hostname":"blihpiufi1kpb4qhjuif8vrz"},"msg":"Unable to initialize API server"}
+/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
+
+> @workspace/api-server@0.0.0 start /workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+{"level":50,"time":1792328197376,"pid":20,"hostname":"21d963a9ab0a","err":{"type":"Error","message":"getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz","stack":"Error: getaddrinfo EAI_AGAIN blihpiufi1kpb4qhjuif8vrz\n    at <anonymous> (/workspace/node_modules/.pnpm/pg-pool@3.14.0_pg@8.23.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async _NodePgSession.transaction (/workspace/node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.23.1_pg@8.23.0/node_modules/src/node-postgres/session.ts:254:24)\n    at async seedInitialHomeContent (/workspace/artifacts/api-server/src/lib/seed.ts:2648:3)\n    at async start (/workspace/artifacts/api-server/src/index.ts:27:3)","errno":-3001,"code":"EAI_AGAIN","syscall":"getaddrinfo","hostname":"blihpiufi1kpb4qhjuif8vrz"},"msg":"Unable to initialize API server"}
+/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
