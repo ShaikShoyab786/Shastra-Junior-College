@@ -1,0 +1,328 @@
+2026-Oct-18 10:33:11
+Docker 29.7.1 with BuildKit and Buildx detected on deployment server (localhost).
+2026-Oct-18 10:33:12
+Starting deployment of ShaikShoyab786/Shastra-Junior-College:main to localhost.
+2026-Oct-18 10:33:12
+Preparing container with helper image: docker.io/coollabsio/coolify-helper:1.0.17
+2026-Oct-18 10:33:16
+Image not found (itlofttber8intqks3pgwcjh:e105ba9ce50550e8c013c46974ac3361d622fc7a). Building new image.
+2026-Oct-18 10:33:17
+----------------------------------------
+2026-Oct-18 10:33:17
+Importing ShaikShoyab786/Shastra-Junior-College:main (commit sha e105ba9ce50550e8c013c46974ac3361d622fc7a) to /artifacts/2mou2t9qdktlcph7kchtte0q.
+2026-Oct-18 10:33:28
+Generating Railpack build plan.
+2026-Oct-18 10:33:29
+Building docker image with Railpack.
+2026-Oct-18 10:33:29
+To check the current progress, click on Show Debug Logs.
+2026-Oct-18 10:34:56
+========================================
+2026-Oct-18 10:34:56
+Deployment failed: Command execution failed (exit code 1): docker exec 2mou2t9qdktlcph7kchtte0q bash -c 'bash /artifacts/build.sh'
+2026-Oct-18 10:34:56
+Error: #0 building with "coolify-railpack" instance using docker-container driver
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#1 [internal] booting buildkit
+2026-Oct-18 10:34:56
+#1 pulling image moby/buildkit:buildx-stable-1
+2026-Oct-18 10:34:56
+#1 pulling image moby/buildkit:buildx-stable-1 7.8s done
+2026-Oct-18 10:34:56
+#1 creating container buildx_buildkit_coolify-railpack0
+2026-Oct-18 10:34:56
+#1 creating container buildx_buildkit_coolify-railpack0 0.6s done
+2026-Oct-18 10:34:56
+#1 DONE 10.1s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#2 resolve image config for docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0
+2026-Oct-18 10:34:56
+#2 DONE 1.7s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#3 docker-image://ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6
+2026-Oct-18 10:34:56
+#3 resolve ghcr.io/railwayapp/railpack-frontend:v0.23.0@sha256:ba4c430961d9ee3215c64807727a4b11e2198daac31250e9db9eaf9cee4624d6 done
+2026-Oct-18 10:34:56
+#3 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 0B / 8.67MB 0.2s
+2026-Oct-18 10:34:56
+#3 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 3.86MB / 3.86MB 0.3s done
+2026-Oct-18 10:34:56
+#3 extracting sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 0.1s done
+2026-Oct-18 10:34:56
+#3 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 3.15MB / 8.67MB 0.6s
+2026-Oct-18 10:34:56
+#3 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 4.19MB / 8.67MB 0.8s
+2026-Oct-18 10:34:56
+#3 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 7.34MB / 8.67MB 0.9s
+2026-Oct-18 10:34:56
+#3 sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 8.67MB / 8.67MB 0.9s done
+2026-Oct-18 10:34:56
+#3 extracting sha256:c6694fa6a71b0a80731c710fceccec91c86d45508e1fdb19e466ba2ddb79b88b 0.1s done
+2026-Oct-18 10:34:56
+#3 DONE 1.1s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#4 load build definition from railpack-plan.json
+2026-Oct-18 10:34:56
+#4 transferring dockerfile: 5.56kB done
+2026-Oct-18 10:34:56
+#4 DONE 0.0s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#5 [railpack] secrets hash
+2026-Oct-18 10:34:56
+#5 DONE 0.0s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#6 loading .
+2026-Oct-18 10:34:56
+#6 DONE 0.0s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#7 docker-image://ghcr.io/railwayapp/railpack-builder:mise-2026.3.17
+2026-Oct-18 10:34:56
+#7 resolve ghcr.io/railwayapp/railpack-builder:mise-2026.3.17
+2026-Oct-18 10:34:56
+#7 ...
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#5 [railpack] secrets hash
+2026-Oct-18 10:34:56
+#5 DONE 0.0s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#7 docker-image://ghcr.io/railwayapp/railpack-builder:mise-2026.3.17
+2026-Oct-18 10:34:56
+#7 resolve ghcr.io/railwayapp/railpack-builder:mise-2026.3.17 1.5s done
+2026-Oct-18 10:34:56
+#7 sha256:437c4596dda2880a773af5490b51574ab44a7e22c7f7641d9153c54631515a96 0B / 118B 0.3s
+2026-Oct-18 10:34:56
+#7 sha256:2dba35c464db6496f81e7931918a4569b10cca014017e8ecee3fe7e8729fc9f2 0B / 224.63MB 0.2s
+2026-Oct-18 10:34:56
+#7 sha256:437c4596dda2880a773af5490b51574ab44a7e22c7f7641d9153c54631515a96 118B / 118B 0.5s done
+2026-Oct-18 10:34:56
+#7 sha256:c3a3dd791043758ff0b75b8edd11cf4abfe979ce7c43b08d09c059732853b688 0B / 33.98MB 0.2s
+2026-Oct-18 10:34:56
+#7 ...
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#6 loading .
+2026-Oct-18 10:34:56
+#6 transferring context: 109.60MB 1.0s done
+2026-Oct-18 10:34:56
+#6 DONE 1.0s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#7 docker-image://ghcr.io/railwayapp/railpack-builder:mise-2026.3.17
+2026-Oct-18 10:34:56
+#7 sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 32B / 32B 0.2s done
+2026-Oct-18 10:34:56
+#7 sha256:6cf051f1897bf7109af670b243c7791c62723fc1ebbfa516af2522da6c8c99a9 0B / 64.40MB 0.2s
+2026-Oct-18 10:34:56
+#7 sha256:2dba35c464db6496f81e7931918a4569b10cca014017e8ecee3fe7e8729fc9f2 11.53MB / 224.63MB 1.7s
+2026-Oct-18 10:34:56
+#7 sha256:c3a3dd791043758ff0b75b8edd11cf4abfe979ce7c43b08d09c059732853b688 2.10MB / 33.98MB 1.2s
+2026-Oct-18 10:34:56
+#7 sha256:c3a3dd791043758ff0b75b8edd11cf4abfe979ce7c43b08d09c059732853b688 4.19MB / 33.98MB 1.4s
+2026-Oct-18 10:34:56
+#7 sha256:c3a3dd791043758ff0b75b8edd11cf4abfe979ce7c43b08d09c059732853b688 6.29MB / 33.98MB 1.7s
+2026-Oct-18 10:34:56
+#7 sha256:6cf051f1897bf7109af670b243c7791c62723fc1ebbfa516af2522da6c8c99a9 5.24MB / 64.40MB 1.2s
+2026-Oct-18 10:34:56
+#7 sha256:c3a3dd791043758ff0b75b8edd11cf4abfe979ce7c43b08d09c059732853b688 9.44MB / 33.98MB 1.8s
+2026-Oct-18 10:34:56
+#7 sha256:6cf051f1897bf7109af670b243c7791c62723fc1ebbfa516af2522da6c8c99a9 10.49MB / 64.40MB 1.7s
+2026-Oct-18 10:34:56
+#7 sha256:6cf051f1897bf7109af670b243c7791c62723fc1ebbfa516af2522da6c8c99a9 16.78MB / 64.40MB 2.1s
+2026-Oct-18 10:34:56
+#7 sha256:26fa3468d221545a43d2151f3977695a31857f9342ba842627d03c9fa1b2ae02 0B / 24.04MB 0.2s
+2026-Oct-18 10:34:56
+#7 sha256:c3a3dd791043758ff0b75b8edd11cf4abfe979ce7c43b08d09c059732853b688 11.53MB / 33.98MB 2.9s
+2026-Oct-18 10:34:56
+#7 sha256:6cf051f1897bf7109af670b243c7791c62723fc1ebbfa516af2522da6c8c99a9 20.97MB / 64.40MB 2.4s
+2026-Oct-18 10:34:56
+#7 sha256:2dba35c464db6496f81e7931918a4569b10cca014017e8ecee3fe7e8729fc9f2 23.07MB / 224.63MB 3.5s
+2026-Oct-18 10:34:56
+#7 sha256:6cf051f1897bf7109af670b243c7791c62723fc1ebbfa516af2522da6c8c99a9 24.52MB / 64.40MB 2.6s
+2026-Oct-18 10:34:56
+#7 sha256:26fa3468d221545a43d2151f3977695a31857f9342ba842627d03c9fa1b2ae02 3.15MB / 24.04MB 0.6s
+2026-Oct-18 10:34:56
+#7 sha256:26fa3468d221545a43d2151f3977695a31857f9342ba842627d03c9fa1b2ae02 7.34MB / 24.04MB 0.8s
+2026-Oct-18 10:34:56
+#7 sha256:6cf051f1897bf7109af670b243c7791c62723fc1ebbfa516af2522da6c8c99a9 31.46MB / 64.40MB 2.9s
+2026-Oct-18 10:34:56
+#7 sha256:26fa3468d221545a43d2151f3977695a31857f9342ba842627d03c9fa1b2ae02 10.49MB / 24.04MB 0.9s
+2026-Oct-18 10:34:56
+#7 ...
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#8 docker-image://ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17
+2026-Oct-18 10:34:56
+#8 resolve ghcr.io/railwayapp/railpack-runtime:mise-2026.3.17 1.5s done
+2026-Oct-18 10:34:56
+#8 sha256:efacd37a3e472e535566fd1b5c83b992d01d6035693265dd387efe523207a9a3 3.56MB / 3.56MB 0.8s done
+2026-Oct-18 10:34:56
+#8 sha256:6db0909c4473287ed4d1f950d26b8bc5b7b4206d365a0e7740cb89e46979153e 28.24MB / 28.24MB 3.0s done
+2026-Oct-18 10:34:56
+#8 extracting sha256:6db0909c4473287ed4d1f950d26b8bc5b7b4206d365a0e7740cb89e46979153e 0.9s done
+2026-Oct-18 10:34:56
+#8 extracting sha256:efacd37a3e472e535566fd1b5c83b992d01d6035693265dd387efe523207a9a3 0.1s done
+2026-Oct-18 10:34:56
+#8 DONE 5.6s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#7 docker-image://ghcr.io/railwayapp/railpack-builder:mise-2026.3.17
+2026-Oct-18 10:34:56
+#7 sha256:c3a3dd791043758ff0b75b8edd11cf4abfe979ce7c43b08d09c059732853b688 13.63MB / 33.98MB 3.6s
+2026-Oct-18 10:34:56
+#7 sha256:6cf051f1897bf7109af670b243c7791c62723fc1ebbfa516af2522da6c8c99a9 37.75MB / 64.40MB 3.9s
+2026-Oct-18 10:34:56
+#7 sha256:2dba35c464db6496f81e7931918a4569b10cca014017e8ecee3fe7e8729fc9f2 36.70MB / 224.63MB 5.0s
+2026-Oct-18 10:34:56
+#7 sha256:6cf051f1897bf7109af670b243c7791c62723fc1ebbfa516af2522da6c8c99a9 41.94MB / 64.40MB 4.1s
+2026-Oct-18 10:34:56
+#7 sha256:c3a3dd791043758ff0b75b8edd11cf4abfe979ce7c43b08d09c059732853b688 15.73MB / 33.98MB 4.7s
+2026-Oct-18 10:34:56
+#7 sha256:6cf051f1897bf7109af670b243c7791c62723fc1ebbfa516af2522da6c8c99a9 48.23MB / 64.40MB 4.8s
+2026-Oct-18 10:34:56
+#7 sha256:6cf051f1897bf7109af670b243c7791c62723fc1ebbfa516af2522da6c8c99a9 52.43MB / 64.40MB 5.1s
+2026-Oct-18 10:34:56
+#7 sha256:6cf051f1897bf7109af670b243c7791c62723fc1ebbfa516af2522da6c8c99a9 57.67MB / 64.40MB 5.4s
+2026-Oct-18 10:34:56
+#7 sha256:c3a3dd791043758ff0b75b8edd11cf4abfe979ce7c43b08d09c059732853b688 17.83MB / 33.98MB 6.0s
+2026-Oct-18 10:34:56
+#7 sha256:6cf051f1897bf7109af670b243c7791c62723fc1ebbfa516af2522da6c8c99a9 62.91MB / 64.40MB 5.6s
+2026-Oct-18 10:34:56
+#7 sha256:2dba35c464db6496f81e7931918a4569b10cca014017e8ecee3fe7e8729fc9f2 50.33MB / 224.63MB 7.2s
+2026-Oct-18 10:34:56
+#7 sha256:6cf051f1897bf7109af670b243c7791c62723fc1ebbfa516af2522da6c8c99a9 64.40MB / 64.40MB 6.5s done
+2026-Oct-18 10:34:56
+#7 sha256:9d2f29087bcd6d99efd909a99095549425cd63e27c71b3bf37f108c6b7c370f9 0B / 48.49MB 0.2s
+2026-Oct-18 10:34:56
+#7 ...
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#9 install apt packages: curl wget
+2026-Oct-18 10:34:56
+#9 0.124 Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+2026-Oct-18 10:34:56
+#9 0.138 Get:<REDACTED>@22.23.3    [1/3] install
+2026-Oct-18 10:34:56
+#12 0.485 mise pnpm@9.15.9     [1/2] install
+2026-Oct-18 10:34:56
+#12 0.485 mise node@22.23.3    [1/3] download node-v22.23.3-linux-x64.tar.gz
+2026-Oct-18 10:34:56
+#12 1.080 mise node@22.23.3    [2/3] generate checksum node-v22.23.3-linux-x64.tar.gz
+2026-Oct-18 10:34:56
+#12 1.099 mise node@22.23.3    [3/3] extract node-v22.23.3-linux-x64.tar.gz
+2026-Oct-18 10:34:56
+#12 2.034 mise pnpm@9.15.9     [1/2] download pnpm-linux-x64
+2026-Oct-18 10:34:56
+#12 2.646 mise node@22.23.3    [3/3] node -v
+2026-Oct-18 10:34:56
+#12 2.652 mise node@22.23.3    [3/3] v22.23.3
+2026-Oct-18 10:34:56
+#12 2.652 mise node@22.23.3    [3/3] npm -v
+2026-Oct-18 10:34:56
+#12 2.773 mise node@22.23.3    [3/3] 10.9.9
+2026-Oct-18 10:34:56
+#12 2.805 mise node@22.23.3  ✓ installed
+2026-Oct-18 10:34:56
+#12 4.843 mise pnpm@9.15.9     [1/2] generate checksum pnpm-linux-x64
+2026-Oct-18 10:34:56
+#12 4.864 mise pnpm@9.15.9     [1/2] extract pnpm-linux-x64
+2026-Oct-18 10:34:56
+#12 5.049 mise pnpm@9.15.9   ✓ installed
+2026-Oct-18 10:34:56
+#12 DONE 5.2s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#13 copy / /app
+2026-Oct-18 10:34:56
+#13 DONE 0.4s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#14 copy /.env.example /app/.env.example
+2026-Oct-18 10:34:56
+#14 DONE 0.0s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#15 mkdir -p /app/node_modules/.cache
+2026-Oct-18 10:34:56
+#15 DONE 0.1s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#16 copy /mise/shims
+2026-Oct-18 10:34:56
+#16 DONE 0.0s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#17 copy /mise/installs
+2026-Oct-18 10:34:56
+#17 ...
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#18 pnpm add -g node-gyp
+2026-Oct-18 10:34:56
+#18 0.488 Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-Oct-18 10:34:56
+#18 0.877 Packages: +20
+2026-Oct-18 10:34:56
+#18 0.877 ++++++++++++++++++++
+2026-Oct-18 10:34:56
+#18 0.926 Progress: resolved 20, reused 0, downloaded 20, added 20, done
+2026-Oct-18 10:34:56
+#18 0.973
+2026-Oct-18 10:34:56
+#18 0.973 /pnpm/global/5:
+2026-Oct-18 10:34:56
+#18 0.973 + node-gyp 13.1.0
+2026-Oct-18 10:34:56
+#18 0.973
+2026-Oct-18 10:34:56
+#18 0.982 Done in 719ms using pnpm v9.15.9
+2026-Oct-18 10:34:56
+#18 DONE 1.1s
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#19 pnpm install --frozen-lockfile --prefer-offline
+2026-Oct-18 10:34:56
+#19 0.384 Scope: all 9 workspace projects
+2026-Oct-18 10:34:56
+#19 0.444  ERR_PNPM_LOCKFILE_CONFIG_MISMATCH  Cannot proceed with the frozen installation. The current "overrides" configuration doesn't match the value found in the lockfile
+2026-Oct-18 10:34:56
+#19 0.444
+2026-Oct-18 10:34:56
+#19 0.444 Update your lockfile using "pnpm install --no-frozen-lockfile"
+2026-Oct-18 10:34:56
+#19 ERROR: process "pnpm install --frozen-lockfile --prefer-offline" did not complete successfully: exit code: 1
+2026-Oct-18 10:34:56
+2026-Oct-18 10:34:56
+#17 copy /mise/installs
+2026-Oct-18 10:34:56
+#17 DONE 1.5s
+2026-Oct-18 10:34:56
+------
+2026-Oct-18 10:34:56
+> pnpm install --frozen-lockfile --prefer-offline:
+2026-Oct-18 10:34:56
+0.384 Scope: all 9 workspace projects
+2026-Oct-18 10:34:56
+0.444  ERR_PNPM_LOCKFILE_CONFIG_MISMATCH  Cannot proceed with the frozen installation. The current "overrides" configuration doesn't match the value found in the lockfile
+2026-Oct-18 10:34:56
+0.444
+2026-Oct-18 10:34:56
+0.444 Update your lockfile using "pnpm install --no-frozen-lockfile"
+2026-Oct-18 10:34:56
+------
+2026-Oct-18 10:34:56
+ERROR: failed to build: failed to solve: process "pnpm install --frozen-lockfile --prefer-offline" did not complete successfully: exit code: 1
+2026-Oct-18 10:34:56
+========================================
+2026-Oct-18 10:34:56
+Deployment failed. Removing the new version of your application.
+2026-Oct-18 10:34:56
+Gracefully shutting down build container: 2mou2t9qdktlcph7kchtte0q
