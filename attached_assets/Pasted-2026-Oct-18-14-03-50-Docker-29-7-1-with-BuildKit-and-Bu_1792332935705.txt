@@ -1,0 +1,48 @@
+2026-Oct-18 14:03:50
+Docker 29.7.1 with BuildKit and Buildx detected on deployment server (localhost).
+2026-Oct-18 14:03:50
+Starting deployment of shastra--junior--college:main-itlofttber8intqks3pgwcjh to localhost.
+2026-Oct-18 14:03:50
+Preparing container with helper image: docker.io/coollabsio/coolify-helper:1.0.17
+2026-Oct-18 14:03:56
+----------------------------------------
+2026-Oct-18 14:03:56
+Importing ShaikShoyab786/Shastra-Junior-College:main (commit sha f4420ea01aff7c062959b2fd58fb747110190e5e) to /artifacts/94zrlegxu6o5xdizsqiwwgmk.
+2026-Oct-18 14:04:13
+Added 3 ARG declarations to Dockerfile for service api.
+2026-Oct-18 14:04:14
+Added 6 ARG declarations to Dockerfile for service web (multi-stage build, added to 2 stages).
+2026-Oct-18 14:04:14
+Pulling & building required images.
+2026-Oct-18 14:04:14
+Adding build arguments to Docker Compose build command.
+2026-Oct-18 14:05:11
+Pulling image-based services before stopping the current deployment.
+2026-Oct-18 14:05:11
+Removing old containers.
+2026-Oct-18 14:05:14
+Starting new application.
+2026-Oct-18 14:05:15
+Container api-itlofttber8intqks3pgwcjh-20261018T140412 Creating
+2026-Oct-18 14:05:15
+Container api-itlofttber8intqks3pgwcjh-20261018T140412 Created
+2026-Oct-18 14:05:15
+Container web-itlofttber8intqks3pgwcjh-20261018T140412 Creating
+2026-Oct-18 14:05:15
+Container web-itlofttber8intqks3pgwcjh-20261018T140412 Created
+2026-Oct-18 14:05:15
+Container api-itlofttber8intqks3pgwcjh-20261018T140412 Starting
+2026-Oct-18 14:05:15
+Container api-itlofttber8intqks3pgwcjh-20261018T140412 Started
+2026-Oct-18 14:05:15
+Container api-itlofttber8intqks3pgwcjh-20261018T140412 Waiting
+2026-Oct-18 14:05:21
+Container api-itlofttber8intqks3pgwcjh-20261018T140412 Healthy
+2026-Oct-18 14:05:21
+Container web-itlofttber8intqks3pgwcjh-20261018T140412 Starting
+2026-Oct-18 14:05:21
+Container web-itlofttber8intqks3pgwcjh-20261018T140412 Started
+2026-Oct-18 14:05:21
+New container started.
+2026-Oct-18 14:05:22
+Gracefully shutting down build container: 94zrlegxu6o5xdizsqiwwgmk
