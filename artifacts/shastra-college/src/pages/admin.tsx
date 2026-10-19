@@ -29,6 +29,8 @@ import {
   ClipboardList,
   Copy,
   ExternalLink,
+  Eye,
+  EyeOff,
   FileText,
   FolderOpen,
   ImagePlus,
@@ -2059,6 +2061,7 @@ type AdminLoginState = "checking" | "signed-in" | "signed-out" | "error";
 export default function AdminPage() {
   const [state, setState] = useState<AdminLoginState>("checking");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -2144,16 +2147,28 @@ export default function AdminPage() {
           aria-hidden="true"
           className="sr-only"
         />
-        <input
-          id="admin-password"
-          type="password"
-          autoComplete="current-password"
-          required
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-[#0b3472] focus:ring-2 focus:ring-[#0b3472]/15"
-          data-testid="input-admin-password"
-        />
+        <div className="relative mt-2">
+          <input
+            id="admin-password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 pr-12 text-slate-900 outline-none transition focus:border-[#0b3472] focus:ring-2 focus:ring-[#0b3472]/15"
+            data-testid="input-admin-password"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((visible) => !visible)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-pressed={showPassword}
+            className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 transition hover:text-[#0b3472] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0b3472]"
+            data-testid="button-toggle-admin-password"
+          >
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </button>
+        </div>
         {error ? (
           <p role="alert" className="mt-3 text-left text-sm font-medium text-red-700">
             {error}

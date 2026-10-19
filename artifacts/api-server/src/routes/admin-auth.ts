@@ -35,7 +35,10 @@ router.post("/admin/auth/login", (req, res) => {
   }
   if (!adminAuthIsConfigured()) {
     req.log.error("Admin password authentication is not configured.");
-    res.status(503).json({ error: "Admin sign-in is not configured." });
+    res.status(503).json({
+      error:
+        "Admin sign-in is not configured. Verify ADMIN_PASSWORD and ensure ADMIN_SESSION_SECRET is at least 32 characters in the Coolify API service.",
+    });
     return;
   }
 
@@ -61,7 +64,10 @@ router.post("/admin/auth/login", (req, res) => {
   const token = createAdminSessionToken(now);
   if (!token) {
     req.log.error("Unable to create admin session; session secret is missing.");
-    res.status(503).json({ error: "Admin sign-in is not configured." });
+    res.status(503).json({
+      error:
+        "Admin sign-in is not configured. Verify ADMIN_PASSWORD and ensure ADMIN_SESSION_SECRET is at least 32 characters in the Coolify API service.",
+    });
     return;
   }
 
