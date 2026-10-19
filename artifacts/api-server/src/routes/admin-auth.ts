@@ -15,6 +15,20 @@ const failedAttempts = new Map<string, { count: number; windowStartedAt: number 
 const ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 10;
 
+function adminAuthConfigurationIssues(): string[] {
+  const issues: string[] = [];
+  if (!process.env.ADMIN_PASSWORD) {
+    issues.push("ADMIN_PASSWORD is missing or empty in the API runtime.");
+  }
+  const sessionSecret = process.env.ADMIN_SESSION_SECRET;
+  if (!sessionSecret) {
+    issues.push("ADMIN_SESSION_SECRET is missing in the API runtime.");
+  } else if (sessionSecret.length < 32) {
+    issues.push("ADMIN_SESSION_SECRET is shorter than 32 characters in the API runtime.");
+  }
+  return issues;
+}
+
 function isRateLimited(ip: string, now: number): boolean {
   const current = failedAttempts.get(ip);
   if (!current || now - current.windowStartedAt >= ATTEMPT_WINDOW_MS) {
@@ -33,11 +47,14 @@ router.post("/admin/auth/login", (req, res) => {
     res.status(403).json({ error: "Admin sign-in request was rejected." });
     return;
   }
-  if (!adminAuthIsConfigured()) {
-    req.log.error("Admin password authentication is not configured.");
+  const configurationIssues = adminAuthConfigurationIssues();
+  if (configurationIssues.length > 0 || !adminAuthIsConfigured()) {
+    req.log.error(
+      { configurationIssues },
+      "Admin password authentication is not configured.",
+    );
     res.status(503).json({
-      error:
-        "Admin sign-in is not configured. Verify ADMIN_PASSWORD and ensure ADMIN_SESSION_SECRET is at least 32 characters in the Coolify API service.",
+      error: `Admin sign-in is not configured: ${configurationIssues.join(" ")}`,
     });
     return;
   }

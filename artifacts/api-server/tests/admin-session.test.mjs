@@ -78,6 +78,10 @@ test("admin password verification requires an exact configured password", () => 
 
 test("password login creates a session that logout clears", async () => {
   const app = express();
+  app.use((req, _res, next) => {
+    req.log = { error() {} };
+    next();
+  });
   app.use(express.json(), adminAuthRouter);
   const server = app.listen(0, "127.0.0.1");
   await new Promise((resolve) => server.once("listening", resolve));
@@ -86,6 +90,31 @@ test("password login creates a session that logout clears", async () => {
   const origin = `http://127.0.0.1:${address.port}`;
 
   try {
+    const configuredPassword = process.env.ADMIN_PASSWORD;
+    const configuredSessionSecret = process.env.ADMIN_SESSION_SECRET;
+    process.env.ADMIN_PASSWORD = "";
+    const missingPassword = await fetch(`${origin}/admin/auth/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin },
+      body: JSON.stringify({ password: "irrelevant" }),
+    });
+    assert.equal(missingPassword.status, 503);
+    assert.match((await missingPassword.json()).error, /ADMIN_PASSWORD is missing/);
+
+    process.env.ADMIN_PASSWORD = configuredPassword;
+    process.env.ADMIN_SESSION_SECRET = "too-short";
+    const shortSessionSecret = await fetch(`${origin}/admin/auth/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin },
+      body: JSON.stringify({ password: "irrelevant" }),
+    });
+    assert.equal(shortSessionSecret.status, 503);
+    assert.match(
+      (await shortSessionSecret.json()).error,
+      /ADMIN_SESSION_SECRET is shorter than 32 characters/,
+    );
+    process.env.ADMIN_SESSION_SECRET = configuredSessionSecret;
+
     const badLogin = await fetch(`${origin}/admin/auth/login`, {
       method: "POST",
       headers: { "content-type": "application/json", origin },
